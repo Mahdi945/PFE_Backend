@@ -14,7 +14,7 @@ const User = {
 
   // Recherche un utilisateur par nom d'utilisateur
   findByUsername: (username) => {
-    const query = 'SELECT id,username,email,numero_telephone,password,role FROM utilisateurs WHERE username = ?';
+    const query = 'SELECT id,username,email,numero_telephone,password,role,status FROM utilisateurs WHERE username = ?';
     return db.execute(query, [username]);
   },
 
@@ -54,7 +54,7 @@ const User = {
 
 // Méthode pour mettre à jour un utilisateur par ID
 updateUser: (id, updateData) => {
-    const { username, email, numeroTelephone, role } = updateData;
+    const { username, email, numeroTelephone, role,status } = updateData;
   
     let query = 'UPDATE utilisateurs SET ';
     const values = [];
@@ -75,6 +75,10 @@ updateUser: (id, updateData) => {
     if (role !== undefined) {
       query += 'role = ?, ';
       values.push(role);
+    }
+    if (status) {
+      query += 'status = ?, ';
+      values.push(status);
     }
   
     // Retirer la dernière virgule et espace

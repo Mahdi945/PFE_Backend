@@ -20,26 +20,29 @@ router.post(
     body('email').isEmail().withMessage('Email invalide').isLength({ max: 255 }).withMessage('Email trop long'), // Limiter la longueur de l'email
     body('password').isLength({ min: 6, max: 20 }).withMessage('Le mot de passe doit contenir entre 6 et 20 caractères'), // Limiter la longueur du mot de passe
     body('username').notEmpty().withMessage('Le nom d\'utilisateur est requis').isLength({ min: 3, max: 50 }).withMessage('Le nom d\'utilisateur doit contenir entre 3 et 50 caractères'), // Limiter la longueur du nom d'utilisateur
-    body('numeroTelephone').isMobilePhone().withMessage('Numéro de téléphone invalide').isLength({ max: 15 }).withMessage('Le numéro de téléphone est trop long') // Limiter la longueur du numéro de téléphone
+    body('numeroTelephone').isMobilePhone().withMessage('Numéro de téléphone invalide').isLength({ max: 8 }).withMessage('Le numéro de téléphone est trop long') // Limiter la longueur du numéro de téléphone
   ],
   validateRequest,
   authController.registerUser
 );
+
+// Route pour la connexion d'un utilisateur
 router.post(
-    '/login',
-    [
-      body('username')
-        .notEmpty().withMessage('Le nom d\'utilisateur est requis')
-        .isLength({ min: 3, max: 20 }).withMessage('Le nom d\'utilisateur doit contenir entre 3 et 20 caractères'), // Ajouter une longueur maximale
-      body('password')
-        .notEmpty().withMessage('Le mot de passe est requis')
-        .isLength({ min: 6, max: 20 }).withMessage('Le mot de passe doit contenir entre 6 et 20 caractères') // Longueur maximale pour le mot de passe
-    ],
-    validateRequest, // Le middleware pour valider les erreurs
-    authController.loginUser // Contrôleur pour la connexion
-  );
-//donnes d utilisateur authentifié
-  router.get('/profile', passport.authenticate('jwt', { session: false }), authController.getUserProfile);
+  '/login',
+  [
+    body('username')
+      .notEmpty().withMessage('Le nom d\'utilisateur est requis')
+      .isLength({ min: 3, max: 20 }).withMessage('Le nom d\'utilisateur doit contenir entre 3 et 20 caractères'), // Ajouter une longueur maximale
+    body('password')
+      .notEmpty().withMessage('Le mot de passe est requis')
+      .isLength({ min: 6, max: 20 }).withMessage('Le mot de passe doit contenir entre 6 et 20 caractères') // Longueur maximale pour le mot de passe
+  ],
+  validateRequest, // Le middleware pour valider les erreurs
+  authController.loginUser // Contrôleur pour la connexion
+);
+
+// Données d'utilisateur authentifié
+router.get('/profile', passport.authenticate('jwt', { session: false }), authController.getUserProfile);
 
 // Route pour la mise à jour d'un utilisateur
 router.put(
@@ -54,8 +57,48 @@ router.put(
   validateRequest,
   authController.updateUser
 );
-// Route pour la mise à jour du mot de passe
-router.put('/update-password', authController.updatePassword);
+// Route pour demander un lien de réinitialisation de mot de passe
+router.post(
+  '/request-password-reset',
+  [
+    body('email').isEmail().withMessage('Email invalide').isLength({ max: 255 }).withMessage('Email trop long') // Validation de l'email
+  ],
+  validateRequest,
+  authController.requestPasswordReset // Nouveau contrôleur pour demander un lien de réinitialisation
+);
+
+// Route pour mettre à jour le mot de passe via un lien sécurisé
+router.put(
+  '/reset-password',
+  [
+    body('newPassword')
+      .isLength({ min: 6, max: 20 })
+      .withMessage('Le mot de passe doit contenir entre 6 et 20 caractères') // Validation du mot de passe
+  ],
+  validateRequest,
+  passport.authenticate('jwt', { session: false }), // Utilisation de Passport pour vérifier le token
+  authController.updatePassword // Contrôleur pour mettre à jour le mot de passe
+);
+// Désactivation d'un utilisateur
+router.put(
+  '/desactiver/:id',
+  [
+    param('id').isInt().withMessage('L\'ID doit être un entier'),
+    body('reason').notEmpty().withMessage('Une raison est requise pour la désactivation')
+  ],
+  validateRequest,
+  authController.deactivateUser
+);
+
+// Réactivation d'un utilisateur
+router.put(
+  '/reactiver/:id',
+  [
+    param('id').isInt().withMessage('L\'ID doit être un entier')
+  ],
+  validateRequest,
+  authController.reactivateUser
+);
 
 // Route pour récupérer un utilisateur par email
 router.get(
