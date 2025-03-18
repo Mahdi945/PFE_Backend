@@ -102,6 +102,11 @@ updateUser: (id, updateData) => {
     const query = 'UPDATE utilisateurs SET password = ? WHERE email = ?';
     return db.execute(query, [newPassword, email]);
   },
+  updatePasswordById: (id, newPassword) => {
+    const query = 'UPDATE utilisateurs SET password = ? WHERE id = ?';
+    return db.execute(query, [newPassword, id]);
+  },
+  
 
   // Affecte un rôle à un utilisateur existant
   /*assignRoleToUser: (id, role) => {

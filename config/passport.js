@@ -4,24 +4,26 @@ import User from '../models/User.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
-// bearer token c est a dire le client porte le token
+
+// Options pour extraire le JWT du cookie HTTP-only
 const options = {
-  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  jwtFromRequest: ExtractJwt.fromExtractors([
+    (req) => req.cookies.jwt // Extraction du token depuis le cookie "jwt"
+  ]),
   secretOrKey: process.env.JWT_SECRET,
 };
 
-//passport dechiffre le token et extrait le payload qui contient les informations d utilisateur 
 passport.use(
   new JwtStrategy(options, async (payload, done) => {
     try {
       // Recherche de l'utilisateur par son ID dans la base de données
-      const user = await User.findById(payload.id); // Assurez-vous que cela renvoie un utilisateur ou null
+      const user = await User.findById(payload.id);
       if (user) {
-        return done(null, user); 
+        return done(null, user);
       }
-      return done(null, false); // Si aucun utilisateur n'est trouvé, on renvoie false
+      return done(null, false); // Si l'utilisateur n'existe pas, renvoie false
     } catch (error) {
-      return done(error, false); 
+      return done(error, false); // Erreur lors de la recherche
     }
   })
 );

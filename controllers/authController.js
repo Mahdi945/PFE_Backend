@@ -201,11 +201,14 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+
 const loginUser = async (req, res) => {
   const { username, password } = req.body;
+
   if (!username || !password) {
     return res.status(400).json({ message: "Nom d'utilisateur et mot de passe requis." });
   }
+
   try {
     const result = await User.findByUsername(username); // Vérifions le retour de cette méthode
     if (!result || result.length === 0 || result[0].length === 0) {
@@ -223,18 +226,39 @@ const loginUser = async (req, res) => {
       return res.status(401).json({ message: "Nom d'utilisateur ou mot de passe incorrect." });
     }
 
+    // Créer un token JWT
     const token = jwt.sign(
       { id: user.id, username: user.username, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN }
+      { expiresIn: process.env.JWT_EXPIRES_IN } // Le temps d'expiration du token
     );
 
-    res.status(200).json({ message: "Connexion réussie.", token });
+     // Définir le cookie HTTP-only
+    res.cookie('jwt', token, {
+      httpOnly: true, // Interdit l'accès au cookie via JavaScript
+      secure: false, // Désactivé pour HTTP (en production, passe à true pour HTTPS)
+      sameSite: 'Strict', // Empêche l'envoi du cookie avec des requêtes cross-site
+      maxAge: 3600000 // 1 heure
+    });
+
+    res.status(200).json({ message: "Connexion réussie." });
   } catch (err) {
     console.error("Erreur lors de la connexion:", err);
     res.status(500).json({ message: "Erreur serveur." });
   }
 };
+
+// Fonction de déconnexion
+const logoutUser = (req, res) => {
+  res.clearCookie('jwt', {
+    httpOnly: true,
+    secure: false, // Désactivé pour HTTP (en production, passe à true pour HTTPS)
+    sameSite: 'Strict'
+  });
+  return res.status(200).json({ message: 'Déconnexion réussie' });
+};
+
+
 
 const deactivateUser = async (req, res) => {
   const { id } = req.params;
@@ -376,9 +400,45 @@ const reactivateUser = async (req, res) => {
       res.status(500).json({ message: 'Erreur du serveur.' });
     }
   };
+  // Fonction pour mettre à jour le mot de passe
+  const updatePasswordConnected = async (req, res) => {
+    const { newPassword } = req.body;
+  
+    try {
+      // Extraire le token du cookie HTTP-only
+      const token = req.cookies.jwt;
+      if (!token) {
+        return res.status(401).json({ message: 'Pas de token, accès non autorisé' });
+      }
+  
+      // Vérifier la validité du token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  
+      // Utiliser l'ID de l'utilisateur décodé plutôt que l'email
+      const userId = decoded.id;
+  
+      // Vérifier que l'utilisateur existe dans la base de données
+      const user = await User.findById(userId);  // Recherche par ID au lieu de l'email
+      if (!user) {
+        return res.status(404).json({ message: 'Utilisateur non trouvé.' });
+      }
+  
+      // Hacher le nouveau mot de passe
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+  
+      // Mettre à jour le mot de passe dans la base de données
+      await User.updatePasswordById(userId, hashedPassword);  // Mise à jour par ID
+  
+      res.status(200).json({ message: 'Mot de passe mis à jour avec succès.' });
+    } catch (error) {
+      console.error('Erreur de mise à jour du mot de passe:', error);
+      res.status(400).json({ message: 'Erreur lors de la mise à jour du mot de passe.' });
+    }
+  };
   
   
-export default { registerUser, loginUser,deactivateUser,reactivateUser,getUserProfile,requestPasswordReset, updateUser, updatePassword , getUserByEmail, getUserByUsername, getUserByRole, deleteUser, getAllUsers };
+  
+export default { registerUser, loginUser,logoutUser,deactivateUser,reactivateUser,getUserProfile,requestPasswordReset, updateUser, updatePassword ,updatePasswordConnected, getUserByEmail, getUserByUsername, getUserByRole, deleteUser, getAllUsers };
 
 /*
 // Fonction pour mettre à jour le mot de passe d'un utilisateur en vérifiant l'email

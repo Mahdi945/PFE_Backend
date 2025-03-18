@@ -4,6 +4,7 @@ import pool from './config/db.js';
 import authRouter from './routes/authRoute.js';
 import passport from './config/passport.js'; // Importer Passport correctement
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 
 // Charger les variables d'environnement
 dotenv.config();
@@ -11,11 +12,15 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware pour parser le JSON
+// Middleware pour parser le JSON et les données de formulaire
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));  // Ajouter cette ligne pour parser les données du formulaire
+
 
 // Activer CORS
 app.use(cors());
+
+app.use(cookieParser());
 
 // Initialiser Passport
 app.use(passport.initialize());

@@ -44,6 +44,17 @@ router.post(
 // Données d'utilisateur authentifié
 router.get('/profile', passport.authenticate('jwt', { session: false }), authController.getUserProfile);
 
+router.post('/logout', authController.logoutUser);
+
+router.put('/update-password',
+  [
+    body('newPassword')
+      .isLength({ min: 6, max: 20 })
+      .withMessage('Le mot de passe doit contenir entre 6 et 20 caractères') // Validation du mot de passe
+  ],
+  validateRequest,
+  passport.authenticate('jwt', { session: false }), 
+  authController.updatePasswordConnected);
 // Route pour la mise à jour d'un utilisateur
 router.put(
   '/update/:id',
