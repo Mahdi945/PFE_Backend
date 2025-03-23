@@ -30,9 +30,7 @@ router.post(
 router.post(
   '/login',
   [
-    body('username')
-      .notEmpty().withMessage('Le nom d\'utilisateur est requis')
-      .isLength({ min: 3, max: 20 }).withMessage('Le nom d\'utilisateur doit contenir entre 3 et 20 caractères'), // Ajouter une longueur maximale
+   
     body('password')
       .notEmpty().withMessage('Le mot de passe est requis')
       .isLength({ min: 6, max: 20 }).withMessage('Le mot de passe doit contenir entre 6 et 20 caractères') // Longueur maximale pour le mot de passe

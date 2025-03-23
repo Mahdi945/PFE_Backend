@@ -201,43 +201,55 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-
 const loginUser = async (req, res) => {
-  const { username, password } = req.body;
+  const { username, email, password } = req.body;
 
-  if (!username || !password) {
-    return res.status(400).json({ message: "Nom d'utilisateur et mot de passe requis." });
+  // Vérifier si un nom d'utilisateur ou un email est fourni, ainsi qu'un mot de passe
+  if ((!username && !email) || !password) {
+    return res.status(400).json({ message: "Nom d'utilisateur ou email et mot de passe requis." });
   }
 
   try {
-    const result = await User.findByUsername(username); // Vérifions le retour de cette méthode
-    if (!result || result.length === 0 || result[0].length === 0) {
-      return res.status(401).json({ message: "Nom d'utilisateur ou mot de passe incorrect." });
+    let user;
+
+    // Si un nom d'utilisateur est fourni, chercher par nom d'utilisateur, sinon chercher par email
+    if (username) {
+      const result = await User.findByUsername(username);
+      if (!result || result.length === 0 || result[0].length === 0) {
+        return res.status(401).json({ message: "Nom d'utilisateur ou mot de passe incorrect." });
+      }
+      user = result[0][0];
+    } else if (email) {
+      const result = await User.findByEmail(email); // Une fonction que vous devrez peut-être implémenter pour chercher par email
+      if (!result || result.length === 0 || result[0].length === 0) {
+        return res.status(401).json({ message: "Email ou mot de passe incorrect." });
+      }
+      user = result[0][0];
     }
 
-    const user = result[0][0]; // Accéder à l'objet utilisateur correctement
-
+    // Vérifier le statut de l'utilisateur (si l'utilisateur est inactif)
     if (user.status === 'inactive') {
       return res.status(403).json({ message: "Votre compte est désactivé. Contactez l'administration." });
     }
 
+    // Comparer le mot de passe
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
-      return res.status(401).json({ message: "Nom d'utilisateur ou mot de passe incorrect." });
+      return res.status(401).json({ message: "Nom d'utilisateur, email ou mot de passe incorrect." });
     }
 
     // Créer un token JWT
     const token = jwt.sign(
       { id: user.id, username: user.username, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN } // Le temps d'expiration du token
+      { expiresIn: process.env.JWT_EXPIRES_IN }
     );
 
-     // Définir le cookie HTTP-only
+    // Définir le cookie HTTP-only
     res.cookie('jwt', token, {
-      httpOnly: true, // Interdit l'accès au cookie via JavaScript
-      secure: false, // Désactivé pour HTTP (en production, passe à true pour HTTPS)
-      sameSite: 'Strict', // Empêche l'envoi du cookie avec des requêtes cross-site
+      httpOnly: true,
+      secure: false, // Désactiver pour HTTP, activer pour HTTPS en production
+      sameSite: 'Strict',
       maxAge: 3600000 // 1 heure
     });
 
@@ -247,6 +259,7 @@ const loginUser = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur." });
   }
 };
+
 
 // Fonction de déconnexion
 const logoutUser = (req, res) => {
