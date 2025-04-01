@@ -8,6 +8,7 @@ import creditRouter from './routes/GestionCreditRoute.js';
 import passport from './config/passport.js'; // Importer Passport correctement
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import path from 'path';
 
 // Charger les variables d'environnement
 dotenv.config();
@@ -19,9 +20,13 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));  // Ajouter cette ligne pour parser les données du formulaire
 
-
-// Activer CORS
-app.use(cors());
+// Configuration CORS pour accepter les cookies
+app.use(cors({
+  origin: 'http://localhost:4200', // Votre front-end Angular
+  methods: 'GET,POST,PUT,DELETE',
+  allowedHeaders: 'Content-Type, Authorization',
+  credentials: true // Permet d'envoyer des cookies
+}));
 
 app.use(cookieParser());
 
@@ -30,12 +35,13 @@ app.use(passport.initialize());
 
 // Configurer les routes d'authentification
 app.use('/api', authRouter);
-
 app.use('/api/pompe', pompeRouter);
-
 app.use('/api/pistolet', pistoletRouter);
-
 app.use('/api/credit', creditRouter);
+
+// Servir les images depuis le dossier public/images
+const __dirname = path.resolve(); // Récupère le chemin absolu du projet
+app.use('/images', express.static(path.join(__dirname, 'public/images')));
 
 // Vérifier la connexion à la base de données
 (async () => {

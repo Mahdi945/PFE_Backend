@@ -2,6 +2,9 @@ import express from 'express';
 import { body, param, validationResult } from 'express-validator'; // Importer les fonctions nécessaires d'Express Validator
 import authController from '../controllers/authController.js';
 import passport from 'passport';
+import multer from 'multer';
+import path from 'path';
+
 const router = express.Router();
 
 // Fonction pour vérifier les erreurs de validation
@@ -13,36 +16,87 @@ const validateRequest = (req, res, next) => {
   next();
 };
 
-// Route pour l'inscription d'un utilisateur
+
+// Configuration de Multer pour stocker les images
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    console.log('Destination de stockage:', 'public/images/'); // Log pour vérifier la destination
+    cb(null, 'public/images/');
+  },
+  filename: (req, file, cb) => {
+    // Laisser cette fonction vide car on ne génère pas le nom ici, mais on le fait plus tard
+    cb(null, file.originalname); // Laisser le nom tel quel pour le moment
+  }
+});
+
+// Filtrer les fichiers pour accepter seulement les images
+const fileFilter = (req, file, cb) => {
+  const filetypes = /jpeg|jpg|png/;
+  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = filetypes.test(file.mimetype);
+
+  if (mimetype && extname) {
+    cb(null, true); // Fichier valide
+  } else {
+    console.log(`Fichier rejeté: ${file.originalname}`); // Log pour fichier rejeté
+    cb(new Error('Seuls les fichiers image (JPG, JPEG, PNG) sont autorisés'), false); // Rejeter le fichier
+  }
+};
+
+
+
+
+
+
+// Middleware pour multer
+const upload = multer({ storage, fileFilter });
+
+// Route pour mettre à jour la photo d'un utilisateur
+router.put('/update-photo/:id', passport.authenticate('jwt', { session: false }),upload.single('photo'), authController.updateUserPhoto);
+// Route pour mettre à jour le profil utilisateur
+// Route pour mettre à jour le profil utilisateur avec des validations simples et une longueur maximale
+router.put(
+  '/update-profile/:id',
+  passport.authenticate('jwt', { session: false }),
+ 
+  authController.updateUserProfile
+);// Route pour l'inscription d'un utilisateur
 router.post(
   '/register',
   [
-    body('email').isEmail().withMessage('Email invalide').isLength({ max: 255 }).withMessage('Email trop long'), // Limiter la longueur de l'email
-    body('password').isLength({ min: 6, max: 20 }).withMessage('Le mot de passe doit contenir entre 6 et 20 caractères'), // Limiter la longueur du mot de passe
-    body('username').notEmpty().withMessage('Le nom d\'utilisateur est requis').isLength({ min: 3, max: 50 }).withMessage('Le nom d\'utilisateur doit contenir entre 3 et 50 caractères'), // Limiter la longueur du nom d'utilisateur
-    body('numeroTelephone').isMobilePhone().withMessage('Numéro de téléphone invalide').isLength({ max: 8 }).withMessage('Le numéro de téléphone est trop long') // Limiter la longueur du numéro de téléphone
+    body('email').isEmail().withMessage('Email invalide').isLength({ max: 255 }).withMessage('Email trop long'),
+    body('password').isLength({ min: 8, max: 20 }).withMessage('Le mot de passe doit contenir entre 8 et 20 caractères'),
+    body('username').notEmpty().withMessage('Le nom d\'utilisateur est requis').isLength({ min: 3, max: 50 }).withMessage('Le nom d\'utilisateur doit contenir entre 3 et 50 caractères'),
+    body('numero_telephone').isMobilePhone().withMessage('Numéro de téléphone invalide').isLength({ max: 14 }).withMessage('Le numéro de téléphone est trop long')
   ],
   validateRequest,
-  authController.registerUser
+  async (req, res) => {
+    // Affichage des erreurs de validation
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() }); // Renvoie les erreurs de validation
+    }
+
+    // Appel de votre fonction d'enregistrement de l'utilisateur ici
+    authController.registerUser(req, res);
+  }
 );
+
 
 // Route pour la connexion d'un utilisateur
 router.post(
-  '/login',
-  [
-   
-    body('password')
-      .notEmpty().withMessage('Le mot de passe est requis')
-      .isLength({ min: 6, max: 20 }).withMessage('Le mot de passe doit contenir entre 6 et 20 caractères') // Longueur maximale pour le mot de passe
-  ],
-  validateRequest, // Le middleware pour valider les erreurs
-  authController.loginUser // Contrôleur pour la connexion
+  '/login',authController.loginUser // Contrôleur pour la connexion
 );
 
-// Données d'utilisateur authentifié
-router.get('/profile', passport.authenticate('jwt', { session: false }), authController.getUserProfile);
+// Middleware pour gérer l'authentification via passport et renvoyer une erreur de session expirée
+router.get('/profile', passport.authenticate('jwt', { session: false }), (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ message: 'Session expirée. Veuillez vous reconnecter.' });
+  }
+  res.json(req.user);
+});
 
-router.post('/logout', authController.logoutUser);
+router.post('/logout',passport.authenticate('jwt', { session: false }),authController.logoutUser);
 
 router.put('/update-password',
   [
@@ -85,7 +139,7 @@ router.put(
       .withMessage('Le mot de passe doit contenir entre 6 et 20 caractères') // Validation du mot de passe
   ],
   validateRequest,
-  passport.authenticate('jwt', { session: false }), // Utilisation de Passport pour vérifier le token
+  
   authController.updatePassword // Contrôleur pour mettre à jour le mot de passe
 );
 // Désactivation d'un utilisateur

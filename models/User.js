@@ -3,12 +3,12 @@ import db from '../config/db.js';
 const User = {
   // Recherche un utilisateur par ID
     findById: (id) => {
-    const query = 'SELECT id,username,email,numero_telephone,role FROM utilisateurs WHERE id = ?';
+    const query = 'SELECT id,username,email,numero_telephone,role,photo FROM utilisateurs WHERE id = ?';
     return db.execute(query, [id]);
   },
   // Recherche un utilisateur par email
   findByEmail: (email) => {
-    const query = 'SELECT id,username,email,numero_telephone,role FROM utilisateurs WHERE email = ?';
+    const query = 'SELECT id,username,email,numero_telephone,password,role FROM utilisateurs WHERE email = ?';
     return db.execute(query, [email || null]);
   },
 
@@ -35,13 +35,34 @@ const User = {
     const query = `SELECT * FROM utilisateurs ORDER BY ${sortBy}`;
     return db.execute(query);
   },
-  // Méthode pour récupérer tous les utilisateurs
-  findAll: () => {
-    const query = 'SELECT id,username,email,numero_telephone,role FROM utilisateurs';
-    return db.execute(query);
-  },
+// Méthode pour récupérer tous les utilisateurs sauf ceux avec le rôle 'gerant'
+findAll: () => {
+  const query = "SELECT id, username, email, numero_telephone, role, status,photo FROM utilisateurs WHERE role != 'gerant'";
+  return db.execute(query);
+}
+,
   
-
+  findOne: (criteria) => {
+    let query = 'SELECT id, username, email, numero_telephone, role, photo FROM utilisateurs WHERE ';
+    const values = [];
+  
+    // Ajouter la condition pour la recherche par email, username ou numéro de téléphone
+    if (criteria.email) {
+      query += 'email = ?';
+      values.push(criteria.email);
+    } else if (criteria.username) {
+      query += 'username = ?';
+      values.push(criteria.username);
+    } else if (criteria.numeroTelephone) {
+      query += 'numero_telephone = ?';
+      values.push(criteria.numeroTelephone);
+    } else {
+      return Promise.reject(new Error('Aucun critère valide fourni pour la recherche.'));
+    }
+  
+    return db.execute(query, values);
+  }
+,  
   // Ajoute un nouvel utilisateur dans la base de données
   addUser: (username, email, numeroTelephone, password, role) => {
     const query = ` 
@@ -106,6 +127,12 @@ updateUser: (id, updateData) => {
     const query = 'UPDATE utilisateurs SET password = ? WHERE id = ?';
     return db.execute(query, [newPassword, id]);
   },
+  // Met à jour la photo d'un utilisateur par ID
+updateUserPhoto: (userId, photoPath) => {
+  const query = 'UPDATE utilisateurs SET photo = ? WHERE id = ?';
+  return db.execute(query, [photoPath, userId]);
+},
+
   
 
   // Affecte un rôle à un utilisateur existant

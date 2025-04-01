@@ -3,6 +3,8 @@ import User from '../models/User.js';
 import jwt from 'jsonwebtoken'; 
 import dotenv from 'dotenv';
 import nodemailer from 'nodemailer';
+import multer from 'multer';
+import path from 'path';
 
 // Charge les variables d'environnement du fichier .env dans process.env
 dotenv.config();
@@ -16,9 +18,42 @@ dotenv.config();
     },
   });
 
+  const updateUserPhoto = async (req, res) => {
+    console.log('Début de la mise à jour de la photo de profil');
+  
+    // Vérifiez si l'utilisateur et le fichier existent
+    const userId = req.params.id;
+    console.log("ID utilisateur:", userId);  // ID de l'utilisateur dans la route
+    console.log("Chemin de l'image téléchargée:", req.file ? req.file.filename : 'Aucun fichier');
+  
+    if (!req.file) {
+      console.log('Aucun fichier trouvé dans la requête');
+      return res.status(400).json({ message: 'Aucun fichier envoyé' });
+    }
+  
+    // Récupérer le chemin de l'image
+    const photoPath = `/images/${req.file.filename}`;
+    console.log(`Chemin de l'image téléchargée: ${photoPath}`);
+  
+    try {
+      // Mettre à jour la photo dans la base de données
+      console.log('Tentative de mise à jour de la photo dans la base de données...');
+      await User.updateUserPhoto(userId, photoPath); // Méthode à implémenter dans le modèle User
+  
+      console.log('Photo mise à jour avec succès');
+      res.status(200).json({ message: 'Photo mise à jour avec succès', photo: photoPath });
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de la photo:', error);
+      res.status(500).json({ message: error.message });
+    }
+  };
+  
+
+
+
 // Fonction pour enregistrer un nouvel utilisateur et envoyer un email
 const registerUser = async (req, res) => {
-  const { username, email, numeroTelephone, password, role } = req.body;
+  const { username, email, numero_telephone, password, role } = req.body;
 
   // Vérification des champs obligatoires
   if (!username || !password || !role) {
@@ -39,8 +74,8 @@ const registerUser = async (req, res) => {
     }
 
     // Vérifier si le numéro de téléphone existe déjà
-    if (numeroTelephone) {
-      const [existingUserByPhoneNumber] = await User.findByPhoneNumber(numeroTelephone);
+    if (numero_telephone) {
+      const [existingUserByPhoneNumber] = await User.findByPhoneNumber(numero_telephone);
       if (existingUserByPhoneNumber && existingUserByPhoneNumber.length > 0) {
         return res.status(400).json({ message: 'Ce numéro de téléphone est déjà utilisé.' });
       }
@@ -50,7 +85,7 @@ const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Ajouter l'utilisateur à la base de données
-    await User.addUser(username, email || null, numeroTelephone || null, hashedPassword, role);
+    await User.addUser(username, email || null, numero_telephone || null, hashedPassword, role);
 
     // Envoi de l'email contenant les informations de l'utilisateur
     const mailOptions = {
@@ -220,7 +255,7 @@ const loginUser = async (req, res) => {
       }
       user = result[0][0];
     } else if (email) {
-      const result = await User.findByEmail(email); // Une fonction que vous devrez peut-être implémenter pour chercher par email
+      const result = await User.findByEmail(email);
       if (!result || result.length === 0 || result[0].length === 0) {
         return res.status(401).json({ message: "Email ou mot de passe incorrect." });
       }
@@ -253,12 +288,16 @@ const loginUser = async (req, res) => {
       maxAge: 3600000 // 1 heure
     });
 
-    res.status(200).json({ message: "Connexion réussie." });
+    res.status(200).json({
+      message: "Connexion réussie.",
+      user: { username: user.username, role: user.role, photo: user.photo  }  // Envoi de l'utilisateur avec son rôle
+    });
   } catch (err) {
     console.error("Erreur lors de la connexion:", err);
     res.status(500).json({ message: "Erreur serveur." });
   }
 };
+
 
 
 // Fonction de déconnexion
@@ -322,11 +361,62 @@ const reactivateUser = async (req, res) => {
 };
 
   
-  // Accès aux données utilisateur protégées
-  const getUserProfile = async (req, res) => {
-    const user = req.user;
-    res.status(200).json(user);
-  };
+// Accès aux données utilisateur protégées
+const getUserProfile = async (req, res) => {
+  const user = req.user;
+
+  // Vérification si la photo est présente
+  if (user.photo) {
+    // Ajouter l'URL complète de l'image de profil
+    user.photoUrl = `http://localhost:3000${user.photo}`;
+  }
+
+  res.status(200).json(user); // Envoyer l'utilisateur avec l'URL de la photo
+};
+const updateUserProfile = async (req, res) => {
+  try {
+    const { id } = req.params; // Récupérer l'ID depuis l'URL
+    const { username, email, numeroTelephone } = req.body;
+
+    // Vérifier si l'utilisateur existe
+    const [userResult] = await User.findById(id);
+    if (userResult.length === 0) {
+      return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    }
+
+    // Vérifier si le username, l'email ou le numéro de téléphone existent déjà
+    if (username) {
+      const [existingUsername] = await User.findByUsername(username);
+      if (existingUsername.length > 0 && existingUsername[0].id !== parseInt(id)) {
+        return res.status(400).json({ message: 'Nom d\'utilisateur déjà pris' });
+      }
+    }
+
+    if (email) {
+      const [existingEmail] = await User.findByEmail(email);
+      if (existingEmail.length > 0 && existingEmail[0].id !== parseInt(id)) {
+        return res.status(400).json({ message: 'Email déjà utilisé' });
+      }
+    }
+
+    if (numeroTelephone) {
+      const [existingPhone] = await User.findByPhoneNumber(numeroTelephone);
+      if (existingPhone.length > 0 && existingPhone[0].id !== parseInt(id)) {
+        return res.status(400).json({ message: 'Numéro de téléphone déjà utilisé' });
+      }
+    }
+
+    // Mettre à jour l'utilisateur
+    await User.updateUser(id, { username, email, numeroTelephone });
+
+    res.json({ message: 'Profil mis à jour avec succès' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+};
+
+
   
   const requestPasswordReset = async (req, res) => {
     const { email } = req.body;
@@ -387,32 +477,49 @@ const reactivateUser = async (req, res) => {
       res.status(500).json({ message: 'Erreur du serveur.' });
     }
   };
-  
   const updatePassword = async (req, res) => {
     const { newPassword } = req.body;
-  
+    const { token } = req.query; // Récupérer le token depuis l'URL
+
     try {
-      // L'utilisateur est déjà authentifié par Passport, ses données sont disponibles dans req.user
-      const email = req.user.email;
-  
-      // Vérifier que l'utilisateur existe
-      const [user] = await User.findByEmail(email);
-      if (!user || user.length === 0) {
-        return res.status(404).json({ message: 'Utilisateur non trouvé.' });
-      }
-  
-      // Hacher le nouveau mot de passe
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-  
-      // Mettre à jour le mot de passe dans la base de données
-      await User.updatePasswordByEmail(email, hashedPassword);
-  
-      res.status(200).json({ message: 'Mot de passe mis à jour avec succès.' });
+        if (!token) {
+            return res.status(400).json({ message: 'Token manquant.' });
+        }
+
+        let decoded;
+        try {
+            decoded = jwt.verify(token, process.env.JWT_SECRET);
+        } catch (error) {
+            return res.status(401).json({ message: 'Token invalide ou expiré.' });
+        }
+
+        const email = decoded.email;
+
+        const [user] = await User.findByEmail(email);
+        if (!user || user.length === 0) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé.' });
+        }
+
+        if (!newPassword || newPassword.length < 8 || !/[A-Z]/.test(newPassword) || !/\d/.test(newPassword) || !/[\W_]/.test(newPassword)) {
+            return res.status(400).json({ message: 'Mot de passe non valide. Il doit contenir au moins 8 caractères, une majuscule, un chiffre et un caractère spécial.' });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        const updated = await User.updatePasswordByEmail(email, hashedPassword);
+
+        if (!updated) {
+            return res.status(500).json({ message: 'Erreur lors de la mise à jour du mot de passe.' });
+        }
+
+        res.status(200).json({ message: 'Mot de passe mis à jour avec succès.' });
+
     } catch (error) {
-      console.error('Erreur de mise à jour du mot de passe:', error);
-      res.status(500).json({ message: 'Erreur du serveur.' });
+        console.error('Erreur de mise à jour du mot de passe:', error);
+        res.status(500).json({ message: 'Erreur du serveur. Veuillez réessayer plus tard.' });
     }
-  };
+};
+
+    
   // Fonction pour mettre à jour le mot de passe
   const updatePasswordConnected = async (req, res) => {
     const { newPassword } = req.body;
@@ -451,7 +558,7 @@ const reactivateUser = async (req, res) => {
   
   
   
-export default { registerUser, loginUser,logoutUser,deactivateUser,reactivateUser,getUserProfile,requestPasswordReset, updateUser, updatePassword ,updatePasswordConnected, getUserByEmail, getUserByUsername, getUserByRole, deleteUser, getAllUsers };
+export default { updateUserPhoto,updateUserProfile,registerUser, loginUser,logoutUser,deactivateUser,reactivateUser,getUserProfile,requestPasswordReset, updateUser, updatePassword ,updatePasswordConnected, getUserByEmail, getUserByUsername, getUserByRole, deleteUser, getAllUsers };
 
 /*
 // Fonction pour mettre à jour le mot de passe d'un utilisateur en vérifiant l'email
