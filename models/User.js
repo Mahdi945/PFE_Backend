@@ -37,7 +37,7 @@ const User = {
   },
 // Méthode pour récupérer tous les utilisateurs sauf ceux avec le rôle 'gerant'
 findAll: () => {
-  const query = "SELECT id, username, email, numero_telephone, role, status,photo FROM utilisateurs WHERE role != 'gerant'";
+  const query = "SELECT id, username, email, numero_telephone, role,temps_de_creation,status,photo FROM utilisateurs WHERE role != 'gerant'";
   return db.execute(query);
 }
 ,
