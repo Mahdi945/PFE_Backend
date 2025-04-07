@@ -1,7 +1,7 @@
-import db from '../config/db.js'; // Votre configuration de la base de données
+import db from '../config/db.js';
 
 const AffectationCalendrier = {
-  // Ajouter une affectation manuelle
+  // ➕ Ajouter une affectation manuelle
   addAffectationManuelle: async (pompiste_id, poste_id, pompe_id, calendrier_id) => {
     const query = `
       INSERT INTO affectations (pompiste_id, poste_id, pompe_id, calendrier_id, statut)
@@ -10,63 +10,198 @@ const AffectationCalendrier = {
     return db.execute(query, [pompiste_id, poste_id, pompe_id, calendrier_id]);
   },
 
-  // Ajouter une affectation automatique équitable
-  addAffectationAutomatiqueEquitable: async (mois, annee, pompistes, postes, pompes) => {
-    // Récupérer les jours du mois et de l'année spécifiés
-    const queryCalendrier = `
-      SELECT * FROM calendrier WHERE MONTH(date) = ? AND YEAR(date) = ?
-    `;
-    const [calendriers] = await db.execute(queryCalendrier, [mois, annee]);
+  addAffectationAutomatiqueEquitable: async (mois, annee) => {
+    try {
+      const [existingAffectations] = await db.execute(
+        `SELECT * FROM affectations a
+         JOIN calendrier c ON a.calendrier_id = c.id
+         WHERE c.mois = ? AND c.annee = ?`,
+        [mois, annee]
+      );
 
-    // Initialisation de l'index pour chaque pompiste
-    let pompistesIndex = new Array(pompistes.length).fill(0);
+      if (existingAffectations.length > 0) {
+        throw new Error('Les affectations automatiques pour ce mois existent déjà.');
+      }
 
-    // Répartir les affectations équitablement sur les jours disponibles
-    const affectationsPromises = calendriers.map(async (calendrier) => {
-      // Trouver l'indice du pompiste pour cet affectation (en fonction de l'index pour la répartition équitable)
-      let pompisteIndex = 0;
-      for (let i = 0; i < pompistes.length; i++) {
-        if (pompistesIndex[i] < pompistesIndex[pompisteIndex]) {
-          pompisteIndex = i;
+      const [pompistes] = await db.execute('SELECT id FROM utilisateurs WHERE role = "pompiste"');
+      const [postes] = await db.execute('SELECT * FROM postes');
+      const [pompes] = await db.execute('SELECT * FROM pompes');
+
+      // Générer le calendrier s’il n’existe pas
+      const [calendrierExist] = await db.execute(
+        'SELECT * FROM calendrier WHERE mois = ? AND annee = ?',
+        [mois, annee]
+      );
+
+      if (!calendrierExist.length) {
+        const dateEnd = new Date(annee, mois, 0);
+        for (let day = 1; day <= dateEnd.getDate(); day++) {
+          const date = new Date(annee, mois - 1, day);
+          await db.execute(
+            'INSERT INTO calendrier (date, statut, mois, annee) VALUES (?, "disponible", ?, ?)',
+            [date, mois, annee]
+          );
         }
       }
 
-      // Sélectionner un pompiste, un poste (matin, après-midi, nuit) et une pompe pour ce jour
-      const pompiste = pompistes[pompisteIndex];
-      const poste = postes[Math.floor(Math.random() * postes.length)];
-      const pompe = pompes[Math.floor(Math.random() * pompes.length)];
-
-      // Incrémenter l'index du pompiste
-      pompistesIndex[pompisteIndex]++;
-
-      // Enregistrer l'affectation dans la base de données
-      return db.execute(
-        `INSERT INTO affectations (pompiste_id, poste_id, pompe_id, calendrier_id, statut)
-        VALUES (?, ?, ?, ?, 'occupé')`,
-        [pompiste.id, poste.id, pompe.id, calendrier.id]
+      const [calendriers] = await db.execute(
+        'SELECT * FROM calendrier WHERE mois = ? AND annee = ?',
+        [mois, annee]
       );
-    });
 
-    // Exécuter toutes les affectations
-    await Promise.all(affectationsPromises);
-  },
+      const shifts = postes.map(p => ({ id: p.id, nom: p.nom }));
+      const nbPompes = pompes.length;
 
-  // Récupérer les affectations d'un jour spécifique
+      for (const jour of calendriers) {
+        const shuffledPompistes = [...pompistes].sort(() => 0.5 - Math.random());
+        let pompistePointer = 0;
+
+        for (const shift of shifts) {
+          const pompisteAssignments = {};
+
+          for (let i = 0; i < nbPompes; i++) {
+            const pompe = pompes[i];
+            let assigned = false;
+
+            let tryCount = 0;
+            while (!assigned && tryCount < shuffledPompistes.length) {
+              const pompiste = shuffledPompistes[pompistePointer % shuffledPompistes.length];
+
+              if (!pompisteAssignments[pompiste.id]) {
+                pompisteAssignments[pompiste.id] = [];
+              }
+
+              if (pompisteAssignments[pompiste.id].length < 2) {
+                await db.execute(
+                  `INSERT INTO affectations (pompiste_id, poste_id, pompe_id, calendrier_id)
+                   VALUES (?, ?, ?, ?)`,
+                  [pompiste.id, shift.id, pompe.id, jour.id]
+                );
+                pompisteAssignments[pompiste.id].push(pompe.id);
+                assigned = true;
+              }
+
+              pompistePointer++;
+              tryCount++;
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Erreur dans addAffectationAutomatiqueEquitable:', error);
+      throw error;
+    }
+  }
+,
+
+  // 📆 Obtenir les affectations d'un jour spécifique
   getAffectationsByJour: async (calendrier_id) => {
-    const query = 'SELECT * FROM affectations WHERE calendrier_id = ?';
-    const [affectations] = await db.execute(query, [calendrier_id]);
-    return affectations;
+    const query = `
+      SELECT 
+        a.id AS affectation_id,
+        u.username AS pompiste,
+        p.numero_pompe,
+        po.nom AS poste,
+        c.date,
+        a.calendrier_id
+      FROM affectations a
+      JOIN utilisateurs u ON a.pompiste_id = u.id
+      JOIN pompes p ON a.pompe_id = p.id
+      JOIN postes po ON a.poste_id = po.id
+      JOIN calendrier c ON a.calendrier_id = c.id
+      WHERE a.calendrier_id = ?
+    `;
+    const [rows] = await db.execute(query, [calendrier_id]);
+    return rows;
   },
 
-  // Récupérer les affectations d'un mois et année
+  // 📅 Obtenir les affectations d’un mois/année
   getAffectationsByMonthYear: async (mois, annee) => {
     const query = `
-      SELECT * FROM affectations
-      JOIN calendrier ON affectations.calendrier_id = calendrier.id
-      WHERE MONTH(calendrier.date) = ? AND YEAR(calendrier.date) = ?
+      SELECT 
+        a.id AS affectation_id,
+        u.username AS pompiste,
+        p.numero_pompe,
+        po.nom AS poste,
+        c.date
+      FROM affectations a
+      JOIN utilisateurs u ON a.pompiste_id = u.id
+      JOIN pompes p ON a.pompe_id = p.id
+      JOIN postes po ON a.poste_id = po.id
+      JOIN calendrier c ON a.calendrier_id = c.id
+      WHERE c.mois = ? AND c.annee = ?
     `;
-    const [affectations] = await db.execute(query, [mois, annee]);
-    return affectations;
+    const [rows] = await db.execute(query, [mois, annee]);
+    return rows;
+  },
+
+
+
+  updateAffectation: async (id, updates) => {
+    const fields = [];
+    const values = [];
+  
+    // Convertir les noms en IDs si nécessaire
+    if (updates.pompiste) {
+      const [result] = await db.execute('SELECT id FROM utilisateurs WHERE username = ?', [updates.pompiste]);
+      if (result.length === 0) throw new Error(`Pompiste "${updates.pompiste}" introuvable.`);
+      updates.pompiste_id = result[0].id;
+    }
+    if (updates.numero_pompe) {
+      const [result] = await db.execute('SELECT id FROM pompes WHERE numero_pompe = ?', [updates.numero_pompe]);
+      if (result.length === 0) throw new Error(`Pompe "${updates.numero_pompe}" introuvable.`);
+      updates.pompe_id = result[0].id;
+    }
+    if (updates.poste) {
+      const [result] = await db.execute('SELECT id FROM postes WHERE nom = ?', [updates.poste]);
+      if (result.length === 0) throw new Error(`Poste "${updates.poste}" introuvable.`);
+      updates.poste_id = result[0].id;
+    }
+  
+    // Construire dynamiquement les champs à mettre à jour
+    if (updates.pompiste_id !== undefined) {
+      fields.push('pompiste_id = ?');
+      values.push(updates.pompiste_id);
+    }
+    if (updates.pompe_id !== undefined) {
+      fields.push('pompe_id = ?');
+      values.push(updates.pompe_id);
+    }
+    if (updates.poste_id !== undefined) {
+      fields.push('poste_id = ?');
+      values.push(updates.poste_id);
+    }
+    if (updates.calendrier_id !== undefined) {
+      fields.push('calendrier_id = ?');
+      values.push(updates.calendrier_id);
+    }
+  
+    if (fields.length === 0) {
+      throw new Error('Aucun champ valide à mettre à jour.');
+    }
+  
+    // Ajouter l'ID à la fin des valeurs
+    values.push(id);
+  
+    // Construire la requête SQL
+    const query = `
+      UPDATE affectations
+      SET ${fields.join(', ')}
+      WHERE id = ?
+    `;
+  
+    console.log('Requête SQL générée :', query);
+    console.log('Valeurs :', values);
+  
+    // Exécuter la requête
+    return db.execute(query, values);
+  },
+
+  // 🔎 Obtenir un calendrier par date
+  getCalendrierByDate: async (date) => {
+    const query = 'SELECT * FROM calendrier WHERE date = ?';
+    const [rows] = await db.execute(query, [date]);
+    return rows[0];
   }
 };
 

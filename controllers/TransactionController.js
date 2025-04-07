@@ -1,14 +1,16 @@
 import Transaction from '../models/Transaction.js';
-import Contrat from '../models/Contrat.js';
+import Credit from '../models/Credit.js';
 
 // Créer une transaction
 const createTransaction = async (req, res) => {
   try {
-    const { id_vehicule, id_utilisateur, quantite, montant, id_contrat } = req.body;
-    await Transaction.addTransaction(id_vehicule, id_utilisateur, quantite, montant, id_contrat);
+    const { id_vehicule, id_utilisateur, quantite, montant, id_credit } = req.body;
 
-    // Mettre à jour le solde du contrat
-    await Contrat.updateCredit(id_contrat, montant);
+    // Ajouter une transaction
+    await Transaction.addTransaction(id_vehicule, id_utilisateur, quantite, montant, id_credit);
+
+    // Mettre à jour le solde du crédit
+    await Credit.updateCredit(id_credit, montant);
 
     res.status(201).json({ message: 'Transaction enregistrée avec succès' });
   } catch (err) {

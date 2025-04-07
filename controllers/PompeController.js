@@ -7,7 +7,17 @@ const addPompe = async (req, res) => {
     await Pompe.addPompe(numero_pompe, type_pompe, statut);
     res.status(201).send({ message: 'Pompe ajoutée avec succès.' });
   } catch (error) {
-    res.status(500).send({ message: 'Erreur lors de l\'ajout de la pompe.', error });
+    res.status(400).send({ message: 'Numero pompe deja utlisé.', error });
+  }
+};
+// Récupérer les pompes filtrées
+const getPompesByFilters = async (req, res) => {
+  try {
+    const { numero_pompe, statut, type_pompe } = req.query;
+    const [pompes] = await Pompe.getPompesByFilters(numero_pompe, statut, type_pompe);
+    res.status(200).send(pompes);
+  } catch (error) {
+    res.status(500).send({ message: 'Erreur lors de la récupération des pompes filtrées.', error });
   }
 };
 
@@ -26,8 +36,8 @@ const getPompeById = async (req, res) => {
   try {
     const { id } = req.params;
     const [pompe] = await Pompe.getPompeById(id);
-    if (pompe) {
-      res.status(200).send(pompe);
+    if (pompe && pompe.length > 0) {
+      res.status(200).send(pompe[0]);
     } else {
       res.status(404).send({ message: 'Pompe non trouvée.' });
     }
@@ -36,17 +46,23 @@ const getPompeById = async (req, res) => {
   }
 };
 
-// Mettre à jour une pompe
 const updatePompe = async (req, res) => {
   try {
     const { id } = req.params;
-    const { numero_pompe, type_pompe, statut } = req.body;
-    await Pompe.updatePompe(id, numero_pompe, type_pompe, statut);
+    const pompeData = req.body;
+
+    if (Object.keys(pompeData).length === 0) {
+      return res.status(400).send({ message: 'Aucun champ à mettre à jour.' });
+    }
+
+    await Pompe.updatePompe(parseInt(id), pompeData);
     res.status(200).send({ message: 'Pompe mise à jour avec succès.' });
   } catch (error) {
-    res.status(500).send({ message: 'Erreur lors de la mise à jour de la pompe.', error });
+    console.error("Erreur updatePompe:", error); // 👈 log utile
+    res.status(500).send({ message: 'Erreur lors de la mise à jour de la pompe.', error: error.message });
   }
 };
+
 
 // Supprimer une pompe
 const deletePompe = async (req, res) => {
@@ -66,4 +82,5 @@ export default {
   getPompeById,
   updatePompe,
   deletePompe,
+  getPompesByFilters,
 };

@@ -75,7 +75,7 @@ findAll: () => {
 
 // Méthode pour mettre à jour un utilisateur par ID
 updateUser: (id, updateData) => {
-    const { username, email, numeroTelephone, role,status } = updateData;
+    const { username, email, numero_telephone, role,status } = updateData;
   
     let query = 'UPDATE utilisateurs SET ';
     const values = [];
@@ -89,9 +89,9 @@ updateUser: (id, updateData) => {
       query += 'email = ?, ';
       values.push(email);
     }
-    if (numeroTelephone !== undefined) {
+    if (numero_telephone !== undefined) {
       query += 'numero_telephone = ?, ';
-      values.push(numeroTelephone);
+      values.push(numero_telephone);
     }
     if (role !== undefined) {
       query += 'role = ?, ';

@@ -121,7 +121,7 @@ const registerUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
     const { id } = req.params;  // Récupérer l'ID depuis l'URL
-    const { username, email, numeroTelephone, role } = req.body;  // Récupérer les données du corps de la requête
+    const { username, email, numero_telephone, role } = req.body;  // Récupérer les données du corps de la requête
   
     try {
       // Vérifier si l'utilisateur avec cet ID existe
@@ -136,7 +136,7 @@ const updateUser = async (req, res) => {
       // Ajouter seulement les champs non undefined
       if (username !== undefined) updateData.username = username;
       if (email !== undefined) updateData.email = email;
-      if (numeroTelephone !== undefined) updateData.numeroTelephone = numeroTelephone;
+      if (numero_telephone !== undefined) updateData.numero_telephone = numero_telephone;
       if (role !== undefined) updateData.role = role;  // Mise à jour du rôle
   
       // Si aucun champ n'est fourni, renvoyer une erreur

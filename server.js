@@ -5,6 +5,7 @@ import authRouter from './routes/authRoute.js';
 import pompeRouter from './routes/PompeRoute.js';
 import pistoletRouter from './routes/PistoletRoute.js';
 import creditRouter from './routes/GestionCreditRoute.js';
+import AffectationCalendrierRouter from './routes/AffectationCalendrierRoute.js';
 import passport from './config/passport.js'; // Importer Passport correctement
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -37,7 +38,9 @@ app.use(passport.initialize());
 app.use('/api', authRouter);
 app.use('/api/pompe', pompeRouter);
 app.use('/api/pistolet', pistoletRouter);
+app.use('/api/affectations', AffectationCalendrierRouter);
 app.use('/api/credit', creditRouter);
+
 
 // Servir les images depuis le dossier public/images
 const __dirname = path.resolve(); // Récupère le chemin absolu du projet

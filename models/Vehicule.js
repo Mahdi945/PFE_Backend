@@ -6,12 +6,12 @@ import fs from 'fs'; // Module pour manipuler les fichiers
 // Définition de l'objet Vehicule qui regroupe les opérations CRUD
 const Vehicule = {  
     // Ajouter un véhicule et générer un QR code
-    addVehicule: async (id_utilisateur, immatriculation, marque, type_vehicule, qr_code_url, id_contrat) => {
+    addVehicule: async (id_utilisateur, immatriculation, marque, type_vehicule, qr_code_url, id_credit) => {
         const query = `
-            INSERT INTO vehicules (id_utilisateur, immatriculation, marque, type_vehicule, qr_code, id_contrat)
+            INSERT INTO vehicules (id_utilisateur, immatriculation, marque, type_vehicule, qr_code, id_credit)
             VALUES (?, ?, ?, ?, ?, ?)
         `;
-        return db.execute(query, [id_utilisateur, immatriculation, marque, type_vehicule, qr_code_url, id_contrat]);
+        return db.execute(query, [id_utilisateur, immatriculation, marque, type_vehicule, qr_code_url, id_credit]);
     },
 
     // Récupérer tous les véhicules de la base de données
@@ -32,10 +32,10 @@ const Vehicule = {
         return db.execute(query, [id_utilisateur]);
     },
 
-    // Récupérer les véhicules liés à un contrat spécifique
-    getVehiculeByContrat: (id_contrat) => {
-        const query = 'SELECT * FROM vehicules WHERE id_contrat = ?';
-        return db.execute(query, [id_contrat]);
+    // Récupérer les véhicules liés à un crédit spécifique
+    getVehiculeByCredit: (id_credit) => {
+        const query = 'SELECT * FROM vehicules WHERE id_credit = ?';
+        return db.execute(query, [id_credit]);
     },
 
     // Mettre à jour les informations d'un véhicule
@@ -55,5 +55,4 @@ const Vehicule = {
     }
 };
 
-// Exportation de l'objet Vehicule pour être utilisé dans d'autres fichiers
 export default Vehicule;
