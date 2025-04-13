@@ -1,69 +1,72 @@
+import db from '../config/db.js';
+import Vehicule from '../models/Vehicule.js';
 import QRCode from 'qrcode';
 import fs from 'fs-extra';
 import path from 'path';
-import Vehicule from '../models/Vehicule.js';
-import Credit from '../models/Credit.js';
 
+// Ajouter un véhicule
 const create = async (req, res) => {
   try {
-    const { id_utilisateur, immatriculation, marque, type_vehicule, id_credit } = req.body;
+    const { id_credit, immatriculation, marque, type_vehicule } = req.body;
 
-    if (!id_utilisateur || !immatriculation || !marque || !type_vehicule || !id_credit) {
+    if (!id_credit || !immatriculation || !marque || !type_vehicule) {
       return res.status(400).json({ message: 'Tous les champs sont requis' });
     }
 
-    // 1️⃣ Vérifier si le crédit existe
-    const [credit] = await Credit.getCreditById(id_credit);
-    if (!credit || credit.length === 0) {
-      return res.status(400).json({ message: 'Le crédit spécifié n\'existe pas' });
+    // Récupérer l'ID utilisateur à partir de l'ID crédit
+    const [creditDetails] = await db.execute('SELECT id_utilisateur FROM details_credits WHERE id = ?', [id_credit]);
+    if (!creditDetails || creditDetails.length === 0) {
+      return res.status(404).json({ message: 'Crédit introuvable' });
     }
+    const id_utilisateur = creditDetails[0].id_utilisateur;
 
-    // 2️⃣ Ajouter uniquement les informations demandées
-    const creditDetails = `
-      Solde crédit: ${credit[0].solde_credit}DT
-      Crédit utilisé: ${credit[0].credit_utilise}DT
-    `;
-
-    const vehicleDetails = `
-      Marque: ${marque}
-      Type: ${type_vehicule}
-    `;
-
-    const qrData = `
-      ${vehicleDetails}
-      ${creditDetails}
-    `;
-
+    // Générer le QR code
+    const qrData = `Immatriculation: ${immatriculation}\nMarque: ${marque}\nType: ${type_vehicule}`;
     const qrImagePath = path.join('public', 'qrcodes', `${immatriculation}.png`);
 
-    // S'assurer que le dossier public/qrcodes existe
     await fs.ensureDir(path.dirname(qrImagePath));
 
-    // Générer le QR code en tant qu'image
     await QRCode.toFile(qrImagePath, qrData);
-
-    // 3️⃣ Convertir le chemin en URL accessible
     const qrCodeUrl = `http://localhost:3000/qrcodes/${immatriculation}.png`;
 
-    // 4️⃣ Enregistrer le véhicule avec le lien QR dans la BDD
+    // Ajouter le véhicule dans la base de données
     const [result] = await Vehicule.addVehicule(id_utilisateur, immatriculation, marque, type_vehicule, qrCodeUrl, id_credit);
 
-    // 5️⃣ Réponse avec succès et URL du QR code généré
-    res.status(201).json({ message: 'Véhicule enregistré avec succès', qrCodeUrl });
-
+    res.status(201).json({
+      message: 'Véhicule enregistré avec succès',
+      vehicule: {
+        id_utilisateur,
+        immatriculation,
+        marque,
+        type_vehicule,
+        qr_code: qrCodeUrl,
+        id_credit
+      }
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Erreur serveur' });
   }
 };
 
-// Récupérer un véhicule avec son QR code
+const getAllVehicules = async (req, res) => {
+  try {
+    const [vehicules] = await Vehicule.getAllVehicules();
+    res.json(vehicules);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
+
+// Récupérer un véhicule par ID
 const getVehicule = async (req, res) => {
   try {
     const { id } = req.params;
-    const [vehicule] = await Vehicule.getVehiculeById(id);
+    const vehicule = await Vehicule.getVehiculeById(id);
 
-    if (!vehicule.length) {
+    if (vehicule.length === 0) {
       return res.status(404).json({ message: 'Véhicule introuvable' });
     }
 
@@ -74,14 +77,21 @@ const getVehicule = async (req, res) => {
   }
 };
 
-// Récupérer les véhicules par client
+// Récupérer les véhicules d'un utilisateur par son username
 const getVehiculesByClient = async (req, res) => {
   try {
-    const { id_utilisateur } = req.params; // Récupérer l'id_utilisateur depuis les paramètres de l'URL
-    const [vehicules] = await Vehicule.getVehiculeByClient(id_utilisateur);
+    const { username } = req.params;
+    const [user] = await db.execute("SELECT id FROM utilisateurs WHERE username = ?", [username]);
+
+    if (user.length === 0) {
+      return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    }
+
+    const id_utilisateur = user[0].id;
+    const vehicules = await Vehicule.getVehiculeByClientUsername(username);
 
     if (vehicules.length === 0) {
-      return res.status(404).json({ message: 'Aucun véhicule trouvé pour ce client' });
+      return res.status(404).json({ message: 'Aucun véhicule trouvé pour cet utilisateur' });
     }
 
     res.json(vehicules);
@@ -94,8 +104,8 @@ const getVehiculesByClient = async (req, res) => {
 // Récupérer les véhicules par crédit
 const getVehiculesByCredit = async (req, res) => {
   try {
-    const { id_credit } = req.params; // Récupérer l'id_credit depuis les paramètres de l'URL
-    const [vehicules] = await Vehicule.getVehiculeByCredit(id_credit);
+    const { id_credit } = req.params;
+    const vehicules = await Vehicule.getVehiculeByCredit(id_credit);
 
     if (vehicules.length === 0) {
       return res.status(404).json({ message: 'Aucun véhicule trouvé pour ce crédit' });
@@ -107,5 +117,60 @@ const getVehiculesByCredit = async (req, res) => {
     res.status(500).json({ message: 'Erreur serveur' });
   }
 };
+const getVehiculeByImmatriculation = async (req, res) => {
+  try {
+    const { immatriculation } = req.params; // Récupérer l'immatriculation depuis les paramètres de la requête
+    const vehicule = await Vehicule.getImmatriculation(immatriculation);
 
-export default { create, getVehicule, getVehiculesByClient, getVehiculesByCredit };
+    if (vehicule.length === 0) {
+      return res.status(404).json({ message: 'Véhicule introuvable' });
+    }
+
+    res.json(vehicule[0]); // Retourner le premier véhicule trouvé
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+};
+
+// Mettre à jour un véhicule
+const updateVehicule = async (req, res) => {
+  try {
+    const { id, immatriculation, marque, type_vehicule } = req.body;
+
+    if (!id || !immatriculation || !marque || !type_vehicule) {
+      return res.status(400).json({ message: 'Tous les champs sont requis' });
+    }
+
+    const result = await Vehicule.updateVehicule(id, immatriculation, marque, type_vehicule);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Véhicule introuvable' });
+    }
+
+    res.status(200).json({ message: 'Véhicule mis à jour avec succès' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+};
+
+// Supprimer un véhicule
+const deleteVehicule = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await Vehicule.deleteVehicule(id);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Véhicule introuvable' });
+    }
+
+    res.status(200).json({ message: 'Véhicule supprimé avec succès' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+};
+
+export default { create, getAllVehicules,getVehiculeByImmatriculation, getVehicule, getVehiculesByClient, getVehiculesByCredit, updateVehicule, deleteVehicule };

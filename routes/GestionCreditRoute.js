@@ -6,18 +6,26 @@ import TransactionController from '../controllers/TransactionController.js';
 const router = express.Router();
 
 // Routes pour la gestion des crédits
-router.post('/credits/add', CreditController.createCredit); // Ajout d'un crédit
-router.get('/credits/all', CreditController.getAllCredits);  // Récupérer tous les crédits
-router.get('/credits/:id_credit', CreditController.getCreditById); // Récupérer un crédit par ID
-router.put('/credits/update', CreditController.updateCredit); // Mettre à jour le crédit
+router.post('/credits/add', CreditController.createCredit);
+router.get('/credits/all', CreditController.getAllCredits);
+router.get('/credits/:id_credit', CreditController.getCreditById);
+router.put('/credits/update', CreditController.updateCredit);
+router.put('/credits/state', CreditController.updateCreditState); // Mettre à jour l'état d'un crédit
+
+
 
 // Routes pour les véhicules
 router.post('/vehicules/add', VehiculeController.create);  // Ajouter un véhicule
 router.get('/vehicules/:id', VehiculeController.getVehicule); // Récupérer un véhicule par ID
-// Route pour récupérer les véhicules d'un client
-router.get('/vehicules/client/:id_utilisateur', VehiculeController.getVehiculesByClient);
-// Route pour récupérer les véhicules d'un crédit (anciennement contrat)
-router.get('/vehicules/credit/:id_credit', VehiculeController.getVehiculesByCredit);
+router.get('/vehicules', VehiculeController.getAllVehicules); // Récupérer tous les véhicules
+// Routes pour les véhicules
+router.get('/vehicules/immatriculation/:immatriculation', VehiculeController.getVehiculeByImmatriculation); // Récupérer un véhicule par immatriculation
+
+router.put('/vehicules/update', VehiculeController.updateVehicule); // Mettre à jour un véhicule
+router.delete('/vehicules/:id', VehiculeController.deleteVehicule); // Supprimer un véhicule
+// Route pour récupérer les véhicules d'un utilisateur par son username
+router.get('/vehicules/client/:username', VehiculeController.getVehiculesByClient); // Récupérer les véhicules d'un client
+router.get('/vehicules/credit/:id_credit', VehiculeController.getVehiculesByCredit); // Récupérer les véhicules d'un crédit
 
 // Routes pour les transactions
 router.post('/transactions/create', TransactionController.createTransaction); // Créer une transaction
