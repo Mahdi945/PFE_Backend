@@ -1,14 +1,22 @@
 import db from '../config/db.js';
 
 const Pistolet = {
-  // Ajouter un pistolet à la base de données
-  addPistolet: async (pompe_id, numero_pistolet) => {
+  addPistolet: async (pompe_id, numero_pistolet, index_ouverture = 0, statut = 'disponible') => {
     const [result] = await db.query(
-      'INSERT INTO pistolets (pompe_id, numero_pistolet) VALUES (?, ?)',
-      [pompe_id, numero_pistolet]
+      'INSERT INTO pistolets (pompe_id, numero_pistolet, index_ouverture, index_fermeture, statut) VALUES (?, ?, ?, 0, ?)',
+      [pompe_id, numero_pistolet, index_ouverture, statut]
     );
     return result.insertId;
   },
+
+  // Ajoutez cette méthode pour mettre à jour le statut
+updateStatutPistolet: async (id, statut) => {
+  const [result] = await db.query(
+    'UPDATE pistolets SET statut = ? WHERE id = ?',
+    [statut, id]
+  );
+  return result.affectedRows;
+},
 
   // Mettre à jour l'index de fermeture pour un pistolet spécifique
   updateIndexFermeture: async (id, index_fermeture) => {
@@ -37,6 +45,12 @@ const Pistolet = {
   // Obtenir tous les pistolets d'une pompe
   getPistoletsByPompeId: async (pompe_id) => {
     const [rows] = await db.query('SELECT * FROM pistolets WHERE pompe_id = ?', [pompe_id]);
+    return rows;
+  },
+
+  // Obtenir tous les pistolets
+  getAllPistolets: async () => {
+    const [rows] = await db.query('SELECT * FROM pistolets');
     return rows;
   }
 };

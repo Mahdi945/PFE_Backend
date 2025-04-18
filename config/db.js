@@ -14,7 +14,8 @@ const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   database: process.env.DB_NAME,
-  connectionLimit: 10
+  connectionLimit: 10,
+  multipleStatements: true // Ajoutez cette ligne
 });
 
 // Exporte la pool de connexions avec des promesses pour pouvoir l'utiliser avec async/await dans d'autres parties du code

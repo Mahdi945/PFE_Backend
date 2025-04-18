@@ -67,7 +67,7 @@ const Credit = {
         // Mettre à jour le solde du crédit et l'attribut credit_utilise
         const query = `
           UPDATE details_credits 
-          SET solde_credit = solde_credit - ?, credit_utilise = credit_utilise + ? 
+          SET credit_utilise = credit_utilise + ? 
           WHERE id = ?
         `;
         return db.execute(query, [montant, montant, id_credit]);

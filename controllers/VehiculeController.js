@@ -21,7 +21,8 @@ const create = async (req, res) => {
     const id_utilisateur = creditDetails[0].id_utilisateur;
 
     // Générer le QR code
-    const qrData = `Immatriculation: ${immatriculation}\nMarque: ${marque}\nType: ${type_vehicule}`;
+    // Dans la fonction create
+    const qrData = `Immatriculation: ${immatriculation}\nMarque: ${marque}\nType: ${type_vehicule}\nCreditID: ${id_credit}`;
     const qrImagePath = path.join('public', 'qrcodes', `${immatriculation}.png`);
 
     await fs.ensureDir(path.dirname(qrImagePath));
@@ -119,17 +120,27 @@ const getVehiculesByCredit = async (req, res) => {
 };
 const getVehiculeByImmatriculation = async (req, res) => {
   try {
-    const { immatriculation } = req.params; // Récupérer l'immatriculation depuis les paramètres de la requête
-    const vehicule = await Vehicule.getImmatriculation(immatriculation);
+    const { immatriculation } = req.params;
+    const [vehicule] = await Vehicule.getVehiculeByImmatriculation(immatriculation);
 
-    if (vehicule.length === 0) {
-      return res.status(404).json({ message: 'Véhicule introuvable' });
+    if (!vehicule) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Véhicule introuvable' 
+      });
     }
 
-    res.json(vehicule[0]); // Retourner le premier véhicule trouvé
+    // Retourner l'objet directement (pas dans un tableau)
+    res.json({
+      success: true,
+      data: vehicule // Envoie l'objet directement
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Erreur serveur' });
+    res.status(500).json({ 
+      success: false,
+      message: 'Erreur serveur' 
+    });
   }
 };
 

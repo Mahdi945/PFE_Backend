@@ -33,6 +33,17 @@ const Vehicule = {
         `;
         return db.execute(query, [id]);
     },
+      // Récupérer un véhicule par son immatriculation avec le nom d'utilisateur
+      getVehiculeByImmatriculation: (immatriculation) => {
+        const query = `
+            SELECT v.*, u.username
+            FROM vehicules v
+            JOIN utilisateurs u ON v.id_utilisateur = u.id
+            WHERE v.immatriculation = ?
+        `;
+        return db.execute(query, [immatriculation]);
+    },
+
     
 // Récupérer les véhicules d'un utilisateur par son username
 getVehiculeByClientUsername: (username) => {
@@ -73,5 +84,6 @@ getVehiculeByClientUsername: (username) => {
         return db.execute(query, [id]);
     }
 };
+
 
 export default Vehicule;

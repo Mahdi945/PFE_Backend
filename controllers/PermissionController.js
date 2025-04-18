@@ -1,18 +1,16 @@
 import Permission from '../models/Permission.js';
 
-// Récupérer toutes les permissions
 const getPermissions = async (req, res) => {
     try {
       const results = await Permission.getAll();
-      if (!results) {
-        return res.status(404).json({ error: 'Aucune permission trouvée.' });
-      }
-      res.json(results);
+      res.json(results || []);
     } catch (err) {
-      res.status(500).json({ error: `Erreur lors de la récupération des permissions: ${err.message}` });
+      console.error('Error in getPermissions:', err);
+      res.status(500).json({ error: 'Erreur lors de la récupération des permissions' });
     }
-  };
-  const getPermissionsParRole = async (req, res) => {
+};
+
+const getPermissionsParRole = async (req, res) => {
     try {
       const { role } = req.params;
   
@@ -20,35 +18,66 @@ const getPermissions = async (req, res) => {
         return res.status(400).json({ error: 'Le rôle est requis.' });
       }
   
-      Permission.getByRole(role, (err, results) => {
-        if (err) {
-          return res.status(500).json({ error: 'Erreur de récupération des permissions.' });
-        }
-        if (!results || results.length === 0) {
-          return res.status(404).json({ message: 'Aucune permission trouvée pour ce rôle.' });
-        }
-        res.json(results);
-      });
+      const results = await Permission.getByRole(role);
+      res.json(results);
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      console.error('Error in getPermissionsParRole:', err);
+      res.status(500).json({ error: 'Erreur lors de la récupération des permissions' });
     }
-  };
-  
-
-// Mettre à jour une permission
-const updatePermission = async (req, res) => {
-  try {
-    const { role, element_name, is_visible } = req.body;
-
-    if (!role || !element_name || is_visible === undefined) {
-      return res.status(400).json({ error: 'Tous les champs sont requis.' });
-    }
-
-    await Permission.update(role, element_name, is_visible);
-    res.json({ message: 'Permission mise à jour avec succès' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
 };
 
-export default { getPermissions, updatePermission,getPermissionsParRole };
+const getAllRoles = async (req, res) => {
+    try {
+      const results = await Permission.getAllRoles();
+      res.json(results);
+    } catch (err) {
+      console.error('Error in getAllRoles:', err);
+      res.status(500).json({ error: 'Erreur lors de la récupération des rôles' });
+    }
+};
+
+const updatePermission = async (req, res) => {
+    try {
+      const { role, element_name, is_visible } = req.body;
+
+      if (!role || !element_name || is_visible === undefined) {
+        return res.status(400).json({ error: 'Tous les champs sont requis.' });
+      }
+
+      const affectedRows = await Permission.update(role, element_name, is_visible);
+      res.json({ 
+        message: 'Permission mise à jour avec succès',
+        affectedRows
+      });
+    } catch (err) {
+      console.error('Error in updatePermission:', err);
+      res.status(500).json({ error: 'Erreur lors de la mise à jour' });
+    }
+};
+
+const updateMultiplePermissions = async (req, res) => {
+    try {
+      const { updates } = req.body;
+
+      if (!updates || !Array.isArray(updates)) {
+        return res.status(400).json({ error: 'Données de mise à jour invalides.' });
+      }
+
+      const affectedRows = await Permission.updateMultiple(updates);
+      res.json({ 
+        message: `${affectedRows} permission(s) mise(s) à jour avec succès`,
+        affectedRows
+      });
+    } catch (err) {
+      console.error('Error in updateMultiplePermissions:', err);
+      res.status(500).json({ error: 'Erreur lors de la mise à jour des permissions' });
+    }
+};
+
+export default { 
+    getPermissions, 
+    updatePermission,
+    getPermissionsParRole,
+    getAllRoles,
+    updateMultiplePermissions
+};

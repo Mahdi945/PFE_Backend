@@ -36,7 +36,10 @@ const Pompe = {
 
     return db.execute(query, values);
   },
-
+  findByNumero: async (numero_pompe) => {
+    const [rows] = await db.query('SELECT * FROM pompes WHERE numero_pompe = ?', [numero_pompe]);
+    return rows[0];
+  },
   updatePompe: (id, fieldsToUpdate) => {
     const keys = Object.keys(fieldsToUpdate);
     if (keys.length === 0) {

@@ -1,22 +1,42 @@
 import Transaction from '../models/Transaction.js';
 import Credit from '../models/Credit.js';
 
-// Créer une transaction
 const createTransaction = async (req, res) => {
   try {
     const { id_vehicule, id_utilisateur, quantite, montant, id_credit } = req.body;
 
-    // Ajouter une transaction
+    // Vérifier d'abord si le crédit existe et a suffisamment de solde
+    const [credit] = await Credit.getCreditById(id_credit);
+    if (!credit) {
+      return res.status(404).json({ error: 'Crédit non trouvé' });
+    }
+
+    // Calculer le nouveau solde en tenant compte du crédit déjà utilisé
+    const creditUtilise = credit.credit_utilise || 0;
+    const nouveauSolde = credit.solde_credit - creditUtilise - montant;
+    
+    if (nouveauSolde < 0) {
+      return res.status(400).json({ 
+        error: 'Solde insuffisant', 
+        solde_disponible: credit.solde_credit - creditUtilise
+      });
+    }
+
+    // Ajouter la transaction
     await Transaction.addTransaction(id_vehicule, id_utilisateur, quantite, montant, id_credit);
+    
+    // Mettre à jour le crédit utilisé et l'état si nécessaire
+    await Transaction.updateCredit(id_credit, montant);
 
-    // Mettre à jour le solde du crédit
-    await Credit.updateCredit(id_credit, montant);
-
-    res.status(201).json({ message: 'Transaction enregistrée avec succès' });
+    res.status(201).json({ 
+      message: 'Transaction enregistrée avec succès',
+      nouveau_solde: nouveauSolde
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 // Export des fonctions
 export default {

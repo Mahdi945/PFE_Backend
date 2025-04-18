@@ -17,7 +17,7 @@ router.get('/month/:mois/year/:annee', AffectationCalendrierController.getAffect
 
 // Mettre à jour une affectation
 router.put('/update/:id', AffectationCalendrierController.updateAffectation);
-
+router.post('/regenerate', AffectationCalendrierController.regenerateAffectations);
 // Récupérer un enregistrement calendrier par date
 router.get('/date/:date', AffectationCalendrierController.getCalendrierByDate);
 
