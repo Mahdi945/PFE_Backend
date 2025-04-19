@@ -35,5 +35,6 @@ router.get('/vehicules/credit/:id_credit', VehiculeController.getVehiculesByCred
 
 // Routes pour les transactions
 router.post('/transactions/create', TransactionController.createTransaction); // Créer une transaction
-
+router.get('/transactions/all', TransactionController.getAllTransactions);
+router.get('/transactions/utilisateur/:id_utilisateur', TransactionController.getTransactionsByUser);
 export default router;

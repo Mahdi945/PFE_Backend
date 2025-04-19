@@ -9,7 +9,50 @@ const Transaction = {
     `;
     return db.execute(query, [id_vehicule, id_utilisateur, quantite, montant, id_credit]);
   },
+  getAllTransactions: () => {
+    const query = `
+      SELECT 
+        t.id,
+        t.id_vehicule,
+        t.id_utilisateur,
+        t.id_credit,
+        t.quantite,
+        t.montant,
+        t.date_transaction,
+        v.immatriculation,
+        v.marque,
+        v.type_vehicule,
+        u.username,
+        u.email,
+        u.numero_telephone,
+        u.role,
+        c.solde_credit,
+        c.credit_utilise
+      FROM transactions t
+      LEFT JOIN vehicules v ON t.id_vehicule = v.id
+      LEFT JOIN utilisateurs u ON t.id_utilisateur = u.id
+      LEFT JOIN details_credits c ON t.id_credit = c.id
+      ORDER BY t.date_transaction DESC
+    `;
+    return db.execute(query);
+  },
 
+  // Récupérer les transactions par utilisateur
+  getTransactionsByUser: (id_utilisateur) => {
+    const query = `
+      SELECT 
+        t.*,
+        v.immatriculation,
+        v.marque,
+        c.reference AS credit_reference
+      FROM transactions t
+      LEFT JOIN vehicules v ON t.id_vehicule = v.id
+      LEFT JOIN details_credits c ON t.id_credit = c.id
+      WHERE t.id_utilisateur = ?
+      ORDER BY t.date_transaction DESC
+    `;
+    return db.execute(query, [id_utilisateur]);
+  },
   // Récupérer les transactions liées à un crédit
   getTransactionsByCredit: (id_credit) => {
     const query = 'SELECT * FROM transactions WHERE id_credit = ?';
