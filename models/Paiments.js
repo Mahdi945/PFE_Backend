@@ -166,7 +166,35 @@ import db from '../config/db.js';
       [reference]
     );
     return rows[0];
-  }
+  },
+  // Statistiques de paiements pour un utilisateur
+getPaymentStats: async (id_utilisateur) => {
+  const query = `
+    SELECT 
+      COUNT(*) AS total_paiements,
+      SUM(montant_paye) AS total_paye,
+      MIN(date_paiement) AS premier_paiement,
+      MAX(date_paiement) AS dernier_paiement
+    FROM paiements_credits
+    WHERE id_utilisateur = ?
+  `;
+  return db.execute(query, [id_utilisateur]);
+},
+
+// Derniers paiements (pour le dashboard)
+getRecentPayments: async (id_utilisateur, limit = 5) => {
+  const query = `
+    SELECT 
+      p.*,
+      c.type_credit
+    FROM paiements_credits p
+    JOIN details_credits c ON p.id_credit = c.id
+    WHERE p.id_utilisateur = ?
+    ORDER BY p.date_paiement DESC
+    LIMIT ?
+  `;
+  return db.execute(query, [id_utilisateur, limit]);
+},
 };
 
 export default Paiments;

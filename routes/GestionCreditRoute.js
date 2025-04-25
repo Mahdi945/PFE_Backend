@@ -3,6 +3,7 @@ import CreditController from '../controllers/CreditController.js';
 import VehiculeController from '../controllers/VehiculeController.js';
 import TransactionController from '../controllers/TransactionController.js';
 import PaimentController from '../controllers/PaimentController.js';
+import DashboardController from '../controllers/DashboardController.js';
 const router = express.Router();
 
 // Routes pour la gestion des crédits
@@ -37,4 +38,13 @@ router.get('/vehicules/credit/:id_credit', VehiculeController.getVehiculesByCred
 router.post('/transactions/create', TransactionController.createTransaction); // Créer une transaction
 router.get('/transactions/all', TransactionController.getAllTransactions);
 router.get('/transactions/utilisateur/:id_utilisateur', TransactionController.getTransactionsByUser);
+// Dashboard routes
+router.get('/dashboard/credits/:id_utilisateur', CreditController.getCreditsByUser);
+router.get('/dashboard/credit-stats/:id_utilisateur', CreditController.getCreditStats);
+router.get('/dashboard/payment-stats/:id_utilisateur', PaimentController.getPaymentStats);
+router.get('/dashboard/recent-payments/:id_utilisateur', PaimentController.getRecentPayments);
+router.get('/dashboard/transaction-stats/:id_utilisateur', TransactionController.getTransactionStats);
+router.get('/dashboard/recent-transactions/:id_utilisateur', TransactionController.getRecentTransactions);
+
+router.get('/dashboard/client/:id_utilisateur', DashboardController.getClientDashboard);
 export default router;

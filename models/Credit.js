@@ -73,7 +73,37 @@ const Credit = {
         return db.execute(query, [montant, montant, id_credit]);
       });
   },
+  // Récupérer les crédits d'un utilisateur spécifique
+getCreditsByUser: async (id_utilisateur) => {
+  const query = `
+    SELECT 
+      dc.*,
+      COUNT(v.id) AS nombre_vehicules,
+      SUM(dc.solde_credit - IFNULL(dc.credit_utilise, 0)) AS solde_restant
+    FROM details_credits dc
+    LEFT JOIN vehicules v ON dc.id = v.id_credit
+    WHERE dc.id_utilisateur = ?
+    GROUP BY dc.id
+    ORDER BY dc.date_debut DESC
+  `;
+  return db.execute(query, [id_utilisateur]);
+},
 
+// Statistiques des crédits pour un utilisateur
+getCreditStats: async (id_utilisateur) => {
+  const query = `
+    SELECT 
+      COUNT(*) AS total_credits,
+      SUM(solde_credit) AS total_solde,
+      SUM(credit_utilise) AS total_utilise,
+      SUM(solde_credit - IFNULL(credit_utilise, 0)) AS solde_restant,
+      SUM(CASE WHEN etat = 'actif' THEN 1 ELSE 0 END) AS credits_actifs,
+      SUM(CASE WHEN etat = 'expiré' THEN 1 ELSE 0 END) AS credits_expires
+    FROM details_credits
+    WHERE id_utilisateur = ?
+  `;
+  return db.execute(query, [id_utilisateur]);
+},
   // Mettre à jour l'état d'un crédit
   updateCreditState: (id_credit, etat) => {
     const query = `

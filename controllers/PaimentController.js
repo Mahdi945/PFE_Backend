@@ -152,11 +152,31 @@ const getPaymentByReference = async (req, res) => {
     });
   }
 };
+const getPaymentStats = async (req, res) => {
+  try {
+    const { id_utilisateur } = req.params;
+    const [stats] = await Paiments.getPaymentStats(id_utilisateur);
+    res.json({ success: true, data: stats[0] });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
 
+const getRecentPayments = async (req, res) => {
+  try {
+    const { id_utilisateur } = req.params;
+    const payments = await Paiments.getRecentPayments(id_utilisateur);
+    res.json({ success: true, data: payments });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
 export default {
   createPayment,
   getAllPayments,
   getPaymentsByCredit,
   getPaymentsByUser,
-  getPaymentByReference
+  getPaymentByReference,
+  getPaymentStats,
+  getRecentPayments
 };

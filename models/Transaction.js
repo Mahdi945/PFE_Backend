@@ -99,7 +99,39 @@ const Transaction = {
         console.error('Erreur updateCredit:', error);
         throw error;
       });
-  }
+  },
+  // Statistiques des transactions pour un utilisateur
+getTransactionStats: async (id_utilisateur) => {
+  const query = `
+    SELECT 
+      COUNT(*) AS total_transactions,
+      SUM(quantite) AS total_quantite,
+      SUM(montant) AS total_montant,
+      MIN(date_transaction) AS premiere_transaction,
+      MAX(date_transaction) AS derniere_transaction
+    FROM transactions
+    WHERE id_utilisateur = ?
+  `;
+  return db.execute(query, [id_utilisateur]);
+},
+
+// Dernières transactions (pour le dashboard)
+getRecentTransactions: async (id_utilisateur, limit = 5) => {
+  const query = `
+    SELECT 
+      t.*,
+      v.immatriculation,
+      v.marque,
+      c.type_credit
+    FROM transactions t
+    LEFT JOIN vehicules v ON t.id_vehicule = v.id
+    LEFT JOIN details_credits c ON t.id_credit = c.id
+    WHERE t.id_utilisateur = ?
+    ORDER BY t.date_transaction DESC
+    LIMIT ?
+  `;
+  return db.execute(query, [id_utilisateur, limit]);
+}
 }
 
 export default Transaction;

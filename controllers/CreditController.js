@@ -98,5 +98,24 @@ const updateExpiredCredits = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+const getCreditsByUser = async (req, res) => {
+  try {
+    const { id_utilisateur } = req.params;
+    const [credits] = await Credit.getCreditsByUser(id_utilisateur);
+    res.json({ success: true, data: credits });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
 
-export default { createCredit, getAllCredits, getCreditById, updateCredit, updateCreditState, updateExpiredCredits };
+const getCreditStats = async (req, res) => {
+  try {
+    const { id_utilisateur } = req.params;
+    const [stats] = await Credit.getCreditStats(id_utilisateur);
+    res.json({ success: true, data: stats[0] });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+export default { createCredit, getAllCredits, getCreditById, updateCredit, updateCreditState, updateExpiredCredits,getCreditStats,getCreditsByUser };

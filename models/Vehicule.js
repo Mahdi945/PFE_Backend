@@ -45,15 +45,27 @@ const Vehicule = {
     },
 
     
-// Récupérer les véhicules d'un utilisateur par son username
-getVehiculeByClientUsername: (username) => {
+/**
+ * Récupère tous les véhicules d'un utilisateur par son ID
+ * @param {number} id_utilisateur - L'ID de l'utilisateur
+ * @returns {Promise<Array>} Liste des véhicules de l'utilisateur
+ */
+ getVehiculesByUserId:(id_utilisateur) => {
     const query = `
-        SELECT v.*, u.username
+        SELECT 
+           *
         FROM vehicules v
         JOIN utilisateurs u ON v.id_utilisateur = u.id
-        WHERE u.username = ?  -- Utilisation du username
+        WHERE v.id_utilisateur = ?  -- Filtre direct par ID utilisateur
+        
     `;
-    return db.execute(query, [username]);
+    
+    try {
+        return db.execute(query, [id_utilisateur]);
+    } catch (error) {
+        console.error('Erreur lors de la récupération des véhicules:', error);
+        throw new Error('Erreur de base de données');
+    }
 },
 
 

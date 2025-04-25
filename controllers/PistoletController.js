@@ -41,20 +41,20 @@ const PistoletController = {
       });
     }
   },
-  enregistrerReleve: async (req, res) => {
+   // Enregistrer un relevé
+   enregistrerReleve: async (req, res) => {
     try {
       const { affectation_id, pistolet_id, index_ouverture, index_fermeture } = req.body;
       
-      // Validation simplifiée
       if (!affectation_id || !pistolet_id || isNaN(index_ouverture) || isNaN(index_fermeture)) {
         return res.status(400).send({ 
-          message: 'Tous les champs sont obligatoires et doivent être valides' 
+          message: 'Tous les champs sont obligatoires' 
         });
       }
   
       if (parseFloat(index_fermeture) < parseFloat(index_ouverture)) {
         return res.status(400).send({ 
-          message: 'L\'index de fermeture doit être supérieur ou égal à l\'index d\'ouverture' 
+          message: 'Index de fermeture invalide' 
         });
       }
   
@@ -66,117 +66,164 @@ const PistoletController = {
       );
   
       res.status(201).send({ 
-        message: 'Relevé enregistré avec succès à ' + new Date().toLocaleString(),
+        message: 'Relevé enregistré avec succès',
         releveId
       });
     } catch (error) {
       const statusCode = error.code ? 400 : 500;
       res.status(statusCode).send({ 
         message: error.message,
-        code: error.code,
-        timestamp: new Date().toISOString()
+        code: error.code
       });
     }
   },
+
+  // Ajouter un relevé manuel
+  ajouterReleveManuel: async (req, res) => {
+    try {
+      const { affectation_id, pistolet_id, index_ouverture, index_fermeture, date_heure } = req.body;
+      
+      if (!affectation_id || !pistolet_id || isNaN(index_ouverture) || isNaN(index_fermeture) || !date_heure) {
+        return res.status(400).send({ 
+          message: 'Tous les champs sont obligatoires' 
+        });
+      }
+
+      if (parseFloat(index_fermeture) < parseFloat(index_ouverture)) {
+        return res.status(400).send({ 
+          message: 'Index de fermeture invalide' 
+        });
+      }
+
+      const releveId = await Pistolet.addReleveManuel(
+        affectation_id,
+        pistolet_id,
+        index_ouverture,
+        index_fermeture,
+        date_heure
+      );
+
+      res.status(201).send({ 
+        message: 'Relevé manuel enregistré avec succès',
+        releveId
+      });
+    } catch (error) {
+      console.error('Erreur ajout manuel:', error);
+      res.status(500).send({ 
+        message: error.message || 'Erreur lors de l\'ajout manuel',
+        error: process.env.NODE_ENV === 'development' ? error : undefined
+      });
+    }
+  },
+
+  // Générer un rapport journalier
   genererRapportJournalier: async (req, res) => {
     try {
       const { date } = req.body;
       
-      // Validation de la date
       if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
         return res.status(400).json({ 
           success: false,
           message: 'Format de date invalide. Utilisez YYYY-MM-DD'
         });
       }
-  
-      // Vérifier qu'il existe des relevés pour cette date
-      const [releves] = await db.query(
-        'SELECT COUNT(*) as count FROM releves_postes WHERE DATE(date_heure_saisie) = ? AND statut = "saisie"',
-        [date]
-      );
-  
-      if (releves[0].count === 0) {
-        return res.status(404).json({ 
-          success: false,
-          message: `Aucun relevé valide trouvé pour la date ${date}`
-        });
-      }
-  
+
       const rowsInserted = await Pistolet.generateRapportJournalier(date);
-  
-      if (rowsInserted === 0) {
-        return res.status(404).json({ 
-          success: false,
-          message: `Aucun rapport généré pour ${date} (pas de données valides)`
-        });
-      }
-  
+
       res.json({ 
         success: true,
         message: `Rapport généré pour ${date} (${rowsInserted} pistolets)`,
         date_rapport: date
       });
-  
     } catch (error) {
       console.error('Erreur génération rapport:', error);
       res.status(500).json({ 
         success: false,
-        message: 'Erreur serveur lors de la génération'
+        message: error.message || 'Erreur serveur lors de la génération'
       });
     }
   },
-    // Nouvelle méthode pour obtenir les revenus (version simplifiée)
-getRevenusJournaliers: async (req, res) => {
-  try {
-    const { date_debut, date_fin, pistolet_id } = req.query;
-    
-    // Validation des dates
-    if (!date_debut || !date_fin || 
-        !/^\d{4}-\d{2}-\d{2}$/.test(date_debut) || 
-        !/^\d{4}-\d{2}-\d{2}$/.test(date_fin)) {
-      return res.status(400).json({ 
+  ajouterRapportManuel: async (req, res) => {
+    try {
+      const { date_rapport, pistolet_id, total_quantite, total_montant } = req.body;
+      
+      // Validation des données
+      if (!date_rapport || !pistolet_id || isNaN(total_quantite) || isNaN(total_montant)) {
+        return res.status(400).json({ 
+          success: false,
+          message: 'Tous les champs sont obligatoires et doivent être valides' 
+        });
+      }
+  
+      // Vérifier le format de la date
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date_rapport)) {
+        return res.status(400).json({ 
+          success: false,
+          message: 'Format de date invalide. Utilisez YYYY-MM-DD' 
+        });
+      }
+  
+      // Vérifier que le pistolet existe
+      const [pistolet] = await db.query('SELECT id FROM pistolets WHERE id = ?', [pistolet_id]);
+      if (pistolet.length === 0) {
+        return res.status(404).json({ 
+          success: false,
+          message: 'Pistolet non trouvé' 
+        });
+      }
+  
+      // Ajouter le rapport manuel
+      const rapportId = await Pistolet.addRapportJournalierManuel(
+        date_rapport,
+        pistolet_id,
+        total_quantite,
+        total_montant
+      );
+  
+      res.status(201).json({ 
+        success: true,
+        message: 'Rapport journalier ajouté manuellement avec succès',
+        rapportId
+      });
+    } catch (error) {
+      console.error('Erreur lors de l\'ajout manuel du rapport:', error);
+      const statusCode = error.message.includes('existe déjà') ? 400 : 500;
+      res.status(statusCode).json({ 
         success: false,
-        message: 'Les paramètres date_debut et date_fin (format YYYY-MM-DD) sont obligatoires' 
+        message: error.message || 'Erreur lors de l\'ajout du rapport'
       });
     }
+  },
+  // Récupérer les revenus journaliers
+  getRevenusJournaliers: async (req, res) => {
+    try {
+      const { date_debut, date_fin, pistolet_id } = req.query;
+      
+      if (!date_debut || !date_fin || 
+          !/^\d{4}-\d{2}-\d{2}$/.test(date_debut) || 
+          !/^\d{4}-\d{2}-\d{2}$/.test(date_fin)) {
+        return res.status(400).json({ 
+          success: false,
+          message: 'Dates invalides. Utilisez YYYY-MM-DD' 
+        });
+      }
 
-    // Vérifier que date_debut <= date_fin
-    if (new Date(date_debut) > new Date(date_fin)) {
-      return res.status(400).json({
+      const revenus = await Pistolet.getRevenusJournaliers(date_debut, date_fin, pistolet_id || null);
+      
+      res.status(200).json({
+        success: true,
+        data: revenus,
+        period: `${date_debut} à ${date_fin}`
+      });
+    } catch (error) {
+      console.error('Erreur récupération revenus:', error);
+      res.status(500).json({ 
         success: false,
-        message: 'date_debut doit être antérieure ou égale à date_fin'
+        message: 'Erreur lors de la récupération des revenus'
       });
     }
-
-    const revenus = await Pistolet.getRevenusJournaliers(
-      date_debut, 
-      date_fin,
-      pistolet_id || null
-    );
-    
-    if (revenus.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Aucun relevé trouvé pour la période spécifiée'
-      });
-    }
-    
-    res.status(200).json({
-      success: true,
-      data: revenus,
-      period: `${date_debut} à ${date_fin}`
-    });
-  } catch (error) {
-    console.error('Erreur récupération revenus:', error);
-    res.status(500).json({ 
-      success: false,
-      message: 'Erreur lors de la récupération des revenus',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
-  }
-},
-updateStatut : async (req, res) => {
+  },
+ updateStatut : async (req, res) => {
   try {
     const { id } = req.params;
     const { statut } = req.body;

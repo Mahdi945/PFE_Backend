@@ -17,4 +17,7 @@ router.post('/rapports/generer', PistoletController.genererRapportJournalier);
 router.get('/:pistolet_id/historique', PistoletController.getHistoriqueReleves);
 router.get('/revenus-journaliers', PistoletController.getRevenusJournaliers);
 router.put('/:id/statut',PistoletController.updateStatut);
+router.post('/releves/manuel', PistoletController.ajouterReleveManuel);
+// Ajouter cette route dans le fichier de routes
+router.post('/rapports/manuel', PistoletController.ajouterRapportManuel);
 export default router;

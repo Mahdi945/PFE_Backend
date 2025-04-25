@@ -54,10 +54,30 @@ import Credit from '../models/Credit.js';
       res.status(500).json({ error: err.message });
     }
   };
-
+  const getTransactionStats = async (req, res) => {
+    try {
+      const { id_utilisateur } = req.params;
+      const [stats] = await Transaction.getTransactionStats(id_utilisateur);
+      res.json({ success: true, data: stats[0] });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  };
+  
+  const getRecentTransactions = async (req, res) => {
+    try {
+      const { id_utilisateur } = req.params;
+      const transactions = await Transaction.getRecentTransactions(id_utilisateur);
+      res.json({ success: true, data: transactions });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  };
 // Export des fonctions
 export default {
   createTransaction,
   getAllTransactions,
-  getTransactionsByUser
+  getTransactionsByUser,
+  getTransactionStats,
+  getRecentTransactions
 };

@@ -11,167 +11,260 @@ const Pistolet = {
     );
     return result.insertId;
   },
-  createRelevePoste: async (affectation_id, pistolet_id, index_ouverture, index_fermeture) => {
-    await db.query('START TRANSACTION');
-    
-    try {
-      const now = new Date();
-      const heure = now.getHours();
-      const minute = now.getMinutes();
-      console.log(`Saisie effectuée à ${heure}h${minute}`);
-  
-      // Détermination de la date de poste (hier pour le poste de nuit)
-      let datePoste;
-      if (heure >= 22 || heure < 6) {
-        datePoste = new Date(now);
-        datePoste.setDate(datePoste.getDate() - 1);
-        datePoste = datePoste.toISOString().split('T')[0];
-      } else {
-        datePoste = now.toISOString().split('T')[0];
-      }
-  
-      // Vérification des relevés existants pour cette date de poste
-      const [existingReleve] = await db.query(
-        `SELECT id FROM releves_postes 
-         WHERE affectation_id = ? AND pistolet_id = ?
-         AND (
-           (HOUR(date_heure_saisie) >= 22 AND DATE(date_heure_saisie) = DATE_SUB(CURDATE(), INTERVAL 1 DAY))
-           OR
-           (HOUR(date_heure_saisie) < 22 AND DATE(date_heure_saisie) = CURDATE())
-         )`,
-        [affectation_id, pistolet_id]
-      );
-  
-      if (existingReleve.length > 0) {
-        throw new Error('Un relevé existe déjà pour cette affectation et ce pistolet aujourd\'hui');
-      }
-  
-      // Vérification de la continuité des index
-      const [lastIndex] = await db.query(
-        `SELECT index_fermeture FROM releves_postes 
-         WHERE pistolet_id = ? 
-         ORDER BY date_heure_saisie DESC LIMIT 1`,
-        [pistolet_id]
-      );
-  
-      if (lastIndex.length > 0) {
-        const dernierIndex = parseFloat(lastIndex[0].index_fermeture);
-        const nouvelIndex = parseFloat(index_ouverture);
+    // Créer un relevé de poste
+    createRelevePoste: async (affectation_id, pistolet_id, index_ouverture, index_fermeture) => {
+      await db.query('START TRANSACTION');
+      
+      try {
+        // Récupérer le pompiste_id à partir de l'affectation
+        const [affectation] = await db.query(
+          'SELECT pompiste_id FROM affectations WHERE id = ?',
+          [affectation_id]
+        );
         
-        if (dernierIndex !== nouvelIndex) {
-          throw new Error(`Index d'ouverture (${nouvelIndex}) ne correspond pas au dernier index de fermeture (${dernierIndex})`);
+        if (affectation.length === 0) {
+          throw new Error('Affectation non trouvée');
         }
+        
+        const pompiste_id = affectation[0].pompiste_id;
+  
+        const now = new Date();
+        const heure = now.getHours();
+        const minute = now.getMinutes();
+  
+        // Vérification des relevés existants pour cette date
+        const [existingReleve] = await db.query(
+          `SELECT id FROM releves_postes 
+           WHERE affectation_id = ? AND pistolet_id = ?
+           AND DATE(date_heure_saisie) = CURDATE()`,
+          [affectation_id, pistolet_id]
+        );
+  
+        if (existingReleve.length > 0) {
+          throw new Error('Un relevé existe déjà pour cette affectation et ce pistolet aujourd\'hui');
+        }
+  
+        // Vérification de la continuité des index
+        const [lastIndex] = await db.query(
+          `SELECT index_fermeture FROM releves_postes 
+           WHERE pistolet_id = ? 
+           ORDER BY date_heure_saisie DESC LIMIT 1`,
+          [pistolet_id]
+        );
+  
+        if (lastIndex.length > 0) {
+          const dernierIndex = parseFloat(lastIndex[0].index_fermeture);
+          const nouvelIndex = parseFloat(index_ouverture);
+          
+          if (dernierIndex !== nouvelIndex) {
+            throw new Error(`Index d'ouverture (${nouvelIndex}) ne correspond pas au dernier index de fermeture (${dernierIndex})`);
+          }
+        }
+  
+        // Insertion du relevé
+        const [result] = await db.query(
+          `INSERT INTO releves_postes 
+          (affectation_id, pompiste_id, pistolet_id, index_ouverture, index_fermeture, date_heure_saisie, statut) 
+          VALUES (?, ?, ?, ?, ?, NOW(), 'saisie')`,
+          [affectation_id, pompiste_id, pistolet_id, index_ouverture, index_fermeture]
+        );
+  
+        // Mise à jour du dernier index
+        await db.query(
+          `UPDATE pistolets 
+           SET dernier_index = ?, date_dernier_index = NOW() 
+           WHERE id = ?`,
+          [index_fermeture, pistolet_id]
+        );
+  
+        await db.query('COMMIT');
+        return result.insertId;
+      } catch (error) {
+        await db.query('ROLLBACK');
+        console.error('Erreur lors de la création du relevé:', error);
+        
+        if (error.message.includes('existe déjà')) {
+          error.code = 'RELEVE_EXISTANT';
+        } else if (error.message.includes('Index d\'ouverture')) {
+          error.code = 'INDEX_INCOHERENT';
+        }
+        
+        throw error;
       }
+    },
   
-      // Insertion avec la date/heure actuelle
-      const [result] = await db.query(
-        `INSERT INTO releves_postes 
-        (affectation_id, pistolet_id, index_ouverture, index_fermeture, date_heure_saisie) 
-        VALUES (?, ?, ?, ?, NOW())`,  // Utilisation de NOW() pour la date/heure réelle
-        [affectation_id, pistolet_id, index_ouverture, index_fermeture]
-      );
-  
-      // Mise à jour du dernier index
-      await db.query(
-        `UPDATE pistolets 
-         SET dernier_index = ?, date_dernier_index = NOW() 
-         WHERE id = ?`,
-        [index_fermeture, pistolet_id]
-      );
-  
-      await db.query('COMMIT');
-      return result.insertId;
-    } catch (error) {
-      await db.query('ROLLBACK');
-      console.error('Erreur lors de la création du relevé:', error);
+    // Ajout manuel d'un relevé
+    addReleveManuel: async (affectation_id, pistolet_id, index_ouverture, index_fermeture, date_heure) => {
+      await db.query('START TRANSACTION');
       
-      if (error.message.includes('existe déjà')) {
-        error.code = 'RELEVE_EXISTANT';
-      } else if (error.message.includes('Index d\'ouverture')) {
-        error.code = 'INDEX_INCOHERENT';
+      try {
+        // Récupérer le pompiste_id à partir de l'affectation
+        const [affectation] = await db.query(
+          'SELECT pompiste_id FROM affectations WHERE id = ?',
+          [affectation_id]
+        );
+        
+        if (affectation.length === 0) {
+          throw new Error('Affectation non trouvée');
+        }
+        
+        const pompiste_id = affectation[0].pompiste_id;
+  
+        // Vérification de la continuité des index
+        const [lastIndex] = await db.query(
+          `SELECT index_fermeture FROM releves_postes 
+           WHERE pistolet_id = ? 
+           ORDER BY date_heure_saisie DESC LIMIT 1`,
+          [pistolet_id]
+        );
+  
+        if (lastIndex.length > 0) {
+          const dernierIndex = parseFloat(lastIndex[0].index_fermeture);
+          const nouvelIndex = parseFloat(index_ouverture);
+          
+          if (dernierIndex !== nouvelIndex) {
+            throw new Error(`Index d'ouverture (${nouvelIndex}) ne correspond pas au dernier index de fermeture (${dernierIndex})`);
+          }
+        }
+  
+        // Insertion du relevé manuel
+        const [result] = await db.query(
+          `INSERT INTO releves_postes 
+          (affectation_id, pompiste_id, pistolet_id, index_ouverture, index_fermeture, date_heure_saisie, statut) 
+          VALUES (?, ?, ?, ?, ?, ?, 'valide')`,
+          [affectation_id, pompiste_id, pistolet_id, index_ouverture, index_fermeture, date_heure]
+        );
+  
+        // Mise à jour du dernier index
+        await db.query(
+          `UPDATE pistolets 
+           SET dernier_index = ?, date_dernier_index = NOW() 
+           WHERE id = ?`,
+          [index_fermeture, pistolet_id]
+        );
+  
+        await db.query('COMMIT');
+        return result.insertId;
+      } catch (error) {
+        await db.query('ROLLBACK');
+        console.error('Erreur lors de l\'ajout manuel du relevé:', error);
+        throw error;
       }
-      
-      throw error;
-    }
-  },
-  generateRapportJournalier: async (date) => {
-    try {
-      // Vérifier le format de la date
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-        throw new Error('Format de date invalide');
+    },
+    addRapportJournalierManuel: async (date_rapport, pistolet_id, total_quantite, total_montant) => {
+      try {
+        // Vérifier si un rapport existe déjà pour cette date et ce pistolet
+        const [existingReport] = await db.query(
+          'SELECT id FROM rapports_journaliers WHERE date_rapport = ? AND pistolet_id = ?',
+          [date_rapport, pistolet_id]
+        );
+    
+        if (existingReport.length > 0) {
+          throw new Error('Un rapport existe déjà pour cette date et ce pistolet');
+        }
+    
+        // Insérer le nouveau rapport
+        const [result] = await db.query(
+          `INSERT INTO rapports_journaliers 
+          (date_rapport, pistolet_id, total_quantite, total_montant, nombre_postes, date_generation) 
+          VALUES (?, ?, ?, ?, 1, NOW())`,
+          [date_rapport, pistolet_id, total_quantite, total_montant]
+        );
+    
+        return result.insertId;
+      } catch (error) {
+        console.error('Erreur lors de l\'ajout manuel du rapport:', error);
+        throw error;
       }
+    },
+    // Générer un rapport journalier
+    generateRapportJournalier: async (date) => {
+      try {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+          throw new Error('Format de date invalide');
+        }
   
-      // Supprimer les anciens rapports pour cette date
-      await db.query('DELETE FROM rapports_journaliers WHERE date_rapport = ?', [date]);
-      
-      // Générer les nouveaux rapports en utilisant directement la date
-      const [result] = await db.query(
-        `INSERT INTO rapports_journaliers 
-        (date_rapport, pistolet_id, total_quantite, total_montant, nombre_postes)
+        // Supprimer les anciens rapports
+        await db.query('DELETE FROM rapports_journaliers WHERE date_rapport = ?', [date]);
+        
+        // Générer les nouveaux rapports
+        const [result] = await db.query(
+          `INSERT INTO rapports_journaliers 
+          (date_rapport, pistolet_id, total_quantite, total_montant, nombre_postes, date_generation)
+          SELECT 
+            ?,
+            r.pistolet_id,
+            SUM(r.index_fermeture - r.index_ouverture) AS total_quantite,
+            SUM((r.index_fermeture - r.index_ouverture) * p.prix_unitaire) AS total_montant,
+            COUNT(DISTINCT a.poste_id) AS nombre_postes,
+            NOW()
+          FROM releves_postes r
+          JOIN affectations a ON r.affectation_id = a.id
+          JOIN pistolets p ON r.pistolet_id = p.id
+          WHERE DATE(r.date_heure_saisie) = ? 
+          GROUP BY r.pistolet_id`,
+          [date, date]
+        );
+        
+        return result.affectedRows || 0;
+      } catch (error) {
+        console.error('Erreur lors de la génération du rapport:', error);
+        throw error;
+      }
+    },
+  
+    // Récupérer les revenus journaliers
+    getRevenusJournaliers: async (date_debut, date_fin, pistolet_id = null) => {
+      let query = `
         SELECT 
-          ?,
+          DATE(r.date_heure_saisie) as date,
           r.pistolet_id,
-          SUM(r.index_fermeture - r.index_ouverture) AS total_quantite,
-          SUM((r.index_fermeture - r.index_ouverture) * p.prix_unitaire) AS total_montant,
-          COUNT(DISTINCT a.poste_id) AS nombre_postes
+          p.nom_produit,
+          p.prix_unitaire,
+          a.poste_id,
+          u.username as nom_pompiste,
+          SUM(r.index_fermeture - r.index_ouverture) AS quantite,
+          SUM((r.index_fermeture - r.index_ouverture) * p.prix_unitaire) AS montant
         FROM releves_postes r
         JOIN affectations a ON r.affectation_id = a.id
         JOIN pistolets p ON r.pistolet_id = p.id
-        WHERE DATE(r.date_heure_saisie) = ? AND r.statut = 'saisie'
-        GROUP BY r.pistolet_id`,
-        [date, date]
-      );
+        JOIN utilisateurs u ON r.pompiste_id = u.id
+        WHERE DATE(r.date_heure_saisie) BETWEEN ? AND ? 
+        
+      `;
       
-      return result.affectedRows || 0;
+      const params = [date_debut, date_fin];
       
-    } catch (error) {
-      console.error('Erreur lors de la génération du rapport:', error);
-      throw error;
-    }
-  },
-// Récupérer les données pour visualisation (version simplifiée sans calendrier)
-getRevenusJournaliers: async (date_debut, date_fin, pistolet_id = null) => {
-  let query = `
-    SELECT 
-      DATE(r.date_heure_saisie) as date,
-      r.pistolet_id,
-      p.nom_produit,
-      p.prix_unitaire,
-      a.poste_id,
-      SUM(r.index_fermeture - r.index_ouverture) AS quantite,
-      SUM((r.index_fermeture - r.index_ouverture) * p.prix_unitaire) AS montant
-    FROM releves_postes r
-    JOIN affectations a ON r.affectation_id = a.id
-    JOIN pistolets p ON r.pistolet_id = p.id
-    WHERE DATE(r.date_heure_saisie) BETWEEN ? AND ? 
-      AND r.statut = 'saisie'
-  `;
-  
-  const params = [date_debut, date_fin];
-  
-  if (pistolet_id) {
-    query += ' AND r.pistolet_id = ?';
-    params.push(pistolet_id);
-  }
-  
-  query += ' GROUP BY DATE(r.date_heure_saisie), r.pistolet_id, a.poste_id ORDER BY date, r.pistolet_id, a.poste_id';
-  
-  const [rows] = await db.query(query, params);
+      if (pistolet_id) {
+        query += ' AND r.pistolet_id = ?';
+        params.push(pistolet_id);
+      }
+      
+      query += ' GROUP BY DATE(r.date_heure_saisie), r.pistolet_id, a.poste_id, r.pompiste_id ORDER BY date, r.pistolet_id';
+      
+      const [rows] = await db.query(query, params);
+      return rows;
+    },
+  // Récupérer l'historique des relevés
+getHistoriqueReleves: async (pistolet_id, date_debut, date_fin) => {
+  const [rows] = await db.query(
+    `SELECT 
+        r.id,
+        r.affectation_id,
+        r.pompiste_id,
+        r.pistolet_id,
+        r.index_ouverture,
+        r.index_fermeture,
+        r.date_heure_saisie,
+        r.statut
+     FROM releves_postes r
+     WHERE r.pistolet_id = ? 
+       AND DATE(r.date_heure_saisie) BETWEEN ? AND ?
+     ORDER BY r.date_heure_saisie DESC`,
+    [pistolet_id, date_debut, date_fin]
+  );
   return rows;
 },
-  // Récupérer l'historique des relevés
-  getHistoriqueReleves: async (pistolet_id, date_debut, date_fin) => {
-    const [rows] = await db.query(
-      `SELECT r.*, a.poste_id, c.date 
-       FROM releves_postes r
-       JOIN affectations a ON r.affectation_id = a.id
-       JOIN calendrier c ON a.calendrier_id = c.id
-       WHERE r.pistolet_id = ? AND c.date BETWEEN ? AND ?
-       ORDER BY c.date, a.poste_id`,
-      [pistolet_id, date_debut, date_fin]
-    );
-    return rows;
-  },
   updateStatutReleve : async (releveId, nouveauStatut) => {
     try {
       // Vérifier que le statut est valide
