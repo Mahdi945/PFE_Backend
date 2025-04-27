@@ -9,33 +9,30 @@ const Transaction = {
     `;
     return db.execute(query, [id_vehicule, id_utilisateur, quantite, montant, id_credit]);
   },
-  getAllTransactions: () => {
-    const query = `
-      SELECT 
-        t.id,
-        t.id_vehicule,
-        t.id_utilisateur,
-        t.id_credit,
-        t.quantite,
-        t.montant,
-        t.date_transaction,
-        v.immatriculation,
-        v.marque,
-        v.type_vehicule,
-        u.username,
-        u.email,
-        u.numero_telephone,
-        u.role,
-        c.solde_credit,
-        c.credit_utilise
-      FROM transactions t
-      LEFT JOIN vehicules v ON t.id_vehicule = v.id
-      LEFT JOIN utilisateurs u ON t.id_utilisateur = u.id
-      LEFT JOIN details_credits c ON t.id_credit = c.id
-      ORDER BY t.date_transaction DESC
-    `;
-    return db.execute(query);
-  },
+// Modifier la méthode getAllTransactions
+getAllTransactions: () => {
+  const query = `
+    SELECT 
+      t.id,
+      t.id_vehicule,
+      t.id_utilisateur,
+      t.id_credit,
+      t.quantite,
+      t.montant,
+      t.date_transaction,
+      v.immatriculation,
+      v.marque,
+      v.type_vehicule,
+      u.username,
+      c.type_credit
+    FROM transactions t
+    LEFT JOIN vehicules v ON t.id_vehicule = v.id
+    LEFT JOIN utilisateurs u ON t.id_utilisateur = u.id
+    LEFT JOIN details_credits c ON t.id_credit = c.id
+    ORDER BY t.date_transaction DESC
+  `;
+  return db.execute(query);
+},
 
   // Récupérer les transactions par utilisateur
   getTransactionsByUser: (id_utilisateur) => {
@@ -131,7 +128,40 @@ getRecentTransactions: async (id_utilisateur, limit = 5) => {
     LIMIT ?
   `;
   return db.execute(query, [id_utilisateur, limit]);
+},
+// Statistiques globales des transactions
+getGlobalTransactionStats: async () => {
+  const query = `
+    SELECT 
+      COUNT(*) AS total_transactions,
+      SUM(quantite) AS total_quantite,
+      SUM(montant) AS total_montant,
+      DATE_FORMAT(MIN(date_transaction), '%Y-%m-%d') AS first_transaction_date,
+      DATE_FORMAT(MAX(date_transaction), '%Y-%m-%d') AS last_transaction_date
+    FROM transactions
+  `;
+  return db.execute(query);
+},
+
+// Transactions récentes (toutes)
+getRecentTransactionsAll: async () => {
+  const query = `
+    SELECT 
+      t.*,
+      v.immatriculation,
+      v.marque,
+      u.username,
+      c.type_credit
+    FROM transactions t
+    LEFT JOIN vehicules v ON t.id_vehicule = v.id
+    LEFT JOIN utilisateurs u ON t.id_utilisateur = u.id
+    LEFT JOIN details_credits c ON t.id_credit = c.id
+    ORDER BY t.date_transaction DESC
+    
+  `;
+  return db.execute(query);
 }
+
 }
 
 export default Transaction;

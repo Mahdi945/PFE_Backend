@@ -9,14 +9,16 @@ dotenv.config();
 
 // Crée un pool de connexions MySQL pour gérer l'accès à la base de données
 const pool = mysql.createPool({
-    
   // Hôte de la base de données (URL ou IP), récupéré depuis les variables d'environnement
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD, 
   database: process.env.DB_NAME,
   connectionLimit: 10,
-  multipleStatements: true // Ajoutez cette ligne
+  multipleStatements: true,
+  waitForConnections: true,
+  queueLimit: 0
 });
 
-// Exporte la pool de connexions avec des promesses pour pouvoir l'utiliser avec async/await dans d'autres parties du code
+// Exporte la pool de connexions avec des promesses pour pouvoir l'utiliser avec async/await
 export default pool.promise();

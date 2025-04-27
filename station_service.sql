@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : sam. 19 avr. 2025 à 16:15
+-- Généré le : ven. 25 avr. 2025 à 02:48
 -- Version du serveur : 10.4.28-MariaDB
 -- Version de PHP : 8.2.4
 
@@ -40,381 +40,276 @@ CREATE TABLE `affectations` (
 --
 
 INSERT INTO `affectations` (`id`, `pompiste_id`, `poste_id`, `pompe_id`, `calendrier_id`) VALUES
-(963, 16, 1, 12, 91),
-(964, 15, 1, 13, 91),
-(965, 16, 1, 14, 91),
-(966, 15, 1, 15, 91),
-(967, 16, 2, 12, 91),
-(968, 15, 2, 13, 91),
-(969, 16, 2, 14, 91),
-(970, 15, 2, 15, 91),
-(971, 16, 3, 12, 91),
-(972, 15, 3, 13, 91),
-(973, 16, 3, 14, 91),
-(974, 15, 3, 15, 91),
-(975, 16, 1, 12, 92),
-(976, 15, 1, 13, 92),
-(977, 16, 1, 14, 92),
-(978, 15, 1, 15, 92),
-(979, 16, 2, 12, 92),
-(980, 15, 2, 13, 92),
-(981, 16, 2, 14, 92),
-(982, 15, 2, 15, 92),
-(983, 16, 3, 12, 92),
-(984, 15, 3, 13, 92),
-(985, 16, 3, 14, 92),
-(986, 15, 3, 15, 92),
-(987, 15, 1, 12, 93),
-(988, 16, 1, 13, 93),
-(989, 15, 1, 14, 93),
-(990, 16, 1, 15, 93),
-(991, 15, 2, 12, 93),
-(992, 16, 2, 13, 93),
-(993, 15, 2, 14, 93),
-(994, 16, 2, 15, 93),
-(995, 15, 3, 12, 93),
-(996, 16, 3, 13, 93),
-(997, 15, 3, 14, 93),
-(998, 16, 3, 15, 93),
-(999, 15, 1, 12, 94),
-(1000, 16, 1, 13, 94),
-(1001, 15, 1, 14, 94),
-(1002, 16, 1, 15, 94),
-(1003, 15, 2, 12, 94),
-(1004, 16, 2, 13, 94),
-(1005, 15, 2, 14, 94),
-(1006, 16, 2, 15, 94),
-(1007, 15, 3, 12, 94),
-(1008, 16, 3, 13, 94),
-(1009, 15, 3, 14, 94),
-(1010, 16, 3, 15, 94),
-(1011, 15, 1, 12, 95),
-(1012, 16, 1, 13, 95),
-(1013, 15, 1, 14, 95),
-(1014, 16, 1, 15, 95),
-(1015, 15, 2, 12, 95),
-(1016, 16, 2, 13, 95),
-(1017, 15, 2, 14, 95),
-(1018, 16, 2, 15, 95),
-(1019, 15, 3, 12, 95),
-(1020, 16, 3, 13, 95),
-(1021, 15, 3, 14, 95),
-(1022, 16, 3, 15, 95),
-(1023, 15, 1, 12, 96),
-(1024, 16, 1, 13, 96),
-(1025, 15, 1, 14, 96),
-(1026, 16, 1, 15, 96),
-(1027, 15, 2, 12, 96),
-(1028, 16, 2, 13, 96),
-(1029, 15, 2, 14, 96),
-(1030, 16, 2, 15, 96),
-(1031, 15, 3, 12, 96),
-(1032, 16, 3, 13, 96),
-(1033, 15, 3, 14, 96),
-(1034, 16, 3, 15, 96),
-(1035, 15, 1, 12, 97),
-(1036, 16, 1, 13, 97),
-(1037, 15, 1, 14, 97),
-(1038, 16, 1, 15, 97),
-(1039, 15, 2, 12, 97),
-(1040, 16, 2, 13, 97),
-(1041, 15, 2, 14, 97),
-(1042, 16, 2, 15, 97),
-(1043, 15, 3, 12, 97),
-(1044, 16, 3, 13, 97),
-(1045, 15, 3, 14, 97),
-(1046, 16, 3, 15, 97),
-(1047, 16, 1, 12, 98),
-(1048, 15, 1, 13, 98),
-(1049, 16, 1, 14, 98),
-(1050, 15, 1, 15, 98),
-(1051, 16, 2, 12, 98),
-(1052, 15, 2, 13, 98),
-(1053, 16, 2, 14, 98),
-(1054, 15, 2, 15, 98),
-(1055, 16, 3, 12, 98),
-(1056, 15, 3, 13, 98),
-(1057, 16, 3, 14, 98),
-(1058, 15, 3, 15, 98),
-(1059, 15, 1, 12, 99),
-(1060, 16, 1, 13, 99),
-(1061, 15, 1, 14, 99),
-(1062, 16, 1, 15, 99),
-(1063, 15, 2, 12, 99),
-(1064, 16, 2, 13, 99),
-(1065, 15, 2, 14, 99),
-(1066, 16, 2, 15, 99),
-(1067, 15, 3, 12, 99),
-(1068, 16, 3, 13, 99),
-(1069, 15, 3, 14, 99),
-(1070, 16, 3, 15, 99),
-(1071, 15, 1, 12, 100),
-(1072, 16, 1, 13, 100),
-(1073, 15, 1, 14, 100),
-(1074, 16, 1, 15, 100),
-(1075, 15, 2, 12, 100),
-(1076, 16, 2, 13, 100),
-(1077, 15, 2, 14, 100),
-(1078, 16, 2, 15, 100),
-(1079, 15, 3, 12, 100),
-(1080, 16, 3, 13, 100),
-(1081, 15, 3, 14, 100),
-(1082, 16, 3, 15, 100),
-(1083, 16, 1, 12, 101),
-(1084, 15, 1, 13, 101),
-(1085, 16, 1, 14, 101),
-(1086, 15, 1, 15, 101),
-(1087, 16, 2, 12, 101),
-(1088, 15, 2, 13, 101),
-(1089, 16, 2, 14, 101),
-(1090, 15, 2, 15, 101),
-(1091, 16, 3, 12, 101),
-(1092, 15, 3, 13, 101),
-(1093, 16, 3, 14, 101),
-(1094, 15, 3, 15, 101),
-(1095, 15, 1, 12, 102),
-(1096, 16, 1, 13, 102),
-(1097, 15, 1, 14, 102),
-(1098, 16, 1, 15, 102),
-(1099, 15, 2, 12, 102),
-(1100, 16, 2, 13, 102),
-(1101, 15, 2, 14, 102),
-(1102, 16, 2, 15, 102),
-(1103, 15, 3, 12, 102),
-(1104, 16, 3, 13, 102),
-(1105, 15, 3, 14, 102),
-(1106, 16, 3, 15, 102),
-(1107, 16, 1, 12, 103),
-(1108, 15, 1, 13, 103),
-(1109, 16, 1, 14, 103),
-(1110, 15, 1, 15, 103),
-(1111, 16, 2, 12, 103),
-(1112, 15, 2, 13, 103),
-(1113, 16, 2, 14, 103),
-(1114, 15, 2, 15, 103),
-(1115, 16, 3, 12, 103),
-(1116, 15, 3, 13, 103),
-(1117, 16, 3, 14, 103),
-(1118, 15, 3, 15, 103),
-(1119, 16, 1, 12, 104),
-(1120, 15, 1, 13, 104),
-(1121, 16, 1, 14, 104),
-(1122, 15, 1, 15, 104),
-(1123, 16, 2, 12, 104),
-(1124, 15, 2, 13, 104),
-(1125, 16, 2, 14, 104),
-(1126, 15, 2, 15, 104),
-(1127, 16, 3, 12, 104),
-(1128, 15, 3, 13, 104),
-(1129, 16, 3, 14, 104),
-(1130, 15, 3, 15, 104),
-(1131, 15, 1, 12, 105),
-(1132, 16, 1, 13, 105),
-(1133, 15, 1, 14, 105),
-(1134, 16, 1, 15, 105),
-(1135, 15, 2, 12, 105),
-(1136, 16, 2, 13, 105),
-(1137, 15, 2, 14, 105),
-(1138, 16, 2, 15, 105),
-(1139, 15, 3, 12, 105),
-(1140, 16, 3, 13, 105),
-(1141, 15, 3, 14, 105),
-(1142, 16, 3, 15, 105),
-(1143, 15, 1, 12, 106),
-(1144, 16, 1, 13, 106),
-(1145, 15, 1, 14, 106),
-(1146, 16, 1, 15, 106),
-(1147, 15, 2, 12, 106),
-(1148, 16, 2, 13, 106),
-(1149, 15, 2, 14, 106),
-(1150, 16, 2, 15, 106),
-(1151, 15, 3, 12, 106),
-(1152, 16, 3, 13, 106),
-(1153, 15, 3, 14, 106),
-(1154, 16, 3, 15, 106),
-(1155, 15, 1, 12, 107),
-(1156, 16, 1, 13, 107),
-(1157, 15, 1, 14, 107),
-(1158, 16, 1, 15, 107),
-(1159, 15, 2, 12, 107),
-(1160, 16, 2, 13, 107),
-(1161, 15, 2, 14, 107),
-(1162, 16, 2, 15, 107),
-(1163, 15, 3, 12, 107),
-(1164, 16, 3, 13, 107),
-(1165, 15, 3, 14, 107),
-(1166, 16, 3, 15, 107),
-(1167, 16, 1, 12, 108),
-(1168, 15, 1, 13, 108),
-(1169, 16, 1, 14, 108),
-(1170, 15, 1, 15, 108),
-(1171, 16, 2, 12, 108),
-(1172, 15, 2, 13, 108),
-(1173, 16, 2, 14, 108),
-(1174, 15, 2, 15, 108),
-(1175, 16, 3, 12, 108),
-(1176, 15, 3, 13, 108),
-(1177, 16, 3, 14, 108),
-(1178, 15, 3, 15, 108),
-(1179, 15, 1, 12, 109),
-(1180, 16, 1, 13, 109),
-(1181, 15, 1, 14, 109),
-(1182, 16, 1, 15, 109),
-(1183, 15, 2, 12, 109),
-(1184, 16, 2, 13, 109),
-(1185, 15, 2, 14, 109),
-(1186, 16, 2, 15, 109),
-(1187, 15, 3, 12, 109),
-(1188, 16, 3, 13, 109),
-(1189, 15, 3, 14, 109),
-(1190, 16, 3, 15, 109),
-(1191, 16, 1, 12, 110),
-(1192, 15, 1, 13, 110),
-(1193, 16, 1, 14, 110),
-(1194, 15, 1, 15, 110),
-(1195, 16, 2, 12, 110),
-(1196, 15, 2, 13, 110),
-(1197, 16, 2, 14, 110),
-(1198, 15, 2, 15, 110),
-(1199, 16, 3, 12, 110),
-(1200, 15, 3, 13, 110),
-(1201, 16, 3, 14, 110),
-(1202, 15, 3, 15, 110),
-(1203, 16, 1, 12, 111),
-(1204, 15, 1, 13, 111),
-(1205, 16, 1, 14, 111),
-(1206, 15, 1, 15, 111),
-(1207, 16, 2, 12, 111),
-(1208, 15, 2, 13, 111),
-(1209, 16, 2, 14, 111),
-(1210, 15, 2, 15, 111),
-(1211, 16, 3, 12, 111),
-(1212, 15, 3, 13, 111),
-(1213, 16, 3, 14, 111),
-(1214, 15, 3, 15, 111),
-(1215, 15, 1, 12, 112),
-(1216, 16, 1, 13, 112),
-(1217, 15, 1, 14, 112),
-(1218, 16, 1, 15, 112),
-(1219, 15, 2, 12, 112),
-(1220, 16, 2, 13, 112),
-(1221, 15, 2, 14, 112),
-(1222, 16, 2, 15, 112),
-(1223, 15, 3, 12, 112),
-(1224, 16, 3, 13, 112),
-(1225, 15, 3, 14, 112),
-(1226, 16, 3, 15, 112),
-(1227, 16, 1, 12, 113),
-(1228, 15, 1, 13, 113),
-(1229, 16, 1, 14, 113),
-(1230, 15, 1, 15, 113),
-(1231, 16, 2, 12, 113),
-(1232, 15, 2, 13, 113),
-(1233, 16, 2, 14, 113),
-(1234, 15, 2, 15, 113),
-(1235, 16, 3, 12, 113),
-(1236, 15, 3, 13, 113),
-(1237, 16, 3, 14, 113),
-(1238, 15, 3, 15, 113),
-(1239, 15, 1, 12, 114),
-(1240, 16, 1, 13, 114),
-(1241, 15, 1, 14, 114),
-(1242, 16, 1, 15, 114),
-(1243, 15, 2, 12, 114),
-(1244, 16, 2, 13, 114),
-(1245, 15, 2, 14, 114),
-(1246, 16, 2, 15, 114),
-(1247, 15, 3, 12, 114),
-(1248, 16, 3, 13, 114),
-(1249, 15, 3, 14, 114),
-(1250, 16, 3, 15, 114),
-(1251, 16, 1, 12, 115),
-(1252, 15, 1, 13, 115),
-(1253, 16, 1, 14, 115),
-(1254, 15, 1, 15, 115),
-(1255, 16, 2, 12, 115),
-(1256, 15, 2, 13, 115),
-(1257, 16, 2, 14, 115),
-(1258, 15, 2, 15, 115),
-(1259, 16, 3, 12, 115),
-(1260, 15, 3, 13, 115),
-(1261, 16, 3, 14, 115),
-(1262, 15, 3, 15, 115),
-(1263, 15, 1, 12, 116),
-(1264, 16, 1, 13, 116),
-(1265, 15, 1, 14, 116),
-(1266, 16, 1, 15, 116),
-(1267, 15, 2, 12, 116),
-(1268, 16, 2, 13, 116),
-(1269, 15, 2, 14, 116),
-(1270, 16, 2, 15, 116),
-(1271, 15, 3, 12, 116),
-(1272, 16, 3, 13, 116),
-(1273, 15, 3, 14, 116),
-(1274, 16, 3, 15, 116),
-(1275, 15, 1, 12, 117),
-(1276, 16, 1, 13, 117),
-(1277, 15, 1, 14, 117),
-(1278, 16, 1, 15, 117),
-(1279, 15, 2, 12, 117),
-(1280, 16, 2, 13, 117),
-(1281, 15, 2, 14, 117),
-(1282, 16, 2, 15, 117),
-(1283, 15, 3, 12, 117),
-(1284, 16, 3, 13, 117),
-(1285, 15, 3, 14, 117),
-(1286, 16, 3, 15, 117),
-(1287, 16, 1, 12, 118),
-(1288, 15, 1, 13, 118),
-(1289, 16, 1, 14, 118),
-(1290, 15, 1, 15, 118),
-(1291, 16, 2, 12, 118),
-(1292, 15, 2, 13, 118),
-(1293, 16, 2, 14, 118),
-(1294, 15, 2, 15, 118),
-(1295, 16, 3, 12, 118),
-(1296, 15, 3, 13, 118),
-(1297, 16, 3, 14, 118),
-(1298, 15, 3, 15, 118),
-(1299, 15, 1, 12, 119),
-(1300, 16, 1, 13, 119),
-(1301, 15, 1, 14, 119),
-(1302, 16, 1, 15, 119),
-(1303, 15, 2, 12, 119),
-(1304, 16, 2, 13, 119),
-(1305, 15, 2, 14, 119),
-(1306, 16, 2, 15, 119),
-(1307, 15, 3, 12, 119),
-(1308, 16, 3, 13, 119),
-(1309, 15, 3, 14, 119),
-(1310, 16, 3, 15, 119),
-(1311, 15, 1, 12, 120),
-(1312, 16, 1, 13, 120),
-(1313, 15, 1, 14, 120),
-(1314, 16, 1, 15, 120),
-(1315, 15, 2, 12, 120),
-(1316, 16, 2, 13, 120),
-(1317, 15, 2, 14, 120),
-(1318, 16, 2, 15, 120),
-(1319, 15, 3, 12, 120),
-(1320, 16, 3, 13, 120),
-(1321, 15, 3, 14, 120),
-(1322, 16, 3, 15, 120),
-(1323, 16, 1, 12, 121),
-(1324, 15, 1, 13, 121),
-(1325, 16, 1, 14, 121),
-(1326, 15, 1, 15, 121),
-(1327, 16, 2, 12, 121),
-(1328, 15, 2, 13, 121),
-(1329, 16, 2, 14, 121),
-(1330, 15, 2, 15, 121),
-(1331, 16, 3, 12, 121),
-(1332, 15, 3, 13, 121),
-(1333, 16, 3, 14, 121),
-(1334, 15, 3, 15, 121),
-(1335, 16, 1, 12, 61),
-(1336, 15, 1, 13, 61),
-(1337, 19, 1, 14, 61);
+(2148, 20, 1, 34, 122),
+(2149, 23, 1, 35, 122),
+(2150, 25, 1, 36, 122),
+(2151, 21, 2, 34, 122),
+(2152, 24, 2, 35, 122),
+(2153, 19, 2, 36, 122),
+(2154, 15, 3, 34, 122),
+(2155, 16, 3, 35, 122),
+(2156, 22, 3, 36, 122),
+(2157, 24, 1, 34, 123),
+(2158, 19, 1, 35, 123),
+(2159, 16, 1, 36, 123),
+(2160, 23, 2, 34, 123),
+(2161, 20, 2, 35, 123),
+(2162, 15, 2, 36, 123),
+(2163, 21, 3, 34, 123),
+(2164, 25, 3, 35, 123),
+(2165, 22, 3, 36, 123),
+(2166, 19, 1, 34, 124),
+(2167, 20, 1, 35, 124),
+(2168, 24, 1, 36, 124),
+(2169, 21, 2, 34, 124),
+(2170, 15, 2, 35, 124),
+(2171, 16, 2, 36, 124),
+(2172, 22, 3, 34, 124),
+(2173, 23, 3, 35, 124),
+(2174, 25, 3, 36, 124),
+(2175, 23, 1, 34, 125),
+(2176, 20, 1, 35, 125),
+(2177, 16, 1, 36, 125),
+(2178, 19, 2, 34, 125),
+(2179, 22, 2, 35, 125),
+(2180, 21, 2, 36, 125),
+(2181, 15, 3, 34, 125),
+(2182, 25, 3, 35, 125),
+(2183, 24, 3, 36, 125),
+(2184, 20, 1, 34, 126),
+(2185, 25, 1, 35, 126),
+(2186, 23, 1, 36, 126),
+(2187, 16, 2, 34, 126),
+(2188, 22, 2, 35, 126),
+(2189, 15, 2, 36, 126),
+(2190, 21, 3, 34, 126),
+(2191, 19, 3, 35, 126),
+(2192, 24, 3, 36, 126),
+(2193, 25, 1, 34, 127),
+(2194, 22, 1, 35, 127),
+(2195, 24, 1, 36, 127),
+(2196, 21, 2, 34, 127),
+(2197, 15, 2, 35, 127),
+(2198, 23, 2, 36, 127),
+(2199, 16, 3, 34, 127),
+(2200, 20, 3, 35, 127),
+(2201, 19, 3, 36, 127),
+(2202, 24, 1, 34, 128),
+(2203, 22, 1, 35, 128),
+(2204, 15, 1, 36, 128),
+(2205, 23, 2, 34, 128),
+(2206, 20, 2, 35, 128),
+(2207, 16, 2, 36, 128),
+(2208, 19, 3, 34, 128),
+(2209, 25, 3, 35, 128),
+(2210, 21, 3, 36, 128),
+(2211, 24, 1, 34, 129),
+(2212, 23, 1, 35, 129),
+(2213, 20, 1, 36, 129),
+(2214, 19, 2, 34, 129),
+(2215, 16, 2, 35, 129),
+(2216, 15, 2, 36, 129),
+(2217, 21, 3, 34, 129),
+(2218, 22, 3, 35, 129),
+(2219, 25, 3, 36, 129),
+(2220, 19, 1, 34, 130),
+(2221, 15, 1, 35, 130),
+(2222, 22, 1, 36, 130),
+(2223, 21, 2, 34, 130),
+(2224, 16, 2, 35, 130),
+(2225, 24, 2, 36, 130),
+(2226, 23, 3, 34, 130),
+(2227, 25, 3, 35, 130),
+(2228, 20, 3, 36, 130),
+(2229, 21, 1, 34, 131),
+(2230, 25, 1, 35, 131),
+(2231, 15, 1, 36, 131),
+(2232, 24, 2, 34, 131),
+(2233, 23, 2, 35, 131),
+(2234, 22, 2, 36, 131),
+(2235, 19, 3, 34, 131),
+(2236, 16, 3, 35, 131),
+(2237, 20, 3, 36, 131),
+(2238, 22, 1, 34, 132),
+(2239, 24, 1, 35, 132),
+(2240, 16, 1, 36, 132),
+(2241, 25, 2, 34, 132),
+(2242, 20, 2, 35, 132),
+(2243, 23, 2, 36, 132),
+(2244, 15, 3, 34, 132),
+(2245, 21, 3, 35, 132),
+(2246, 19, 3, 36, 132),
+(2247, 21, 1, 34, 133),
+(2248, 20, 1, 35, 133),
+(2249, 24, 1, 36, 133),
+(2250, 15, 2, 34, 133),
+(2251, 16, 2, 35, 133),
+(2252, 19, 2, 36, 133),
+(2253, 25, 3, 34, 133),
+(2254, 22, 3, 35, 133),
+(2255, 23, 3, 36, 133),
+(2256, 22, 1, 34, 134),
+(2257, 20, 1, 35, 134),
+(2258, 25, 1, 36, 134),
+(2259, 19, 2, 34, 134),
+(2260, 16, 2, 35, 134),
+(2261, 15, 2, 36, 134),
+(2262, 21, 3, 34, 134),
+(2263, 24, 3, 35, 134),
+(2264, 23, 3, 36, 134),
+(2265, 24, 1, 34, 135),
+(2266, 15, 1, 35, 135),
+(2267, 20, 1, 36, 135),
+(2268, 25, 2, 34, 135),
+(2269, 22, 2, 35, 135),
+(2270, 23, 2, 36, 135),
+(2271, 16, 3, 34, 135),
+(2272, 21, 3, 35, 135),
+(2273, 19, 3, 36, 135),
+(2274, 24, 1, 34, 136),
+(2275, 23, 1, 35, 136),
+(2276, 22, 1, 36, 136),
+(2277, 21, 2, 34, 136),
+(2278, 20, 2, 35, 136),
+(2279, 19, 2, 36, 136),
+(2280, 15, 3, 34, 136),
+(2281, 25, 3, 35, 136),
+(2282, 16, 3, 36, 136),
+(2283, 15, 1, 34, 137),
+(2284, 24, 1, 35, 137),
+(2285, 22, 1, 36, 137),
+(2286, 25, 2, 34, 137),
+(2287, 19, 2, 35, 137),
+(2288, 23, 2, 36, 137),
+(2289, 21, 3, 34, 137),
+(2290, 16, 3, 35, 137),
+(2291, 20, 3, 36, 137),
+(2292, 23, 1, 34, 138),
+(2293, 20, 1, 35, 138),
+(2294, 24, 1, 36, 138),
+(2295, 19, 2, 34, 138),
+(2296, 16, 2, 35, 138),
+(2297, 22, 2, 36, 138),
+(2298, 25, 3, 34, 138),
+(2299, 15, 3, 35, 138),
+(2300, 21, 3, 36, 138),
+(2301, 21, 1, 34, 139),
+(2302, 20, 1, 35, 139),
+(2303, 19, 1, 36, 139),
+(2304, 15, 2, 34, 139),
+(2305, 16, 2, 35, 139),
+(2306, 22, 2, 36, 139),
+(2307, 25, 3, 34, 139),
+(2308, 23, 3, 35, 139),
+(2309, 24, 3, 36, 139),
+(2310, 20, 1, 34, 140),
+(2311, 19, 1, 35, 140),
+(2312, 16, 1, 36, 140),
+(2313, 15, 2, 34, 140),
+(2314, 21, 2, 35, 140),
+(2315, 24, 2, 36, 140),
+(2316, 25, 3, 34, 140),
+(2317, 23, 3, 35, 140),
+(2318, 22, 3, 36, 140),
+(2319, 20, 1, 34, 141),
+(2320, 15, 1, 35, 141),
+(2321, 16, 1, 36, 141),
+(2322, 21, 2, 34, 141),
+(2323, 25, 2, 35, 141),
+(2324, 22, 2, 36, 141),
+(2325, 24, 3, 34, 141),
+(2326, 19, 3, 35, 141),
+(2327, 23, 3, 36, 141),
+(2328, 15, 1, 34, 142),
+(2329, 20, 1, 35, 142),
+(2330, 23, 1, 36, 142),
+(2331, 22, 2, 34, 142),
+(2332, 21, 2, 35, 142),
+(2333, 19, 2, 36, 142),
+(2334, 24, 3, 34, 142),
+(2335, 16, 3, 35, 142),
+(2336, 25, 3, 36, 142),
+(2337, 16, 1, 34, 143),
+(2338, 24, 1, 35, 143),
+(2339, 22, 1, 36, 143),
+(2340, 20, 2, 34, 143),
+(2341, 15, 2, 35, 143),
+(2342, 21, 2, 36, 143),
+(2343, 19, 3, 34, 143),
+(2344, 23, 3, 35, 143),
+(2345, 25, 3, 36, 143),
+(2346, 22, 1, 34, 144),
+(2347, 20, 1, 35, 144),
+(2348, 25, 1, 36, 144),
+(2349, 19, 2, 34, 144),
+(2350, 20, 2, 35, 144),
+(2351, 24, 2, 36, 144),
+(2352, 23, 3, 34, 144),
+(2353, 21, 3, 35, 144),
+(2354, 15, 3, 36, 144),
+(2355, 19, 1, 34, 145),
+(2356, 21, 1, 35, 145),
+(2357, 25, 1, 36, 145),
+(2358, 15, 2, 34, 145),
+(2359, 16, 2, 35, 145),
+(2360, 24, 2, 36, 145),
+(2361, 20, 3, 34, 145),
+(2362, 23, 3, 35, 145),
+(2363, 22, 3, 36, 145),
+(2364, 15, 1, 34, 146),
+(2365, 16, 1, 35, 146),
+(2366, 23, 1, 36, 146),
+(2367, 21, 2, 34, 146),
+(2368, 22, 2, 35, 146),
+(2369, 25, 2, 36, 146),
+(2370, 19, 3, 34, 146),
+(2371, 20, 3, 35, 146),
+(2372, 24, 3, 36, 146),
+(2373, 15, 1, 34, 147),
+(2374, 16, 1, 35, 147),
+(2375, 19, 1, 36, 147),
+(2376, 21, 2, 34, 147),
+(2377, 24, 2, 35, 147),
+(2378, 23, 2, 36, 147),
+(2379, 22, 3, 34, 147),
+(2380, 25, 3, 35, 147),
+(2381, 20, 3, 36, 147),
+(2382, 19, 1, 34, 148),
+(2383, 15, 1, 35, 148),
+(2384, 16, 1, 36, 148),
+(2385, 25, 2, 34, 148),
+(2386, 21, 2, 35, 148),
+(2387, 20, 2, 36, 148),
+(2388, 24, 3, 34, 148),
+(2389, 22, 3, 35, 148),
+(2390, 23, 3, 36, 148),
+(2391, 19, 1, 34, 149),
+(2392, 21, 1, 35, 149),
+(2393, 25, 1, 36, 149),
+(2394, 24, 2, 34, 149),
+(2395, 16, 2, 35, 149),
+(2396, 23, 2, 36, 149),
+(2397, 22, 3, 34, 149),
+(2398, 15, 3, 35, 149),
+(2399, 20, 3, 36, 149),
+(2400, 25, 1, 34, 150),
+(2401, 15, 1, 35, 150),
+(2402, 16, 1, 36, 150),
+(2403, 23, 2, 34, 150),
+(2404, 19, 2, 35, 150),
+(2405, 21, 2, 36, 150),
+(2406, 22, 3, 34, 150),
+(2407, 20, 3, 35, 150),
+(2408, 24, 3, 36, 150),
+(2409, 19, 1, 34, 151),
+(2410, 22, 1, 35, 151),
+(2411, 25, 1, 36, 151),
+(2412, 15, 2, 34, 151),
+(2413, 24, 2, 35, 151),
+(2414, 21, 2, 36, 151),
+(2415, 16, 3, 34, 151),
+(2416, 23, 3, 35, 151),
+(2417, 20, 3, 36, 151);
 
 -- --------------------------------------------------------
 
@@ -435,67 +330,36 @@ CREATE TABLE `calendrier` (
 --
 
 INSERT INTO `calendrier` (`id`, `date`, `statut`, `mois`, `annee`) VALUES
-(61, '2025-04-01', 'disponible', 4, 2025),
-(62, '2025-04-02', 'disponible', 4, 2025),
-(63, '2025-04-03', 'disponible', 4, 2025),
-(64, '2025-04-04', 'disponible', 4, 2025),
-(65, '2025-04-05', 'disponible', 4, 2025),
-(66, '2025-04-06', 'disponible', 4, 2025),
-(67, '2025-04-07', 'disponible', 4, 2025),
-(68, '2025-04-08', 'disponible', 4, 2025),
-(69, '2025-04-09', 'disponible', 4, 2025),
-(70, '2025-04-10', 'disponible', 4, 2025),
-(71, '2025-04-11', 'disponible', 4, 2025),
-(72, '2025-04-12', 'disponible', 4, 2025),
-(73, '2025-04-13', 'disponible', 4, 2025),
-(74, '2025-04-14', 'disponible', 4, 2025),
-(75, '2025-04-15', 'disponible', 4, 2025),
-(76, '2025-04-16', 'disponible', 4, 2025),
-(77, '2025-04-17', 'disponible', 4, 2025),
-(78, '2025-04-18', 'disponible', 4, 2025),
-(79, '2025-04-19', 'disponible', 4, 2025),
-(80, '2025-04-20', 'disponible', 4, 2025),
-(81, '2025-04-21', 'disponible', 4, 2025),
-(82, '2025-04-22', 'disponible', 4, 2025),
-(83, '2025-04-23', 'disponible', 4, 2025),
-(84, '2025-04-24', 'disponible', 4, 2025),
-(85, '2025-04-25', 'disponible', 4, 2025),
-(86, '2025-04-26', 'disponible', 4, 2025),
-(87, '2025-04-27', 'disponible', 4, 2025),
-(88, '2025-04-28', 'disponible', 4, 2025),
-(89, '2025-04-29', 'disponible', 4, 2025),
-(90, '2025-04-30', 'disponible', 4, 2025),
-(91, '2025-05-01', 'disponible', 5, 2025),
-(92, '2025-05-02', 'disponible', 5, 2025),
-(93, '2025-05-03', 'disponible', 5, 2025),
-(94, '2025-05-04', 'disponible', 5, 2025),
-(95, '2025-05-05', 'disponible', 5, 2025),
-(96, '2025-05-06', 'disponible', 5, 2025),
-(97, '2025-05-07', 'disponible', 5, 2025),
-(98, '2025-05-08', 'disponible', 5, 2025),
-(99, '2025-05-09', 'disponible', 5, 2025),
-(100, '2025-05-10', 'disponible', 5, 2025),
-(101, '2025-05-11', 'disponible', 5, 2025),
-(102, '2025-05-12', 'disponible', 5, 2025),
-(103, '2025-05-13', 'disponible', 5, 2025),
-(104, '2025-05-14', 'disponible', 5, 2025),
-(105, '2025-05-15', 'disponible', 5, 2025),
-(106, '2025-05-16', 'disponible', 5, 2025),
-(107, '2025-05-17', 'disponible', 5, 2025),
-(108, '2025-05-18', 'disponible', 5, 2025),
-(109, '2025-05-19', 'disponible', 5, 2025),
-(110, '2025-05-20', 'disponible', 5, 2025),
-(111, '2025-05-21', 'disponible', 5, 2025),
-(112, '2025-05-22', 'disponible', 5, 2025),
-(113, '2025-05-23', 'disponible', 5, 2025),
-(114, '2025-05-24', 'disponible', 5, 2025),
-(115, '2025-05-25', 'disponible', 5, 2025),
-(116, '2025-05-26', 'disponible', 5, 2025),
-(117, '2025-05-27', 'disponible', 5, 2025),
-(118, '2025-05-28', 'disponible', 5, 2025),
-(119, '2025-05-29', 'disponible', 5, 2025),
-(120, '2025-05-30', 'disponible', 5, 2025),
-(121, '2025-05-31', 'disponible', 5, 2025);
+(122, '2025-04-01', 'disponible', 4, 2025),
+(123, '2025-04-02', 'disponible', 4, 2025),
+(124, '2025-04-03', 'disponible', 4, 2025),
+(125, '2025-04-04', 'disponible', 4, 2025),
+(126, '2025-04-05', 'disponible', 4, 2025),
+(127, '2025-04-06', 'disponible', 4, 2025),
+(128, '2025-04-07', 'disponible', 4, 2025),
+(129, '2025-04-08', 'disponible', 4, 2025),
+(130, '2025-04-09', 'disponible', 4, 2025),
+(131, '2025-04-10', 'disponible', 4, 2025),
+(132, '2025-04-11', 'disponible', 4, 2025),
+(133, '2025-04-12', 'disponible', 4, 2025),
+(134, '2025-04-13', 'disponible', 4, 2025),
+(135, '2025-04-14', 'disponible', 4, 2025),
+(136, '2025-04-15', 'disponible', 4, 2025),
+(137, '2025-04-16', 'disponible', 4, 2025),
+(138, '2025-04-17', 'disponible', 4, 2025),
+(139, '2025-04-18', 'disponible', 4, 2025),
+(140, '2025-04-19', 'disponible', 4, 2025),
+(141, '2025-04-20', 'disponible', 4, 2025),
+(142, '2025-04-21', 'disponible', 4, 2025),
+(143, '2025-04-22', 'disponible', 4, 2025),
+(144, '2025-04-23', 'disponible', 4, 2025),
+(145, '2025-04-24', 'disponible', 4, 2025),
+(146, '2025-04-25', 'disponible', 4, 2025),
+(147, '2025-04-26', 'disponible', 4, 2025),
+(148, '2025-04-27', 'disponible', 4, 2025),
+(149, '2025-04-28', 'disponible', 4, 2025),
+(150, '2025-04-29', 'disponible', 4, 2025),
+(151, '2025-04-30', 'disponible', 4, 2025);
 
 -- --------------------------------------------------------
 
@@ -524,7 +388,20 @@ INSERT INTO `details_credits` (`id`, `id_utilisateur`, `type_credit`, `solde_cre
 (2, 13, 'organisationnelle', 185.00, '2025-04-10', 30, 415.00, 'actif', 400.00, '2025-04-16 19:06:03'),
 (3, 10, 'organisationnelle', 500.00, '2025-04-10', 30, 500.00, 'expiré', 0.00, '2025-04-18 03:43:13'),
 (4, 13, 'individuelle', 300.00, '2025-04-10', 1, NULL, 'expiré', NULL, NULL),
-(5, 9, 'individuelle', 300.00, '2025-04-25', 30, 60.00, 'actif', NULL, '2025-04-18 14:53:17');
+(5, 9, 'individuelle', 300.00, '2025-04-25', 30, 120.00, 'actif', 110.00, '2025-04-21 18:17:28'),
+(6, 10, 'individuelle', 500.00, '2025-04-24', 30, NULL, 'remboursé', 0.00, '2025-04-21 18:25:07');
+
+--
+-- Déclencheurs `details_credits`
+--
+DELIMITER $$
+CREATE TRIGGER `before_details_credits_insert` BEFORE INSERT ON `details_credits` FOR EACH ROW BEGIN
+    IF NEW.montant_restant IS NULL THEN
+        SET NEW.montant_restant = NEW.solde_credit;
+    END IF;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -551,7 +428,13 @@ CREATE TABLE `paiements_credits` (
 INSERT INTO `paiements_credits` (`id`, `reference_paiement`, `id_credit`, `id_utilisateur`, `montant_paye`, `montant_restant`, `date_paiement`, `mode_paiement`, `description`) VALUES
 (1, 'PAY-713926-205', 2, 13, 50.00, 450.00, '2025-04-16 18:48:33', 'especes', 'hyt'),
 (2, 'PAY-763060-263', 2, 13, 50.00, 400.00, '2025-04-16 19:06:03', 'especes', 'aa'),
-(3, 'PAY-678268-410', 3, 10, 20.00, 480.00, '2025-04-16 19:21:18', 'especes', 'uu');
+(3, 'PAY-678268-410', 3, 10, 20.00, 480.00, '2025-04-16 19:21:18', 'especes', 'uu'),
+(4, 'PAY-011405-645', 5, 9, 20.00, 220.00, '2025-04-21 18:03:31', 'especes', 'ZZ'),
+(5, 'PAY-082920-520', 5, 9, 20.00, 200.00, '2025-04-21 18:04:42', 'carte', 'a'),
+(6, 'PAY-137335-971', 5, 9, 20.00, 180.00, '2025-04-21 18:05:37', 'especes', 'Z'),
+(8, 'PAY-808660-435', 5, 9, 50.00, 130.00, '2025-04-21 18:16:48', 'especes', 'zz'),
+(9, 'PAY-848827-537', 5, 9, 20.00, 110.00, '2025-04-21 18:17:28', 'especes', 'S'),
+(10, 'PAY-307091-330', 6, 10, 500.00, 0.00, '2025-04-21 18:25:07', 'virement', 'J');
 
 -- --------------------------------------------------------
 
@@ -604,27 +487,27 @@ INSERT INTO `permissions` (`id`, `role`, `element_name`, `parent_element`, `is_v
 (30, 'client', 'Stock', NULL, 0),
 (31, 'gerant', 'Historique transactions', NULL, 0),
 (32, 'cogerant', 'Historique transactions', NULL, 0),
-(33, 'caissier', 'Historique transactions', NULL, 1),
+(33, 'caissier', 'Historique transactions', NULL, 0),
 (34, 'pompiste', 'Historique transactions', NULL, 0),
-(35, 'client', 'Historique transactions', NULL, 1),
+(35, 'client', 'Historique transactions', NULL, 0),
 (36, 'gerant', 'Saisie vente credit', NULL, 0),
 (37, 'cogerant', 'Saisie vente credit', NULL, 0),
 (38, 'caissier', 'Saisie vente credit', NULL, 0),
 (39, 'pompiste', 'Saisie vente credit', NULL, 1),
 (40, 'client', 'Saisie vente credit', NULL, 0),
-(41, 'gerant', 'Saisie Index fermeture', NULL, 0),
+(41, 'gerant', 'Saisie Index fermeture', 'Pompes', 0),
 (42, 'cogerant', 'Saisie Index fermeture', NULL, 0),
 (43, 'caissier', 'Saisie Index fermeture', NULL, 0),
 (44, 'pompiste', 'Saisie Index fermeture', NULL, 1),
 (45, 'client', 'Saisie Index fermeture', NULL, 0),
 (69, 'gerant', 'Créer compte', 'Utilisateurs', 1),
 (70, 'cogerant', 'Créer compte', 'Utilisateurs', 1),
-(71, 'caissier', 'Créer compte', 'Utilisateurs', 1),
+(71, 'caissier', 'Créer compte', 'Utilisateurs', 0),
 (72, 'pompiste', 'Créer compte', 'Utilisateurs', 1),
 (73, 'client', 'Créer compte', 'Utilisateurs', 1),
 (74, 'gerant', 'Liste utilisateurs', 'Utilisateurs', 1),
-(75, 'cogerant', 'Liste utilisateurs', 'Utilisateurs', 1),
-(76, 'caissier', 'Liste utilisateurs', 'Utilisateurs', 1),
+(75, 'cogerant', 'Liste utilisateurs', 'Utilisateurs', 0),
+(76, 'caissier', 'Liste utilisateurs', 'Utilisateurs', 0),
 (77, 'pompiste', 'Liste utilisateurs', 'Utilisateurs', 1),
 (78, 'client', 'Liste utilisateurs', 'Utilisateurs', 1),
 (79, 'gerant', 'Enregistrer crédit', 'Crédits', 1),
@@ -634,29 +517,34 @@ INSERT INTO `permissions` (`id`, `role`, `element_name`, `parent_element`, `is_v
 (83, 'client', 'Enregistrer crédit', 'Crédits', 1),
 (84, 'gerant', 'Enregistrer Véhicules', 'Crédits', 1),
 (85, 'cogerant', 'Enregistrer Véhicules', 'Crédits', 1),
-(86, 'caissier', 'Enregistrer Véhicules', 'Crédits', 1),
+(86, 'caissier', 'Enregistrer Véhicules', 'Crédits', 0),
 (87, 'pompiste', 'Enregistrer Véhicules', 'Crédits', 1),
 (88, 'client', 'Enregistrer Véhicules', 'Crédits', 1),
 (89, 'gerant', 'Historique des Paiements', 'Crédits', 1),
-(90, 'cogerant', 'Historique des Paiements', 'Crédits', 1),
-(91, 'caissier', 'Historique des Paiements', 'Crédits', 1),
+(90, 'cogerant', 'Historique des Paiements', 'Crédits', 0),
+(91, 'caissier', 'Historique des Paiements', 'Crédits', 0),
 (92, 'pompiste', 'Historique des Paiements', 'Crédits', 1),
 (93, 'client', 'Historique des Paiements', 'Crédits', 1),
-(94, 'gerant', 'Historique des Transactions', 'Crédits', 0),
+(94, 'gerant', 'Historique des Transactions', 'Crédits', 1),
 (95, 'cogerant', 'Historique des Transactions', 'Crédits', 0),
 (96, 'caissier', 'Historique des Transactions', 'Crédits', 0),
 (97, 'pompiste', 'Historique des Transactions', 'Crédits', 0),
 (98, 'client', 'Historique des Transactions', 'Crédits', 0),
 (99, 'gerant', 'Enregistrer pompe', 'Pompes', 1),
 (100, 'cogerant', 'Enregistrer pompe', 'Pompes', 1),
-(101, 'caissier', 'Enregistrer pompe', 'Pompes', 1),
+(101, 'caissier', 'Enregistrer pompe', 'Pompes', 0),
 (102, 'pompiste', 'Enregistrer pompe', 'Pompes', 1),
 (103, 'client', 'Enregistrer pompe', 'Pompes', 1),
 (104, 'gerant', 'Liste pompes', 'Pompes', 1),
 (105, 'cogerant', 'Liste pompes', 'Pompes', 1),
-(106, 'caissier', 'Liste pompes', 'Pompes', 1),
+(106, 'caissier', 'Liste pompes', 'Pompes', 0),
 (107, 'pompiste', 'Liste pompes', 'Pompes', 1),
-(108, 'client', 'Liste pompes', 'Pompes', 1);
+(108, 'client', 'Liste pompes', 'Pompes', 1),
+(109, 'caissier', 'Saisie Paiements', NULL, 1),
+(110, 'cogerant', 'Saisie Paiements', 'Crédits', 1),
+(111, 'gerant', 'Saisie Paiements', 'Crédits', 1),
+(112, 'gerant', 'Visualiser Revenues', 'Pompes', 1),
+(113, 'cogerant', 'Visualiser Revenues', 'Pompes', 1);
 
 -- --------------------------------------------------------
 
@@ -668,21 +556,26 @@ CREATE TABLE `pistolets` (
   `id` int(11) NOT NULL,
   `pompe_id` int(11) NOT NULL,
   `numero_pistolet` varchar(50) NOT NULL,
-  `index_ouverture` decimal(10,2) DEFAULT 0.00,
-  `index_fermeture` decimal(10,2) DEFAULT 0.00,
-  `statut` enum('disponible','indisponible') DEFAULT 'disponible',
+  `statut` enum('disponible','indisponible','maintenance') DEFAULT 'disponible',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `nom_produit` varchar(50) NOT NULL DEFAULT 'Sans nom',
+  `prix_unitaire` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `unite_mesure` varchar(10) DEFAULT 'Litre',
+  `date_dernier_index` date DEFAULT NULL,
+  `dernier_index` decimal(12,2) DEFAULT 0.00
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Déchargement des données de la table `pistolets`
 --
 
-INSERT INTO `pistolets` (`id`, `pompe_id`, `numero_pistolet`, `index_ouverture`, `index_fermeture`, `statut`, `created_at`, `updated_at`) VALUES
-(1, 30, 'PI02', 0.00, 0.00, 'disponible', '2025-04-14 20:27:21', '2025-04-14 20:27:21'),
-(2, 33, 'PI02', 0.00, 0.00, 'disponible', '2025-04-15 12:18:11', '2025-04-15 20:27:01'),
-(3, 33, 'PI03', 0.00, 0.00, 'indisponible', '2025-04-15 12:18:11', '2025-04-15 20:26:32');
+INSERT INTO `pistolets` (`id`, `pompe_id`, `numero_pistolet`, `statut`, `created_at`, `updated_at`, `nom_produit`, `prix_unitaire`, `unite_mesure`, `date_dernier_index`, `dernier_index`) VALUES
+(4, 34, 'PIII1', 'disponible', '2025-04-21 19:28:39', '2025-04-21 20:41:57', 'SP95', 2.50, 'Litre', NULL, 0.00),
+(5, 35, 'PI01', 'disponible', '2025-04-22 00:34:53', '2025-04-24 19:57:40', 'SP95', 2.50, 'Litre', '2025-04-24', 900.00),
+(6, 35, 'PI03', 'disponible', '2025-04-22 00:34:53', '2025-04-24 19:58:12', 'GPL', 2.70, 'Litre', '2025-04-24', 100.00),
+(7, 35, 'PI02', 'disponible', '2025-04-22 00:34:53', '2025-04-24 19:58:45', 'GAZOLE', 2.30, 'Litre', '2025-04-24', 200.00),
+(8, 36, 'PI04', 'disponible', '2025-04-22 00:39:26', '2025-04-23 21:28:07', 'SP95', 2.50, 'Litre', '2025-04-23', 600.00);
 
 -- --------------------------------------------------------
 
@@ -703,21 +596,9 @@ CREATE TABLE `pompes` (
 --
 
 INSERT INTO `pompes` (`id`, `numero_pompe`, `type_pompe`, `statut`, `created_at`) VALUES
-(12, 'P001', 'sans plomb', 'maintenance', '2025-04-08 21:50:46'),
-(13, 'P002', 'gasoil', 'reserve', '2025-04-08 23:50:55'),
-(14, 'P003', 'sans plomb', 'reserve', '2025-04-08 23:51:05'),
-(15, 'P004', 'multi-produits', 'reserve', '2025-04-08 23:51:16'),
-(16, 'P005', 'multi-produits', 'reserve', '2025-04-08 23:51:22'),
-(17, 'P008', 'multi-produits', 'reserve', '2025-04-14 18:46:26'),
-(19, 'P009', 'sans plomb', 'reserve', '2025-04-14 19:31:06'),
-(20, 'P010', 'sans plomb', 'reserve', '2025-04-14 20:00:56'),
-(21, 'P011', 'sans plomb', 'reserve', '2025-04-14 20:04:17'),
-(22, 'P090', 'sans plomb', 'reserve', '2025-04-14 20:06:30'),
-(25, 'P012', 'sans plomb', 'reserve', '2025-04-14 20:09:05'),
-(27, 'P013', 'sans plomb', 'reserve', '2025-04-14 20:10:58'),
-(28, 'P014', 'gasoil', 'reserve', '2025-04-14 20:25:51'),
-(30, 'P015', 'gasoil', 'reserve', '2025-04-14 20:27:21'),
-(33, 'P016', 'sans plomb', 'reserve', '2025-04-15 12:18:11');
+(34, 'P020', 'gasoil', 'reserve', '2025-04-21 18:28:39'),
+(35, 'P021', 'multi-produits', 'reserve', '2025-04-22 00:34:52'),
+(36, 'P022', 'sans plomb', 'reserve', '2025-04-22 00:39:26');
 
 -- --------------------------------------------------------
 
@@ -740,6 +621,63 @@ INSERT INTO `postes` (`id`, `nom`, `heure_debut`, `heure_fin`) VALUES
 (1, 'Matin', '06:00:00', '14:00:00'),
 (2, 'Après-midi', '14:00:00', '22:00:00'),
 (3, 'Nuit', '22:00:00', '06:00:00');
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `rapports_journaliers`
+--
+
+CREATE TABLE `rapports_journaliers` (
+  `id` int(11) NOT NULL,
+  `date_rapport` date NOT NULL,
+  `pistolet_id` int(11) NOT NULL,
+  `total_quantite` decimal(10,2) NOT NULL,
+  `total_montant` decimal(10,2) NOT NULL,
+  `nombre_postes` int(11) NOT NULL,
+  `date_generation` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `rapports_journaliers`
+--
+
+INSERT INTO `rapports_journaliers` (`id`, `date_rapport`, `pistolet_id`, `total_quantite`, `total_montant`, `nombre_postes`, `date_generation`) VALUES
+(8, '2025-04-23', 5, 400.00, 1000.00, 2, '2025-04-24 00:45:26'),
+(9, '2025-04-23', 6, 100.00, 270.00, 2, '2025-04-24 00:45:26'),
+(10, '2025-04-23', 7, 400.00, 920.00, 2, '2025-04-24 00:45:26'),
+(11, '2025-04-23', 8, 400.00, 1000.00, 2, '2025-04-24 00:45:26'),
+(12, '2025-04-24', 5, 200.00, 500.00, 1, '2025-04-24 21:11:11'),
+(13, '2025-04-24', 6, 100.00, 270.00, 1, '2025-04-24 21:11:11'),
+(14, '2025-04-24', 7, 200.00, 460.00, 1, '2025-04-24 21:11:11'),
+(15, '2025-04-25', 5, 500.00, 400.00, 1, '2025-04-24 21:25:40');
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `releves_postes`
+--
+
+CREATE TABLE `releves_postes` (
+  `id` int(11) NOT NULL,
+  `affectation_id` int(11) NOT NULL,
+  `pompiste_id` int(11) DEFAULT NULL,
+  `pistolet_id` int(11) NOT NULL,
+  `index_ouverture` decimal(12,2) NOT NULL CHECK (`index_ouverture` >= 0),
+  `index_fermeture` decimal(12,2) NOT NULL CHECK (`index_fermeture` >= `index_ouverture`),
+  `date_heure_saisie` datetime DEFAULT current_timestamp(),
+  `statut` enum('saisie','valide','annule') DEFAULT 'saisie'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `releves_postes`
+--
+
+INSERT INTO `releves_postes` (`id`, `affectation_id`, `pompiste_id`, `pistolet_id`, `index_ouverture`, `index_fermeture`, `date_heure_saisie`, `statut`) VALUES
+(12, 2353, NULL, 5, 400.00, 700.00, '2025-04-23 23:12:29', 'saisie'),
+(13, 2362, 23, 5, 700.00, 900.00, '2025-04-24 20:57:40', 'saisie'),
+(14, 2362, 23, 6, 0.00, 100.00, '2025-04-24 20:58:12', 'saisie'),
+(15, 2362, 23, 7, 0.00, 200.00, '2025-04-24 20:58:45', 'saisie');
 
 -- --------------------------------------------------------
 
@@ -815,11 +753,17 @@ CREATE TABLE `utilisateurs` (
 INSERT INTO `utilisateurs` (`id`, `username`, `email`, `numero_telephone`, `password`, `role`, `temps_de_creation`, `status`, `photo`) VALUES
 (9, 'john', 'johndoe@example.com', '1234567898', '$2b$10$ZTs0/GYkUz4R3c6.fqQbQuOaWbmaH0CJa9NCIlADeiDvF7e.urmFO', 'client', '2025-03-14 14:42:46', 'active', NULL),
 (10, 'mahdov', 'jo@example.com', '1267898883', '$2b$10$r78JXVlJc7FO6ST/HS.o8ubQhjyFERrn/GfTlQzmvxcazkfl.pvWO', 'client', '2025-03-14 15:26:28', 'active', NULL),
-(13, 'Mahdi Bey', 'mahdibeyy202@gmail.com', '56327280', '$2b$10$djxErd2eHbhS0PKTK4PuXeE/Y/JQvqmppg7kk2t0R6RjSSQLRbzO6', 'client', '2025-03-14 16:45:22', 'active', NULL),
+(13, 'Mahdi Bey', 'cncservice2018@gmail.com', '56327280', '$2b$10$I.ack14P/JALNplUd9i3NuR6w/fys71k9DVysmRUSxk9QrDIOGWGi', 'client', '2025-03-14 16:45:22', 'active', '/images/nbg.png'),
 (14, 'Ahmed Zamma', 'mahdibeyy@gmail.com', '56327237', '$2b$10$3qvhoX.KKYtvZ5sIzXrgIORhFSgWR4XsR71VwaMGeiEcj.9her1/O', 'gerant', '2025-03-17 13:43:35', 'active', '/images/nbg.png'),
 (15, 'Ahmed Bey', 'mahdibey2002@gmail.com', '56327210', '$2b$10$0NjolxaLuID7fcKfLy8sOOYShGEjARg3L9BQN9spbEcnv8RkyrWZq', 'pompiste', '2025-03-17 20:55:51', 'active', NULL),
 (16, 'mahdi', 'newuser@example.com', '12345678', '$2b$10$1d0Yfs65TEqFFE5acBSGb.QP7xQWQv6RcKzFGJFLVytMV8i5Pdhzm', 'pompiste', '2025-03-29 10:18:29', 'active', NULL),
-(19, 'Mariem Baccouche', 'baccouche.mariem.iset@gmail.com', '98830579', '$2b$10$OVCe4SOpRX94g4aE7AyFC.XJbOaw8A3InOVVy5AyLJ.lVyPqJ0wlm', 'pompiste', '2025-04-14 13:37:31', 'active', NULL);
+(19, 'Mariem Baccouche', 'baccouche.mariem.iset@gmail.com', '98830579', '$2b$10$OVCe4SOpRX94g4aE7AyFC.XJbOaw8A3InOVVy5AyLJ.lVyPqJ0wlm', 'pompiste', '2025-04-14 13:37:31', 'active', NULL),
+(20, 'Mario Balotelli', 'SuperMario45@gmail.com', '1234567890', '$2b$10$IMKRHiru0FvkPr72Uv2D1efDlfNfkLfmsswC9bnTLtizCbK.O.9W2', 'pompiste', '2025-04-22 00:40:25', 'active', NULL),
+(21, 'Edin Dzeko', 'Edindzeko9@gmail.com', '54209180', '$2b$10$asZ.b8ntHVVZNyhQNdaFzusc/jPtNhD1S1EzdDdQHNPYqorcaXjzu', 'pompiste', '2025-04-22 00:41:20', 'active', NULL),
+(22, 'Lautaro Martinez', 'LautaroMartinez9@gmail.com', '54209183', '$2b$10$jEz5RXNjm7Pc/75TjMV0yO5O0mj0ijKc1uaNnTs/rPfacGOQsz6Vi', 'pompiste', '2025-04-22 00:41:55', 'active', NULL),
+(23, 'Nicolo Barella', 'NicoloBarella9@gmail.com', '54209187', '$2b$10$Jxx6.XusstHPy8I3DS.uB.dGpxuOvwC8jSZpeo26JSUpCjodHCA5.', 'pompiste', '2025-04-22 00:42:26', 'active', NULL),
+(24, 'Hannibal Mejbri', 'HannibalMejbri9@gmail.com', '54209182', '$2b$10$Q.7O5BjpJbkHDwDI.z8KwOepeNpmjeVLAPMNL8k1m4O.lW6ZGyWty', 'pompiste', '2025-04-22 00:43:11', 'active', NULL),
+(25, 'Radhouane Falhi', 'RadhouaneFalhi9@gmail.com', '54209181', '$2b$10$hdhts5/ARh4RjGADK/FUjONFaBrpnJdeD.Gm0N/D/5lCemMrWEOAK', 'pompiste', '2025-04-22 00:44:07', 'active', NULL);
 
 -- --------------------------------------------------------
 
@@ -917,6 +861,22 @@ ALTER TABLE `postes`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Index pour la table `rapports_journaliers`
+--
+ALTER TABLE `rapports_journaliers`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `pistolet_id` (`pistolet_id`),
+  ADD KEY `date_rapport` (`date_rapport`);
+
+--
+-- Index pour la table `releves_postes`
+--
+ALTER TABLE `releves_postes`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `affectation_id` (`affectation_id`),
+  ADD KEY `pistolet_id` (`pistolet_id`);
+
+--
 -- Index pour la table `transactions`
 --
 ALTER TABLE `transactions`
@@ -951,49 +911,61 @@ ALTER TABLE `vehicules`
 -- AUTO_INCREMENT pour la table `affectations`
 --
 ALTER TABLE `affectations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1338;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2418;
 
 --
 -- AUTO_INCREMENT pour la table `calendrier`
 --
 ALTER TABLE `calendrier`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=122;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=152;
 
 --
 -- AUTO_INCREMENT pour la table `details_credits`
 --
 ALTER TABLE `details_credits`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT pour la table `paiements_credits`
 --
 ALTER TABLE `paiements_credits`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT pour la table `permissions`
 --
 ALTER TABLE `permissions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=132;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=114;
 
 --
 -- AUTO_INCREMENT pour la table `pistolets`
 --
 ALTER TABLE `pistolets`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT pour la table `pompes`
 --
 ALTER TABLE `pompes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT pour la table `postes`
 --
 ALTER TABLE `postes`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT pour la table `rapports_journaliers`
+--
+ALTER TABLE `rapports_journaliers`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+
+--
+-- AUTO_INCREMENT pour la table `releves_postes`
+--
+ALTER TABLE `releves_postes`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT pour la table `transactions`
@@ -1005,7 +977,7 @@ ALTER TABLE `transactions`
 -- AUTO_INCREMENT pour la table `utilisateurs`
 --
 ALTER TABLE `utilisateurs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT pour la table `vehicules`
@@ -1044,6 +1016,19 @@ ALTER TABLE `paiements_credits`
 --
 ALTER TABLE `pistolets`
   ADD CONSTRAINT `pistolets_ibfk_1` FOREIGN KEY (`pompe_id`) REFERENCES `pompes` (`id`);
+
+--
+-- Contraintes pour la table `rapports_journaliers`
+--
+ALTER TABLE `rapports_journaliers`
+  ADD CONSTRAINT `rapports_journaliers_ibfk_1` FOREIGN KEY (`pistolet_id`) REFERENCES `pistolets` (`id`);
+
+--
+-- Contraintes pour la table `releves_postes`
+--
+ALTER TABLE `releves_postes`
+  ADD CONSTRAINT `releves_postes_ibfk_1` FOREIGN KEY (`affectation_id`) REFERENCES `affectations` (`id`),
+  ADD CONSTRAINT `releves_postes_ibfk_2` FOREIGN KEY (`pistolet_id`) REFERENCES `pistolets` (`id`);
 
 --
 -- Contraintes pour la table `transactions`

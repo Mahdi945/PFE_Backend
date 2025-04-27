@@ -89,6 +89,25 @@ getPompesByFilters: (numero_pompe, statut, type_pompe) => {
 
   return db.execute(query, values);
 },
+getPompeStats: async () => {
+  const query = `
+    SELECT 
+      p.id,
+      p.numero_pompe,
+      p.type_pompe,
+      p.statut,
+      COUNT(pt.id) AS nombre_pistolets,
+      SUM(CASE WHEN pt.statut = 'disponible' THEN 1 ELSE 0 END) AS pistolets_disponibles,
+      SUM(CASE WHEN pt.statut = 'indisponible' THEN 1 ELSE 0 END) AS pistolets_indisponibles,
+      SUM(CASE WHEN pt.statut = 'maintenance' THEN 1 ELSE 0 END) AS pistolets_maintenance,
+      GROUP_CONCAT(pt.numero_pistolet ORDER BY pt.numero_pistolet SEPARATOR ', ') AS numeros_pistolets
+    FROM pompes p
+    LEFT JOIN pistolets pt ON p.id = pt.pompe_id
+    GROUP BY p.id
+  `;
+  return db.execute(query);
+}
+
 };
 
 export default Pompe;

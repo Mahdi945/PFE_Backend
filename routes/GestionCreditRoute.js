@@ -47,4 +47,5 @@ router.get('/dashboard/transaction-stats/:id_utilisateur', TransactionController
 router.get('/dashboard/recent-transactions/:id_utilisateur', TransactionController.getRecentTransactions);
 
 router.get('/dashboard/client/:id_utilisateur', DashboardController.getClientDashboard);
+router.get('/dashboard/gerant', DashboardController.getGerantDashboard);
 export default router;

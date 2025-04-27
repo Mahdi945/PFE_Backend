@@ -35,12 +35,11 @@ const User = {
     const query = `SELECT * FROM utilisateurs ORDER BY ${sortBy}`;
     return db.execute(query);
   },
-// Méthode pour récupérer tous les utilisateurs sauf ceux avec le rôle 'gerant'
-findAll: () => {
-  const query = "SELECT id, username, email, numero_telephone, role,temps_de_creation,status,photo FROM utilisateurs WHERE role != 'gerant'";
-  return db.execute(query);
-}
-,
+  // Méthode pour récupérer tous les utilisateurs sauf ceux avec le rôle 'gerant'
+  findAll: () => {
+    const query = "SELECT id, username, email, numero_telephone, role,temps_de_creation,status,photo FROM utilisateurs WHERE role != 'gerant'";
+    return db.execute(query);
+  },
   
   findOne: (criteria) => {
     let query = 'SELECT id, username, email, numero_telephone, role, photo FROM utilisateurs WHERE ';
@@ -132,6 +131,94 @@ updateUserPhoto: (userId, photoPath) => {
   const query = 'UPDATE utilisateurs SET photo = ? WHERE id = ?';
   return db.execute(query, [photoPath, userId]);
 },
+getUserStats: async (filter = {}) => {
+  let query = `
+    SELECT 
+      COUNT(*) AS total_users,
+      COUNT(CASE WHEN status = 'active' THEN 1 END) AS active_users,
+      COUNT(CASE WHEN status = 'inactive' THEN 1 END) AS inactive_users,
+      COUNT(CASE WHEN role = 'client' THEN 1 END) AS clients,
+      COUNT(CASE WHEN role = 'pompiste' THEN 1 END) AS pompistes,
+      COUNT(CASE WHEN role = 'gerant' THEN 1 END) AS gerants,
+      COUNT(CASE WHEN role = 'Cogerant' THEN 1 END) AS cogerants
+    FROM utilisateurs
+    WHERE 1=1
+  `;
+
+  const params = [];
+
+  // Gestion des filtres avec validation des dates
+  if (filter.type === 'day') {
+    query += ' AND DATE(temps_de_creation) = CURDATE()';
+  } else if (filter.type === 'month' && filter.month && filter.year) {
+    query += ' AND MONTH(temps_de_creation) = ? AND YEAR(temps_de_creation) = ?';
+    params.push(parseInt(filter.month), parseInt(filter.year));
+  } else if (filter.type === 'year' && filter.year) {
+    query += ' AND YEAR(temps_de_creation) = ?';
+    params.push(parseInt(filter.year));
+  } else if (filter.startDate && filter.endDate) {
+    // Validation des formats de date
+    if (this.isValidDate(filter.startDate) && this.isValidDate(filter.endDate)) {
+      query += ' AND DATE(temps_de_creation) BETWEEN ? AND ?';
+      params.push(filter.startDate, filter.endDate);
+    } else {
+      throw new Error('Format de date invalide');
+    }
+  }
+
+  // Exécution sécurisée
+  try {
+    const [result] = await db.execute(query, params);
+    return [result];
+  } catch (error) {
+    console.error('Erreur SQL:', error);
+    throw error;
+  }
+},
+
+// Validation du format de date (YYYY-MM-DD)
+isValidDate(dateString) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(dateString);
+},
+// Nouveaux utilisateurs par période
+getNewUsersByPeriod: async (period = 'day') => {
+  let dateCondition = '';
+  switch(period) {
+    case 'day':
+      dateCondition = 'DATE(temps_de_creation) = CURDATE()';
+      break;
+    case 'month':
+      dateCondition = 'MONTH(temps_de_creation) = MONTH(CURDATE()) AND YEAR(temps_de_creation) = YEAR(CURDATE())';
+      break;
+    case 'year':
+      dateCondition = 'YEAR(temps_de_creation) = YEAR(CURDATE())';
+      break;
+    default:
+      dateCondition = 'DATE(temps_de_creation) = CURDATE()';
+  }
+
+  const query = `
+    SELECT 
+      COUNT(*) AS count,
+      role
+    FROM utilisateurs
+    WHERE ${dateCondition}
+    GROUP BY role
+  `;
+  return db.execute(query);
+},
+// Dans models/User.js
+getNewUsers: async () => {
+  const query = `
+    SELECT 
+      COUNT(*) AS count,
+      role
+    FROM utilisateurs
+    WHERE DATE(temps_de_creation) = CURDATE()
+    GROUP BY role
+  `;
+  return db.execute(query);
+}
 
   
 

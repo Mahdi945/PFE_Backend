@@ -5,51 +5,103 @@ import dotenv from 'dotenv';
 import nodemailer from 'nodemailer';
 import multer from 'multer';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 // Charge les variables d'environnement du fichier .env dans process.env
 dotenv.config();
 
-  // Configurer le transporteur nodemailer
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+// Configurer le transporteur nodemailer
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
-  const updateUserPhoto = async (req, res) => {
-    console.log('Début de la mise à jour de la photo de profil');
-  
-    // Vérifiez si l'utilisateur et le fichier existent
-    const userId = req.params.id;
-    console.log("ID utilisateur:", userId);  // ID de l'utilisateur dans la route
-    console.log("Chemin de l'image téléchargée:", req.file ? req.file.filename : 'Aucun fichier');
-  
-    if (!req.file) {
-      console.log('Aucun fichier trouvé dans la requête');
-      return res.status(400).json({ message: 'Aucun fichier envoyé' });
-    }
-  
-    // Récupérer le chemin de l'image
-    const photoPath = `/images/${req.file.filename}`;
-    console.log(`Chemin de l'image téléchargée: ${photoPath}`);
-  
-    try {
-      // Mettre à jour la photo dans la base de données
-      console.log('Tentative de mise à jour de la photo dans la base de données...');
-      await User.updateUserPhoto(userId, photoPath); // Méthode à implémenter dans le modèle User
-  
-      console.log('Photo mise à jour avec succès');
-      res.status(200).json({ message: 'Photo mise à jour avec succès', photo: photoPath });
-    } catch (error) {
-      console.error('Erreur lors de la mise à jour de la photo:', error);
-      res.status(500).json({ message: error.message });
-    }
-  };
-  
+// Fonction pour générer un template email avec le logo
+const generateEmailTemplate = (title, content, actionLink = null, actionText = null) => {
+  return `
+    <div style="font-family: 'Poppins', 'Segoe UI', sans-serif; max-width: 650px; margin: 0 auto; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 30px rgba(0, 0, 0, 0.1);">
+      <!-- Header orange vif avec logo très grand -->
+      <div style="padding: 50px 20px; text-align: center; background: linear-gradient(135deg, #FF7F33 0%, #FF5E1A 100%);">
+        <img src="cid:logo" alt="Carbotrack Logo" style="height: 50px; width: auto; max-width: 100%;"/>
+      </div>
+      
+      <!-- Contenu principal -->
+      <div style="padding: 50px 40px; color: #333333; line-height: 1.6; background: #ffffff;">
+        <h1 style="color: #2c3e50; margin: 0 0 30px 0; font-size: 30px; font-weight: 600; text-align: center; letter-spacing: -0.5px;">
+          ${title}
+        </h1>
+        
+        <div style="font-size: 16px; color: #555555;">
+          ${content}
+        </div>
+        
+        ${actionLink && actionText ? `
+          <div style="text-align: center; margin: 50px 0 40px;">
+            <a href="${actionLink}" style="
+              display: inline-block;
+              padding: 18px 40px;
+              font-size: 17px;
+              color: #ffffff;
+              background: linear-gradient(135deg, #FF7F33 0%, #FF5E1A 100%);
+              text-decoration: none;
+              border-radius: 10px;
+              font-weight: 600;
+              transition: all 0.2s ease;
+              box-shadow: 0 4px 15px rgba(255, 126, 51, 0.3);
+            " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(255, 126, 51, 0.4)';" 
+            onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 15px rgba(255, 126, 51, 0.3)';">
+              ${actionText}
+            </a>
+          </div>
+        ` : ''}
+      </div>
+      
+      <!-- Footer léger -->
+      <div style="padding: 24px; text-align: center; font-size: 14px; color: #95a5a6; background: #f9f9f9;">
+        <p style="margin: 0;">
+          © ${new Date().getFullYear()} Carbotrack. Tous droits réservés.
+        </p>
+        <p style="margin: 8px 0 0;">
+          <a href="${process.env.FRONTEND_URL}" style="color: #7f8c8d; text-decoration: none; font-weight: 500;">Accéder à la plateforme</a>
+        </p>
+      </div>
+    </div>
+  `;
+};
 
 
+const updateUserPhoto = async (req, res) => {
+  console.log('Début de la mise à jour de la photo de profil');
+
+  // Vérifiez si l'utilisateur et le fichier existent
+  const userId = req.params.id;
+  console.log("ID utilisateur:", userId);  // ID de l'utilisateur dans la route
+  console.log("Chemin de l'image téléchargée:", req.file ? req.file.filename : 'Aucun fichier');
+
+  if (!req.file) {
+    console.log('Aucun fichier trouvé dans la requête');
+    return res.status(400).json({ message: 'Aucun fichier envoyé' });
+  }
+
+  // Récupérer le chemin de l'image
+  const photoPath = `/images/${req.file.filename}`;
+  console.log(`Chemin de l'image téléchargée: ${photoPath}`);
+
+  try {
+    // Mettre à jour la photo dans la base de données
+    console.log('Tentative de mise à jour de la photo dans la base de données...');
+    await User.updateUserPhoto(userId, photoPath); // Méthode à implémenter dans le modèle User
+
+    console.log('Photo mise à jour avec succès');
+    res.status(200).json({ message: 'Photo mise à jour avec succès', photo: photoPath });
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour de la photo:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
 
 // Fonction pour enregistrer un nouvel utilisateur et envoyer un email
 const registerUser = async (req, res) => {
@@ -87,20 +139,48 @@ const registerUser = async (req, res) => {
     // Ajouter l'utilisateur à la base de données
     await User.addUser(username, email || null, numero_telephone || null, hashedPassword, role);
 
+    const emailContent = `
+      <div style="margin-bottom: 40px; text-align: center;">
+        <p style="font-size: 18px; color: #FF7F33; margin-bottom: 30px;">
+          Votre compte a été créé avec succès !
+        </p>
+        
+        <div style="background: #FFF8F5; border: 1px solid #FFE8DE; padding: 25px; border-radius: 10px; text-align: left; max-width: 500px; margin: 0 auto;">
+          <p style="font-weight: 600; margin-bottom: 20px; color: #2c3e50; font-size: 17px;">Vos identifiants de connexion :</p>
+          
+          <div style="display: flex; margin-bottom: 15px; align-items: center;">
+            <div style="width: 150px; color: #7f8c8d; font-size: 15px;">Nom d'utilisateur</div>
+            <div style="font-weight: 600; color: #2c3e50; background: #f5f5f5; padding: 8px 12px; border-radius: 6px; flex-grow: 1;">${username}</div>
+          </div>
+          
+          <div style="display: flex; margin-bottom: 5px; align-items: center;">
+            <div style="width: 150px; color: #7f8c8d; font-size: 15px;">Mot de passe</div>
+            <div style="font-weight: 600; color: #2c3e50; background: #f5f5f5; padding: 8px 12px; border-radius: 6px; flex-grow: 1;">${password}</div>
+          </div>
+        </div>
+      </div>
+      
+      <div style="background: #F9F9F9; padding: 20px; border-radius: 8px; margin: 40px 0 30px 0;">
+        <p style="margin: 0; color: #666; font-size: 15px; text-align: center;">
+          <span style="color: #FF7F33; font-weight: 500;">Important :</span> Changez votre mot de passe temporaire dès votre première connexion.
+        </p>
+      </div>
+    `;
+
     // Envoi de l'email contenant les informations de l'utilisateur
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: `"Carbotrack" <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: 'Bienvenue sur notre plateforme',
-      html: `
-        <p>Bonjour ${username},</p>
-        <p>Bienvenue sur notre plateforme ! Voici vos informations de connexion :</p>
-        <p><strong>Nom d'utilisateur :</strong> ${username}</p>
-        <p><strong>Mot de passe :</strong> ${password}</p>
-        <p>Nous vous recommandons de changer votre mot de passe après votre première connexion pour plus de sécurité.</p>
-        <p>Cordialement,</p>
-        <p>L'équipe de support</p>
-      `,
+      subject: 'Bienvenue sur Carbotrack',
+      html: generateEmailTemplate(
+        'Bienvenue sur Carbotrack',
+        emailContent
+      ),
+      attachments: [{
+        filename: 'logobg.png',
+        path: path.join(process.cwd(), 'public', 'logobg.png'),
+        cid: 'logo'
+      }]
     };
 
     // Envoi de l'email
@@ -120,39 +200,39 @@ const registerUser = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-    const { id } = req.params;  // Récupérer l'ID depuis l'URL
-    const { username, email, numero_telephone, role } = req.body;  // Récupérer les données du corps de la requête
-  
-    try {
-      // Vérifier si l'utilisateur avec cet ID existe
-      const [existingUser] = await User.findById(id);  // Rechercher l'utilisateur par ID
-      if (!existingUser || existingUser.length === 0) {
-        return res.status(404).json({ message: 'Utilisateur non trouvé.' });
-      }
-  
-      // Préparer les données à mettre à jour
-      const updateData = {};
-  
-      // Ajouter seulement les champs non undefined
-      if (username !== undefined) updateData.username = username;
-      if (email !== undefined) updateData.email = email;
-      if (numero_telephone !== undefined) updateData.numero_telephone = numero_telephone;
-      if (role !== undefined) updateData.role = role;  // Mise à jour du rôle
-  
-      // Si aucun champ n'est fourni, renvoyer une erreur
-      if (Object.keys(updateData).length === 0) {
-        return res.status(400).json({ message: 'Aucune donnée à mettre à jour.' });
-      }
-  
-      // Mise à jour des informations de l'utilisateur
-      await User.updateUser(id, updateData);
-  
-      res.status(200).json({ message: 'Utilisateur mis à jour avec succès.' });
-    } catch (err) {
-      console.error('Erreur lors de la mise à jour de l\'utilisateur:', err);
-      res.status(500).json({ message: 'Erreur du serveur.' });
+  const { id } = req.params;  // Récupérer l'ID depuis l'URL
+  const { username, email, numero_telephone, role } = req.body;  // Récupérer les données du corps de la requête
+
+  try {
+    // Vérifier si l'utilisateur avec cet ID existe
+    const [existingUser] = await User.findById(id);  // Rechercher l'utilisateur par ID
+    if (!existingUser || existingUser.length === 0) {
+      return res.status(404).json({ message: 'Utilisateur non trouvé.' });
     }
-  };
+
+    // Préparer les données à mettre à jour
+    const updateData = {};
+
+    // Ajouter seulement les champs non undefined
+    if (username !== undefined) updateData.username = username;
+    if (email !== undefined) updateData.email = email;
+    if (numero_telephone !== undefined) updateData.numero_telephone = numero_telephone;
+    if (role !== undefined) updateData.role = role;  // Mise à jour du rôle
+
+    // Si aucun champ n'est fourni, renvoyer une erreur
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ message: 'Aucune donnée à mettre à jour.' });
+    }
+
+    // Mise à jour des informations de l'utilisateur
+    await User.updateUser(id, updateData);
+
+    res.status(200).json({ message: 'Utilisateur mis à jour avec succès.' });
+  } catch (err) {
+    console.error('Erreur lors de la mise à jour de l\'utilisateur:', err);
+    res.status(500).json({ message: 'Erreur du serveur.' });
+  }
+};
 
 // Fonction pour rechercher un utilisateur par email
 const getUserByEmail = async (req, res) => {
@@ -290,15 +370,13 @@ const loginUser = async (req, res) => {
 
     res.status(200).json({
       message: "Connexion réussie.",
-      user: { username: user.username, role: user.role, photo: user.photo  }  // Envoi de l'utilisateur avec son rôle
+      user: { username: user.username, role: user.role, photo: user.photo }  // Envoi de l'utilisateur avec son rôle
     });
   } catch (err) {
     console.error("Erreur lors de la connexion:", err);
     res.status(500).json({ message: "Erreur serveur." });
   }
 };
-
-
 
 // Fonction de déconnexion
 const logoutUser = (req, res) => {
@@ -310,8 +388,6 @@ const logoutUser = (req, res) => {
   return res.status(200).json({ message: 'Déconnexion réussie' });
 };
 
-
-
 const deactivateUser = async (req, res) => {
   const { id } = req.params;
   const { reason } = req.body;
@@ -321,14 +397,30 @@ const deactivateUser = async (req, res) => {
       return res.status(404).json({ message: 'Utilisateur non trouvé.' });
     }
     await User.updateUser(id, { status: 'inactive' });
+    
+    // Contenu de l'email de désactivation
+    const emailContent = `
+      <p>Bonjour ${user[0].username},</p>
+      <p>Votre compte Carbotrack a été désactivé pour la raison suivante :</p>
+      <p><em>${reason}</em></p>
+      <p>Si vous pensez qu'il s'agit d'une erreur, veuillez contacter notre équipe de support.</p>
+    `;
+
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: `"Carbotrack" <${process.env.EMAIL_USER}>`,
       to: user[0].email,
       subject: 'Votre compte a été désactivé',
-      html: `<p>Bonjour ${user[0].username},</p>
-             <p>Votre compte a été désactivé pour la raison suivante : ${reason}</p>
-             <p>Si vous pensez qu'il s'agit d'une erreur, veuillez contacter l'administrateur.</p>`
+      html: generateEmailTemplate(
+        'Compte désactivé',
+        emailContent
+      ),
+      attachments: [{
+        filename: 'logobg.png',
+        path: path.join(process.cwd(), 'public', 'logobg.png'),
+        cid: 'logo'
+      }]
     };
+
     transporter.sendMail(mailOptions);
     res.status(200).json({ message: 'Compte désactivé avec succès.' });
   } catch (err) {
@@ -345,13 +437,30 @@ const reactivateUser = async (req, res) => {
       return res.status(404).json({ message: 'Utilisateur non trouvé.' });
     }
     await User.updateUser(id, { status: 'active' });
+    
+    // Contenu de l'email de réactivation
+    const emailContent = `
+      <p>Bonjour ${user[0].username},</p>
+      <p>Votre compte Carbotrack a été réactivé avec succès.</p>
+      <p>Vous pouvez maintenant vous connecter à votre compte en utilisant vos identifiants habituels.</p>
+      <p>Si vous rencontrez des problèmes, n'hésitez pas à contacter notre équipe de support.</p>
+    `;
+
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: `"Carbotrack" <${process.env.EMAIL_USER}>`,
       to: user[0].email,
       subject: 'Votre compte a été réactivé',
-      html: `<p>Bonjour ${user[0].username},</p>
-             <p>Votre compte a été réactivé. Vous pouvez maintenant vous connecter.</p>`
+      html: generateEmailTemplate(
+        'Compte réactivé',
+        emailContent
+      ),
+      attachments: [{
+        filename: 'logobg.png',
+        path: path.join(process.cwd(), 'public', 'logobg.png'),
+        cid: 'logo'
+      }]
     };
+
     transporter.sendMail(mailOptions);
     res.status(200).json({ message: 'Compte réactivé avec succès.' });
   } catch (err) {
@@ -360,7 +469,6 @@ const reactivateUser = async (req, res) => {
   }
 };
 
-  
 // Accès aux données utilisateur protégées
 const getUserProfile = async (req, res) => {
   const user = req.user;
@@ -373,6 +481,7 @@ const getUserProfile = async (req, res) => {
 
   res.status(200).json(user); // Envoyer l'utilisateur avec l'URL de la photo
 };
+
 const updateUserProfile = async (req, res) => {
   try {
     const { id } = req.params; // Récupérer l'ID depuis l'URL
@@ -416,150 +525,211 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
+const requestPasswordReset = async (req, res) => {
+  const { email } = req.body;
 
-  
-  const requestPasswordReset = async (req, res) => {
-    const { email } = req.body;
-  
-    try {
-      // Vérifier si l'utilisateur existe
-      const [user] = await User.findByEmail(email);
-      if (!user || user.length === 0) {
-        return res.status(404).json({ message: 'Utilisateur non trouvé.' });
+  try {
+    // Vérifier si l'utilisateur existe
+    const [user] = await User.findByEmail(email);
+    if (!user || user.length === 0) {
+      return res.status(404).json({ message: 'Utilisateur non trouvé.' });
+    }
+
+    // Générer un token JWT pour la réinitialisation du mot de passe
+    const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '15m' });
+
+    // Construire le lien de réinitialisation
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+
+    // Contenu de l'email de réinitialisation
+    const emailContent = `
+      <p>Bonjour,</p>
+      <p>Vous avez demandé à réinitialiser votre mot de passe Carbotrack.</p>
+      <p>Cliquez sur le bouton ci-dessous pour définir un nouveau mot de passe :</p>
+      <p><small>Ce lien expirera dans 15 minutes.</small></p>
+    `;
+
+    // Options de l'email
+    const mailOptions = {
+      from: `"Carbotrack" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'Réinitialisation de votre mot de passe Carbotrack',
+      html: generateEmailTemplate(
+        'Réinitialisation de mot de passe',
+        emailContent,
+        resetLink,
+        'Réinitialiser le mot de passe'
+      ),
+      attachments: [{
+        filename: 'logobg.png',
+        path: path.join(process.cwd(), 'public', 'logobg.png'),
+        cid: 'logo'
+      }]
+    };
+
+    // Envoyer l'email
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('Erreur d\'envoi de l\'email:', error);
+        return res.status(500).json({ message: 'Erreur lors de l\'envoi de l\'email.' });
       }
-  
-      // Générer un token JWT pour la réinitialisation du mot de passe
-      const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '15m' });
-  
-      // Construire le lien de réinitialisation
-      const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
-  
-      // Contenu HTML de l'email avec un bouton stylé
-      const htmlContent = `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-          <h2 style="color: #4CAF50;">Réinitialisation de votre mot de passe</h2>
-          <p>Bonjour,</p>
-          <p>Vous avez demandé à réinitialiser votre mot de passe. Cliquez sur le bouton ci-dessous pour procéder :</p>
-          <a href="${resetLink}" style="
-            display: inline-block;
-            padding: 10px 20px;
-            font-size: 16px;
-            color: #fff;
-            background-color: #4CAF50;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 10px;
-          ">Réinitialiser le mot de passe</a>
-          <p style="margin-top: 20px;">Si vous n'avez pas demandé cette réinitialisation, veuillez ignorer cet email.</p>
-          <p>Merci,</p>
-          <p>L'équipe de support</p>
-        </div>
-      `;
-  
-      // Options de l'email
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: 'Réinitialisation de votre mot de passe',
-        html: htmlContent, // Utilisation du contenu HTML
-      };
-  
-      // Envoyer l'email
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          console.error('Erreur d\'envoi de l\'email:', error);
-          return res.status(500).json({ message: 'Erreur lors de l\'envoi de l\'email.' });
-        }
-        res.status(200).json({ message: 'Lien de réinitialisation envoyé avec succès.' });
-      });
-    } catch (err) {
-      console.error('Erreur lors de la demande de réinitialisation du mot de passe:', err);
-      res.status(500).json({ message: 'Erreur du serveur.' });
-    }
-  };
-  const updatePassword = async (req, res) => {
-    const { newPassword } = req.body;
-    const { token } = req.query; // Récupérer le token depuis l'URL
-
-    try {
-        if (!token) {
-            return res.status(400).json({ message: 'Token manquant.' });
-        }
-
-        let decoded;
-        try {
-            decoded = jwt.verify(token, process.env.JWT_SECRET);
-        } catch (error) {
-            return res.status(401).json({ message: 'Token invalide ou expiré.' });
-        }
-
-        const email = decoded.email;
-
-        const [user] = await User.findByEmail(email);
-        if (!user || user.length === 0) {
-            return res.status(404).json({ message: 'Utilisateur non trouvé.' });
-        }
-
-        if (!newPassword || newPassword.length < 8 || !/[A-Z]/.test(newPassword) || !/\d/.test(newPassword) || !/[\W_]/.test(newPassword)) {
-            return res.status(400).json({ message: 'Mot de passe non valide. Il doit contenir au moins 8 caractères, une majuscule, un chiffre et un caractère spécial.' });
-        }
-
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-        const updated = await User.updatePasswordByEmail(email, hashedPassword);
-
-        if (!updated) {
-            return res.status(500).json({ message: 'Erreur lors de la mise à jour du mot de passe.' });
-        }
-
-        res.status(200).json({ message: 'Mot de passe mis à jour avec succès.' });
-
-    } catch (error) {
-        console.error('Erreur de mise à jour du mot de passe:', error);
-        res.status(500).json({ message: 'Erreur du serveur. Veuillez réessayer plus tard.' });
-    }
+      res.status(200).json({ message: 'Lien de réinitialisation envoyé avec succès.' });
+    });
+  } catch (err) {
+    console.error('Erreur lors de la demande de réinitialisation du mot de passe:', err);
+    res.status(500).json({ message: 'Erreur du serveur.' });
+  }
 };
 
-    
-  // Fonction pour mettre à jour le mot de passe
-  const updatePasswordConnected = async (req, res) => {
-    const { newPassword } = req.body;
-  
-    try {
-      // Extraire le token du cookie HTTP-only
-      const token = req.cookies.jwt;
-      if (!token) {
-        return res.status(401).json({ message: 'Pas de token, accès non autorisé' });
-      }
-  
-      // Vérifier la validité du token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  
-      // Utiliser l'ID de l'utilisateur décodé plutôt que l'email
-      const userId = decoded.id;
-  
-      // Vérifier que l'utilisateur existe dans la base de données
-      const user = await User.findById(userId);  // Recherche par ID au lieu de l'email
-      if (!user) {
-        return res.status(404).json({ message: 'Utilisateur non trouvé.' });
-      }
-  
-      // Hacher le nouveau mot de passe
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-  
-      // Mettre à jour le mot de passe dans la base de données
-      await User.updatePasswordById(userId, hashedPassword);  // Mise à jour par ID
-  
-      res.status(200).json({ message: 'Mot de passe mis à jour avec succès.' });
-    } catch (error) {
-      console.error('Erreur de mise à jour du mot de passe:', error);
-      res.status(400).json({ message: 'Erreur lors de la mise à jour du mot de passe.' });
-    }
-  };
-  
-  
-  
-export default { updateUserPhoto,updateUserProfile,registerUser, loginUser,logoutUser,deactivateUser,reactivateUser,getUserProfile,requestPasswordReset, updateUser, updatePassword ,updatePasswordConnected, getUserByEmail, getUserByUsername, getUserByRole, deleteUser, getAllUsers };
+const updatePassword = async (req, res) => {
+  const { newPassword } = req.body;
+  const { token } = req.query; // Récupérer le token depuis l'URL
 
+  try {
+    if (!token) {
+      return res.status(400).json({ message: 'Token manquant.' });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (error) {
+      return res.status(401).json({ message: 'Token invalide ou expiré.' });
+    }
+
+    const email = decoded.email;
+
+    const [user] = await User.findByEmail(email);
+    if (!user || user.length === 0) {
+      return res.status(404).json({ message: 'Utilisateur non trouvé.' });
+    }
+
+    if (!newPassword || newPassword.length < 8 || !/[A-Z]/.test(newPassword) || !/\d/.test(newPassword) || !/[\W_]/.test(newPassword)) {
+      return res.status(400).json({ message: 'Mot de passe non valide. Il doit contenir au moins 8 caractères, une majuscule, un chiffre et un caractère spécial.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const updated = await User.updatePasswordByEmail(email, hashedPassword);
+
+    if (!updated) {
+      return res.status(500).json({ message: 'Erreur lors de la mise à jour du mot de passe.' });
+    }
+
+    // Envoyer un email de confirmation
+    const emailContent = `
+      <p>Bonjour ${user[0].username},</p>
+      <p>Votre mot de passe Carbotrack a été mis à jour avec succès.</p>
+      <p>Si vous n'avez pas effectué cette action, veuillez contacter immédiatement notre équipe de support.</p>
+    `;
+
+    const mailOptions = {
+      from: `"Carbotrack" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'Confirmation de changement de mot de passe',
+      html: generateEmailTemplate(
+        'Mot de passe mis à jour',
+        emailContent
+      ),
+      attachments: [{
+        filename: 'logobg.png',
+        path: path.join(process.cwd(), 'public', 'logobg.png'),
+        cid: 'logo'
+      }]
+    };
+
+    transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: 'Mot de passe mis à jour avec succès.' });
+  } catch (error) {
+    console.error('Erreur de mise à jour du mot de passe:', error);
+    res.status(500).json({ message: 'Erreur du serveur. Veuillez réessayer plus tard.' });
+  }
+};
+
+// Fonction pour mettre à jour le mot de passe
+const updatePasswordConnected = async (req, res) => {
+  const { newPassword } = req.body;
+
+  try {
+    // Extraire le token du cookie HTTP-only
+    const token = req.cookies.jwt;
+    if (!token) {
+      return res.status(401).json({ message: 'Pas de token, accès non autorisé' });
+    }
+
+    // Vérifier la validité du token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Utiliser l'ID de l'utilisateur décodé plutôt que l'email
+    const userId = decoded.id;
+
+    // Vérifier que l'utilisateur existe dans la base de données
+    const [user] = await User.findById(userId);
+    if (!user || user.length === 0) {
+      return res.status(404).json({ message: 'Utilisateur non trouvé.' });
+    }
+
+    // Vérification de la force du mot de passe
+    if (!newPassword || newPassword.length < 8 || !/[A-Z]/.test(newPassword) || !/\d/.test(newPassword) || !/[\W_]/.test(newPassword)) {
+      return res.status(400).json({ message: 'Mot de passe non valide. Il doit contenir au moins 8 caractères, une majuscule, un chiffre et un caractère spécial.' });
+    }
+
+    // Hacher le nouveau mot de passe
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Mettre à jour le mot de passe dans la base de données
+    await User.updatePasswordById(userId, hashedPassword);
+
+    // Envoyer un email de confirmation
+    const emailContent = `
+      <p>Bonjour ${user[0].username},</p>
+      <p>Le mot de passe de votre compte Carbotrack a été modifié avec succès.</p>
+      <p>Si vous n'avez pas effectué cette action, veuillez contacter immédiatement notre équipe de support.</p>
+    `;
+
+    const mailOptions = {
+      from: `"Carbotrack" <${process.env.EMAIL_USER}>`,
+      to: user[0].email,
+      subject: 'Confirmation de changement de mot de passe',
+      html: generateEmailTemplate(
+        'Mot de passe mis à jour',
+        emailContent
+      ),
+      attachments: [{
+        filename: 'logobg.png',
+        path: path.join(process.cwd(), 'public', 'logobg.png'),
+        cid: 'logo'
+      }]
+    };
+
+    transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: 'Mot de passe mis à jour avec succès.' });
+  } catch (error) {
+    console.error('Erreur de mise à jour du mot de passe:', error);
+    res.status(400).json({ message: 'Erreur lors de la mise à jour du mot de passe.' });
+  }
+};
+
+export default {
+  updateUserPhoto,
+  updateUserProfile,
+  registerUser,
+  loginUser,
+  logoutUser,
+  deactivateUser,
+  reactivateUser,
+  getUserProfile,
+  requestPasswordReset,
+  updateUser,
+  updatePassword,
+  updatePasswordConnected,
+  getUserByEmail,
+  getUserByUsername,
+  getUserByRole,
+  deleteUser,
+  getAllUsers
+};
 /*
 // Fonction pour mettre à jour le mot de passe d'un utilisateur en vérifiant l'email
     const updatePassword = async (req, res) => {

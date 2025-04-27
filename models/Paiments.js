@@ -167,18 +167,39 @@ import db from '../config/db.js';
     );
     return rows[0];
   },
-  // Statistiques de paiements pour un utilisateur
-getPaymentStats: async (id_utilisateur) => {
-  const query = `
+// Nouvelle méthode pour les statistiques de paiements
+getPaymentStats: async (filter = {}) => {
+  let query = `
     SELECT 
-      COUNT(*) AS total_paiements,
-      SUM(montant_paye) AS total_paye,
-      MIN(date_paiement) AS premier_paiement,
-      MAX(date_paiement) AS dernier_paiement
-    FROM paiements_credits
-    WHERE id_utilisateur = ?
+      DATE(p.date_paiement) as date,
+      SUM(p.montant_paye) as total_paye,
+      COUNT(*) as nombre_paiements,
+      c.type_credit
+    FROM paiements_credits p
+    JOIN details_credits c ON p.id_credit = c.id
+    WHERE 1=1
   `;
-  return db.execute(query, [id_utilisateur]);
+
+  const params = [];
+
+  // Gestion des filtres
+  if (filter.type === 'day') {
+    query += ' AND DATE(p.date_paiement) = CURDATE()';
+  } else if (filter.type === 'month' && filter.month && filter.year) {
+    query += ' AND MONTH(p.date_paiement) = ? AND YEAR(p.date_paiement) = ?';
+    params.push(filter.month, filter.year);
+  } else if (filter.type === 'year' && filter.year) {
+    query += ' AND YEAR(p.date_paiement) = ?';
+    params.push(filter.year);
+  } else if (filter.startDate && filter.endDate) {
+    query += ' AND DATE(p.date_paiement) BETWEEN ? AND ?';
+    params.push(filter.startDate, filter.endDate);
+  }
+
+  query += ' GROUP BY DATE(p.date_paiement), c.type_credit ORDER BY date DESC';
+
+  const [rows] = await db.query(query, params);
+  return rows;
 },
 
 // Derniers paiements (pour le dashboard)

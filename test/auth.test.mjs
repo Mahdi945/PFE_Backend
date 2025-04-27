@@ -1,4 +1,4 @@
-import { chai } from 'chai';
+import { expect } from 'chai';
 import chaiHttp from 'chai-http';
 import bcrypt from 'bcrypt';
 import app from '../server.js'; // Assurez-vous que votre serveur exporte l'application Express en tant que module ES

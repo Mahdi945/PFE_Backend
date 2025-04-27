@@ -123,6 +123,44 @@ getCreditStats: async (id_utilisateur) => {
     `;
     return db.execute(query);
   },
+// Statistiques globales des crédits
+getGlobalCreditStats: async () => {
+  const query = `
+    SELECT 
+      COUNT(*) AS total_credits,
+      SUM(solde_credit) AS total_solde,
+      SUM(IFNULL(credit_utilise, 0)) AS total_utilise,
+      SUM(
+        CASE 
+          WHEN etat = 'expiré' THEN solde_credit
+          WHEN etat = 'remboursé' THEN 0
+          ELSE solde_credit - IFNULL(credit_utilise, 0)
+        END
+      ) AS solde_restant,
+      SUM(CASE WHEN etat = 'actif' THEN 1 ELSE 0 END) AS credits_actifs,
+      SUM(CASE WHEN etat = 'expiré' THEN 1 ELSE 0 END) AS credits_expires,
+      SUM(CASE WHEN etat = 'remboursé' THEN 1 ELSE 0 END) AS credits_rembourses
+    FROM details_credits
+  `;
+  return db.execute(query);
+},
+// Crédits avec véhicules associés
+getCreditsWithVehicules: async () => {
+  const query = `
+    SELECT 
+      c.id,
+      c.type_credit,
+      c.solde_credit,
+      c.credit_utilise,
+      c.etat,
+      GROUP_CONCAT(v.immatriculation) AS vehicules,
+      COUNT(v.id) AS nombre_vehicules
+    FROM details_credits c
+    LEFT JOIN vehicules v ON c.id = v.id_credit
+    GROUP BY c.id
+  `;
+  return db.execute(query);
+}
 };
 
 export default Credit;

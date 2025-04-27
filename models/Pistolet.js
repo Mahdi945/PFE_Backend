@@ -212,7 +212,44 @@ const Pistolet = {
         throw error;
       }
     },
-  
+    getAllRevenuesJournalieres: async () => {
+      const query = `
+        SELECT 
+          DATE(r.date_heure_saisie) as date,
+          r.pistolet_id,
+          p.nom_produit,
+          p.prix_unitaire,
+          SUM(r.index_fermeture - r.index_ouverture) AS quantite,
+          SUM((r.index_fermeture - r.index_ouverture) * p.prix_unitaire) AS montant
+        FROM releves_postes r
+        JOIN pistolets p ON r.pistolet_id = p.id
+        WHERE r.statut = 'valide'
+        GROUP BY DATE(r.date_heure_saisie), r.pistolet_id
+        ORDER BY date DESC
+        LIMIT 30`; // Limiter à 30 jours pour éviter trop de données
+      
+      try {
+        const [rows] = await db.query(query);
+        
+        // Structurer les données par produit et par date
+        const result = rows.reduce((acc, row) => {
+          if (!acc[row.nom_produit]) {
+            acc[row.nom_produit] = [];
+          }
+          acc[row.nom_produit].push({
+            date: row.date,
+            quantite: row.quantite,
+            montant: row.montant
+          });
+          return acc;
+        }, {});
+        
+        return result;
+      } catch (error) {
+        console.error('Erreur dans getAllRevenuesJournalieres:', error);
+        throw error;
+      }
+    },
     // Récupérer les revenus journaliers
     getRevenusJournaliers: async (date_debut, date_fin, pistolet_id = null) => {
       let query = `
@@ -245,6 +282,63 @@ const Pistolet = {
       const [rows] = await db.query(query, params);
       return rows;
     },
+    // Ajoutez ces méthodes à votre modèle Pistolet
+
+// Méthode pour récupérer les rapports journaliers avec filtres
+getDailyRevenues: async (filter = {}) => {
+  let query = `
+    SELECT 
+      rj.date_rapport as date,
+      rj.pistolet_id,
+      p.nom_produit,
+      p.prix_unitaire,
+      rj.total_quantite as quantite,
+      rj.total_montant as montant,
+      rj.nombre_postes
+    FROM rapports_journaliers rj
+    JOIN pistolets p ON rj.pistolet_id = p.id
+    WHERE 1=1
+  `;
+
+  const params = [];
+
+  // Gestion des filtres
+  if (filter.type === 'day') {
+    query += ' AND rj.date_rapport = CURDATE()';
+  } else if (filter.type === 'month' && filter.month && filter.year) {
+    query += ' AND MONTH(rj.date_rapport) = ? AND YEAR(rj.date_rapport) = ?';
+    params.push(filter.month, filter.year);
+  } else if (filter.type === 'year' && filter.year) {
+    query += ' AND YEAR(rj.date_rapport) = ?';
+    params.push(filter.year);
+  } else if (filter.startDate && filter.endDate) {
+    query += ' AND rj.date_rapport BETWEEN ? AND ?';
+    params.push(filter.startDate, filter.endDate);
+  }
+
+  query += ' ORDER BY rj.date_rapport DESC, rj.pistolet_id ASC';
+
+  const [rows] = await db.query(query, params);
+  return rows;
+},
+// Méthode pour récupérer les revenus par date spécifique
+getRevenuesByDate: async (date) => {
+  const query = `
+    SELECT 
+      r.pistolet_id,
+      p.nom_produit,
+      p.prix_unitaire,
+      SUM(r.index_fermeture - r.index_ouverture) AS quantite,
+      SUM((r.index_fermeture - r.index_ouverture) * p.prix_unitaire) AS montant
+    FROM releves_postes r
+    JOIN pistolets p ON r.pistolet_id = p.id
+    WHERE DATE(r.date_heure_saisie) = ? AND r.statut = 'valide'
+    GROUP BY r.pistolet_id
+  `;
+  
+  const [rows] = await db.query(query, [date]);
+  return rows;
+},
   // Récupérer l'historique des relevés
 getHistoriqueReleves: async (pistolet_id, date_debut, date_fin) => {
   const [rows] = await db.query(

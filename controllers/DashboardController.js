@@ -1,6 +1,9 @@
 // controllers/DashboardController.js
 import Credit from '../models/Credit.js';
+import User from '../models/User.js';
 import Paiments from '../models/paiments.js';
+import Pompe from '../models/Pompe.js';
+import Pistolet from '../models/Pistolet.js';
 import Transaction from '../models/Transaction.js';
 import Vehicule from '../models/Vehicule.js';
 
@@ -38,7 +41,8 @@ class DashboardController {
 
       res.json({ 
         success: true,
-        data: formattedData
+        data: formattedData,
+        currency: 'TND' // Ajout de la devise par défaut
       });
     } catch (error) {
       console.error('Dashboard Error:', error);
@@ -48,6 +52,58 @@ class DashboardController {
       });
     }
   }
-}
+  static async getGerantDashboard(req, res) {
+    try {
+      const filter = req.query.filter || { type: 'month' };
+      
+      // Définir les valeurs par défaut
+      if (filter.type === 'month') {
+        filter.month = filter.month || new Date().getMonth() + 1;
+        filter.year = filter.year || new Date().getFullYear();
+      } else if (filter.type === 'year') {
+        filter.year = filter.year || new Date().getFullYear();
+      }
+  
+      const [
+        userStats,
+        creditStats,
+        recentTransactions,
+        pompeStats,
+        allTransactions,
+        creditsWithVehicules,
+        dailyRevenues,
+        paymentStats
+      ] = await Promise.all([
+        User.getUserStats(filter),
+        Credit.getGlobalCreditStats(filter),
+        Transaction.getRecentTransactionsAll(),
+        Pompe.getPompeStats(),
+        Transaction.getAllTransactions(),
+        Credit.getCreditsWithVehicules(),
+        Pistolet.getDailyRevenues(filter),
+        Paiments.getPaymentStats(filter)
+      ]);
+  
+      res.json({ 
+        success: true,
+        data: {
+          userStats: userStats[0][0] || {}, // Prendre le premier élément des résultats
+          creditStats: creditStats[0][0] || {},
+          pompeStats: pompeStats[0] || [],
+          dailyRevenues: dailyRevenues || [],
+          allTransactions: allTransactions[0] || [],
+          creditsWithVehicules: creditsWithVehicules[0] || [],
+          paymentStats: paymentStats || []
+        },
+        filter: filter
+      });
+    } catch (error) {
+      console.error('Dashboard Gerant Error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erreur lors de la récupération des données du dashboard gérant'
+      });
+    }
+  }}
 
 export default DashboardController;
