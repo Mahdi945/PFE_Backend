@@ -1,7 +1,7 @@
 // controllers/DashboardController.js
 import Credit from '../models/Credit.js';
 import User from '../models/User.js';
-import Paiments from '../models/paiments.js';
+import Paiments from '../models/Paiments.js';
 import Pompe from '../models/Pompe.js';
 import Pistolet from '../models/Pistolet.js';
 import Transaction from '../models/Transaction.js';

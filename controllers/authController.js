@@ -728,7 +728,8 @@ export default {
   getUserByUsername,
   getUserByRole,
   deleteUser,
-  getAllUsers
+  getAllUsers,
+  
 };
 /*
 // Fonction pour mettre à jour le mot de passe d'un utilisateur en vérifiant l'email

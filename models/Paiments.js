@@ -167,40 +167,56 @@ import db from '../config/db.js';
     );
     return rows[0];
   },
-// Nouvelle méthode pour les statistiques de paiements
-getPaymentStats: async (filter = {}) => {
+// Dans votre modèle Paiments.js
+ getPaymentStats: async (filterOrUserId) => {
   let query = `
     SELECT 
-      DATE(p.date_paiement) as date,
-      SUM(p.montant_paye) as total_paye,
+      SUM(montant_paye) as total_paye,
       COUNT(*) as nombre_paiements,
-      c.type_credit
-    FROM paiements_credits p
-    JOIN details_credits c ON p.id_credit = c.id
-    WHERE 1=1
+      mode_paiement
+    FROM paiements_credits
   `;
 
   const params = [];
 
-  // Gestion des filtres
-  if (filter.type === 'day') {
-    query += ' AND DATE(p.date_paiement) = CURDATE()';
-  } else if (filter.type === 'month' && filter.month && filter.year) {
-    query += ' AND MONTH(p.date_paiement) = ? AND YEAR(p.date_paiement) = ?';
-    params.push(filter.month, filter.year);
-  } else if (filter.type === 'year' && filter.year) {
-    query += ' AND YEAR(p.date_paiement) = ?';
-    params.push(filter.year);
-  } else if (filter.startDate && filter.endDate) {
-    query += ' AND DATE(p.date_paiement) BETWEEN ? AND ?';
-    params.push(filter.startDate, filter.endDate);
+  // Vérifier si c'est un filtre (objet) ou un ID utilisateur (nombre)
+  if (typeof filterOrUserId === 'object') {
+    // Cas pour le dashboard gérant (avec filtres)
+    const filter = filterOrUserId;
+    query += ' WHERE 1=1';
+
+    if (filter.type === 'day') {
+      query += ' AND DATE(date_paiement) = CURDATE()';
+    } else if (filter.type === 'month' && filter.month && filter.year) {
+      query += ' AND MONTH(date_paiement) = ? AND YEAR(date_paiement) = ?';
+      params.push(filter.month, filter.year);
+    } else if (filter.type === 'year' && filter.year) {
+      query += ' AND YEAR(date_paiement) = ?';
+      params.push(filter.year);
+    } else if (filter.startDate && filter.endDate) {
+      query += ' AND DATE(date_paiement) BETWEEN ? AND ?';
+      params.push(filter.startDate, filter.endDate);
+    }
+  } else {
+    // Cas pour le dashboard client (avec ID utilisateur)
+    query += ' WHERE id_utilisateur = ?';
+    params.push(filterOrUserId);
   }
 
-  query += ' GROUP BY DATE(p.date_paiement), c.type_credit ORDER BY date DESC';
+  query += ' GROUP BY mode_paiement';
 
   const [rows] = await db.query(query, params);
+  
+  // Pour le dashboard client, on retourne les stats globales
+  if (typeof filterOrUserId !== 'object') {
+    const total = rows.reduce((sum, item) => sum + parseFloat(item.total_paye), 0);
+    return [[{ total_paye: total, nombre_paiements: rows.reduce((sum, item) => sum + item.nombre_paiements, 0) }]];
+  }
+  
+  // Pour le dashboard gérant, on retourne les données brutes
   return rows;
 },
+
 
 // Derniers paiements (pour le dashboard)
 getRecentPayments: async (id_utilisateur, limit = 5) => {

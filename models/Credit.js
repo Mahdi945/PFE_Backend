@@ -94,11 +94,13 @@ getCreditStats: async (id_utilisateur) => {
   const query = `
     SELECT 
       COUNT(*) AS total_credits,
-      SUM(solde_credit) AS total_solde,
+     SUM(CASE WHEN etat = 'actif' THEN solde_credit ELSE 0 END) AS total_solde,
+
       SUM(credit_utilise) AS total_utilise,
       SUM(solde_credit - IFNULL(credit_utilise, 0)) AS solde_restant,
       SUM(CASE WHEN etat = 'actif' THEN 1 ELSE 0 END) AS credits_actifs,
-      SUM(CASE WHEN etat = 'expiré' THEN 1 ELSE 0 END) AS credits_expires
+      SUM(CASE WHEN etat = 'expiré' THEN 1 ELSE 0 END) AS credits_expires,
+      SUM(CASE WHEN etat = 'annulé' THEN 1 ELSE 0 END) AS credits_annulés
     FROM details_credits
     WHERE id_utilisateur = ?
   `;
