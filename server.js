@@ -174,7 +174,7 @@ cron.schedule('0 * * * *', async () => {
     
     // 1. Recently repaid credits (last hour)
     const [recentlyPaid] = await pool.query(`
-      SELECT dc.id, dc.id_utilisateur, u.username
+      SELECT dc.id, dc.id_utilisateur, u.username 
       FROM details_credits dc
       JOIN utilisateurs u ON dc.id_utilisateur = u.id
       WHERE dc.etat = 'remboursé'
