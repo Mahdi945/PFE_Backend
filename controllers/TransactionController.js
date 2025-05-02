@@ -74,10 +74,10 @@ const createTransaction = async (req, res) => {
   try {
     await connection.beginTransaction();
     
-    const { id_vehicule, id_utilisateur, quantite, montant, id_credit } = req.body;
+    const { id_vehicule, quantite, montant, id_credit } = req.body;
 
     // Validation des données
-    if (!id_vehicule || !id_utilisateur || !quantite || !montant) {
+    if (!id_vehicule || !quantite || !montant) {
       return res.status(400).json({ 
         success: false,
         error: 'Tous les champs obligatoires doivent être fournis' 
@@ -87,25 +87,27 @@ const createTransaction = async (req, res) => {
     let creditInfo = null;
     let nouveauSolde = null;
     let creditUtilise = 0;
+    let id_utilisateur = null;
 
-    // Si un crédit est spécifié, vérifier sa validité
+    // Si un crédit est spécifié, vérifier sa validité et récupérer l'utilisateur
     if (id_credit) {
       const [credit] = await connection.execute(
         `SELECT dc.* 
          FROM details_credits dc
-         WHERE dc.id = ? AND dc.id_utilisateur = ?`,
-        [id_credit, id_utilisateur]
+         WHERE dc.id = ?`,
+        [id_credit]
       );
       
       if (!credit || credit.length === 0) {
         await connection.rollback();
         return res.status(404).json({ 
           success: false,
-          error: 'Crédit non trouvé ou ne vous appartient pas' 
+          error: 'Crédit non trouvé' 
         });
       }
       
       creditInfo = credit[0];
+      id_utilisateur = creditInfo.id_utilisateur;
       creditUtilise = parseFloat(creditInfo.credit_utilise) || 0;
       const soldeCredit = parseFloat(creditInfo.solde_credit);
       nouveauSolde = soldeCredit - creditUtilise - parseFloat(montant);
@@ -119,10 +121,29 @@ const createTransaction = async (req, res) => {
           montant_demande: montant
         });
       }
+    } else {
+      // Pour les transactions sans crédit, récupérer l'utilisateur via le véhicule
+      const [vehicule] = await connection.execute(
+        `SELECT v.*, dc.id_utilisateur 
+         FROM vehicules v
+         LEFT JOIN details_credits dc ON v.id_credit = dc.id
+         WHERE v.id = ?`,
+        [id_vehicule]
+      );
+      
+      if (!vehicule || vehicule.length === 0) {
+        await connection.rollback();
+        return res.status(404).json({ 
+          success: false,
+          error: 'Véhicule non trouvé' 
+        });
+      }
+      
+      id_utilisateur = vehicule[0].id_utilisateur;
     }
 
-    // Récupération des informations complètes avec jointure pour le crédit si nécessaire
-    const [user] = await connection.execute(
+    // Récupération des informations utilisateur et véhicule
+    const [info] = await connection.execute(
       `SELECT 
          u.email, 
          u.username, 
@@ -130,60 +151,60 @@ const createTransaction = async (req, res) => {
          v.immatriculation,
          ${id_credit ? 'dc.solde_credit, dc.credit_utilise' : 'NULL as solde_credit, NULL as credit_utilise'}
        FROM utilisateurs u
-       JOIN vehicules v ON v.id_utilisateur = u.id
+       JOIN vehicules v ON v.id = ?
        ${id_credit ? 'JOIN details_credits dc ON dc.id = ?' : ''}
-       WHERE u.id = ? AND v.id = ?`,
-      id_credit ? [id_credit, id_utilisateur, id_vehicule] : [id_utilisateur, id_vehicule]
+       WHERE u.id = ?`,
+      id_credit ? [id_vehicule, id_credit, id_utilisateur] : [id_vehicule, id_utilisateur]
     );
 
-    if (!user || user.length === 0) {
+    if (!info || info.length === 0) {
       await connection.rollback();
       return res.status(404).json({
         success: false,
-        error: 'Utilisateur ou véhicule non trouvé'
+        error: 'Informations non trouvées'
       });
     }
 
-    const userInfo = user[0];
+    const userInfo = info[0];
 
-    // Création de la transaction
+    // Création de la transaction (sans id_utilisateur)
     const transactionResult = await Transaction.addTransaction(
       id_vehicule, 
-      id_utilisateur, 
       quantite, 
       montant, 
-      id_credit || null,
-      connection
+      id_credit || null
     );
 
     // Mettre à jour le crédit si nécessaire
     if (id_credit) {
-      await Transaction.updateCredit(id_credit, montant, connection);
+      await Transaction.updateCredit(id_credit, montant);
       // Recharger les infos crédit après mise à jour
       const [updatedCredit] = await connection.execute(
         'SELECT credit_utilise, solde_credit FROM details_credits WHERE id = ?',
         [id_credit]
       );
       creditUtilise = parseFloat(updatedCredit[0].credit_utilise);
+
+    
     }
 
-   // Envoi de l'email
-if (userInfo.email) {
-  const emailContent = `
-    <p>Bonjour ${userInfo.username},</p>
-    <p>Votre transaction a été enregistrée avec succès :</p>
-    <ul>
-      <li>Véhicule: ${userInfo.marque} (${userInfo.immatriculation})</li>
-      <li>Quantité: ${quantite}L</li>
-      <li>Montant: ${montant} DT</li>
-      ${id_credit ? `
-        <li>Crédit utilisé: #${id_credit}</li>
-        <li>Crédit consommé: ${(parseFloat(creditUtilise) + parseFloat(montant)).toFixed(2)} DT</li>
-        <li>Solde restant: ${(parseFloat(userInfo.solde_credit) - (parseFloat(creditUtilise) + parseFloat(montant))).toFixed(2)} DT</li>
-      ` : '<li>Paiement: Direct</li>'}
-    </ul>
-    <p>Date: ${new Date().toLocaleString()}</p>
-  `;
+    // Envoi de l'email
+    if (userInfo.email) {
+      const emailContent = `
+        <p>Bonjour ${userInfo.username},</p>
+        <p>Votre transaction a été enregistrée avec succès :</p>
+        <ul>
+          <li>Véhicule: ${userInfo.marque} (${userInfo.immatriculation})</li>
+          <li>Quantité: ${quantite}L</li>
+          <li>Montant: ${montant} DT</li>
+          ${id_credit ? `
+            <li>Crédit utilisé: #${id_credit}</li>
+            <li>Crédit consommé: ${(parseFloat(creditUtilise) + parseFloat(montant)).toFixed(2)} DT</li>
+            <li>Solde restant: ${(parseFloat(userInfo.solde_credit) - (parseFloat(creditUtilise) + parseFloat(montant))).toFixed(2)} DT</li>
+          ` : '<li>Paiement: Direct</li>'}
+        </ul>
+      `;
+      
       const mailOptions = {
         from: `"Carbotrack" <${process.env.EMAIL_USER}>`,
         to: userInfo.email,
@@ -196,7 +217,6 @@ if (userInfo.email) {
         }]
       };
 
-      // Envoi asynchrone pour ne pas bloquer
       transporter.sendMail(mailOptions).catch(err => {
         console.error('Erreur envoi email:', err);
       });
@@ -215,25 +235,17 @@ if (userInfo.email) {
         montant,
         id_credit: id_credit || null,
         credit_utilise: id_credit ? creditUtilise : null,
-        solde_restant: id_credit ? (parseFloat(userInfo.solde_credit) - creditUtilise) : null,
-        email_sent: !!userInfo.email
+        solde_restant: id_credit ? (parseFloat(userInfo.solde_credit) - creditUtilise) : null
       }
     });
 
   } catch (err) {
     await connection.rollback();
     console.error('Erreur création transaction:', err);
-    
-    const status = err.message.includes('non trouvé') ? 404 : 500;
-    const errorMessage = status === 404 ? err.message : 'Erreur lors de la création de la transaction';
-
-    res.status(status).json({ 
+    res.status(500).json({ 
       success: false,
-      error: errorMessage,
-      details: process.env.NODE_ENV === 'development' ? {
-        message: err.message,
-        stack: err.stack
-      } : undefined
+      error: 'Erreur lors de la création de la transaction',
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
   } finally {
     connection.release();

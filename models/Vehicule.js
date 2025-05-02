@@ -1,7 +1,7 @@
-import db from '../config/db.js'; // Connexion à la base de données
-import QRCode from 'qrcode'; // Bibliothèque pour générer des QR codes
-import path from 'path'; // Module Node.js pour gérer les chemins de fichiers
-import fs from 'fs'; // Module pour manipuler les fichiers
+import db from '../config/db.js';
+import QRCode from 'qrcode';
+import path from 'path';
+import fs from 'fs';
 
 const Vehicule = {  
     // Vérifier si un crédit individuel a déjà un véhicule
@@ -39,20 +39,10 @@ const Vehicule = {
     },
 
     // Ajouter un véhicule avec vérification préalable
-    addVehicule: async (id_utilisateur, immatriculation, marque, type_vehicule, qr_code_url, id_credit) => {
+    addVehicule: async (immatriculation, marque, type_vehicule, qr_code_url, id_credit) => {
         try {
             // Vérification avant l'ajout
             await Vehicule.checkCreditVehiculeLimit(id_credit);
-            
-            // Vérifier aussi que l'utilisateur est bien propriétaire du crédit
-            const [creditOwnership] = await db.execute(
-                'SELECT id FROM details_credits WHERE id = ? AND id_utilisateur = ?',
-                [id_credit, id_utilisateur]
-            );
-            
-            if (creditOwnership.length === 0) {
-                throw new Error('Le crédit spécifié ne appartient pas à cet utilisateur');
-            }
             
             // Vérifier que le crédit est actif
             const [creditStatus] = await db.execute(
@@ -66,11 +56,11 @@ const Vehicule = {
             
             // Tout est OK, ajouter le véhicule
             const query = `
-                INSERT INTO vehicules (id_utilisateur, immatriculation, marque, type_vehicule, qr_code, id_credit)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO vehicules (immatriculation, marque, type_vehicule, qr_code, id_credit)
+                VALUES (?, ?, ?, ?, ?)
             `;
-            const result = await db.execute(query, 
-                [id_utilisateur, immatriculation, marque, type_vehicule, qr_code_url, id_credit]);
+            const [result] = await db.execute(query, 
+                [immatriculation, marque, type_vehicule, qr_code_url, id_credit]);
             
             return result;
         } catch (error) {
@@ -79,89 +69,128 @@ const Vehicule = {
         }
     },
 
-    // Récupérer tous les véhicules avec le nom d’utilisateur
-    getAllVehicules: () => {
+
+    getAllVehicules: async () => {
         const query = `
-            SELECT v.*, u.username
+            SELECT 
+                v.*,
+                u.id as id_utilisateur,
+                u.username,
+                u.email,
+                dc.etat as credit_etat
             FROM vehicules v
-            JOIN utilisateurs u ON v.id_utilisateur = u.id
+            JOIN details_credits dc ON v.id_credit = dc.id
+            JOIN utilisateurs u ON dc.id_utilisateur = u.id
         `;
-        return db.execute(query);
+        const [rows] = await db.execute(query);
+        console.log('Véhicules récupérés de la base de données:', rows); // Ajouté pour débogage
+        return rows;
     },
 
-    // Récupérer un véhicule spécifique par son ID avec le nom d’utilisateur
-    getVehiculeById: (id) => {
+
+    // Récupérer un véhicule spécifique par son ID avec les infos utilisateur
+    getVehiculeById: async (id) => {
         const query = `
-            SELECT v.*, u.username
+            SELECT 
+                v.*,
+                u.id as id_utilisateur,
+                u.username,
+                u.email
             FROM vehicules v
-            JOIN utilisateurs u ON v.id_utilisateur = u.id
+            JOIN details_credits dc ON v.id_credit = dc.id
+            JOIN utilisateurs u ON dc.id_utilisateur = u.id
             WHERE v.id = ?
         `;
-        return db.execute(query, [id]);
+        const [rows] = await db.execute(query, [id]);
+        return rows[0];
     },
-      // Récupérer un véhicule par son immatriculation avec le nom d'utilisateur
-      getVehiculeByImmatriculation: (immatriculation) => {
+
+    // Récupérer un véhicule par son immatriculation avec les infos utilisateur
+    getVehiculeByImmatriculation: async (immatriculation) => {
         const query = `
-            SELECT v.*, u.username
+            SELECT 
+                v.*,
+                u.id as id_utilisateur,
+                u.username,
+                u.email
             FROM vehicules v
-            JOIN utilisateurs u ON v.id_utilisateur = u.id
+            JOIN details_credits dc ON v.id_credit = dc.id
+            JOIN utilisateurs u ON dc.id_utilisateur = u.id
             WHERE v.immatriculation = ?
         `;
-        return db.execute(query, [immatriculation]);
+        const [rows] = await db.execute(query, [immatriculation]);
+        return rows[0];
     },
 
-    
-/**
- * Récupère tous les véhicules d'un utilisateur par son ID
- * @param {number} id_utilisateur - L'ID de l'utilisateur
- * @returns {Promise<Array>} Liste des véhicules de l'utilisateur
- */
- getVehiculesByUserId:(id_utilisateur) => {
-    const query = `
-        SELECT 
-           *
-        FROM vehicules v
-        JOIN utilisateurs u ON v.id_utilisateur = u.id
-        WHERE v.id_utilisateur = ?  -- Filtre direct par ID utilisateur
-        
-    `;
-    
-    try {
-        return db.execute(query, [id_utilisateur]);
-    } catch (error) {
-        console.error('Erreur lors de la récupération des véhicules:', error);
-        throw new Error('Erreur de base de données');
-    }
-},
-
-
-    // Récupérer les véhicules d’un crédit spécifique avec le nom d’utilisateur
-    getVehiculeByCredit: (id_credit) => {
+    // Récupérer tous les véhicules d'un utilisateur par son ID
+    getVehiculesByUserId: async (id_utilisateur) => {
         const query = `
-            SELECT v.*, u.username
+            SELECT 
+                v.*,
+                u.username,
+                u.email
             FROM vehicules v
-            JOIN utilisateurs u ON v.id_utilisateur = u.id
+            JOIN details_credits dc ON v.id_credit = dc.id
+            JOIN utilisateurs u ON dc.id_utilisateur = u.id
+            WHERE dc.id_utilisateur = ?
+        `;
+        const [rows] = await db.execute(query, [id_utilisateur]);
+        return rows;
+    },
+
+    // Récupérer les véhicules d'un crédit spécifique avec les infos utilisateur
+    getVehiculeByCredit: async (id_credit) => {
+        const query = `
+            SELECT 
+                v.*,
+                u.id as id_utilisateur,
+                u.username,
+                u.email
+            FROM vehicules v
+            JOIN details_credits dc ON v.id_credit = dc.id
+            JOIN utilisateurs u ON dc.id_utilisateur = u.id
             WHERE v.id_credit = ?
         `;
-        return db.execute(query, [id_credit]);
+        const [rows] = await db.execute(query, [id_credit]);
+        return rows;
     },
 
     // Mettre à jour un véhicule
-    updateVehicule: (id, immatriculation, marque, type_vehicule) => {
+    updateVehicule: async (id, immatriculation, marque, type_vehicule) => {
         const query = `
             UPDATE vehicules
             SET immatriculation = ?, marque = ?, type_vehicule = ?
             WHERE id = ?
         `;
-        return db.execute(query, [immatriculation, marque, type_vehicule, id]);
+        const [result] = await db.execute(query, [immatriculation, marque, type_vehicule, id]);
+        return result;
     },
 
     // Supprimer un véhicule
-    deleteVehicule: (id) => {
+    deleteVehicule: async (id) => {
         const query = 'DELETE FROM vehicules WHERE id = ?';
-        return db.execute(query, [id]);
+        const [result] = await db.execute(query, [id]);
+        return result;
+    },
+
+    // Générer un QR code pour un véhicule
+    generateQRCode: async (immatriculation, marque, type_vehicule, id_credit) => {
+        try {
+            const qrData = `Immatriculation: ${immatriculation}\nMarque: ${marque}\nType: ${type_vehicule}\nCreditID: ${id_credit}`;
+            const qrImagePath = path.join('public', 'qrcodes', `${immatriculation}.png`);
+            
+            // Créer le dossier s'il n'existe pas
+            await fs.promises.mkdir(path.dirname(qrImagePath), { recursive: true });
+            
+            // Générer le QR code
+            await QRCode.toFile(qrImagePath, qrData);
+            
+            return `${process.env.BASE_URL}/qrcodes/${immatriculation}.png`;
+        } catch (error) {
+            console.error('Erreur lors de la génération du QR code:', error);
+            throw error;
+        }
     }
 };
-
 
 export default Vehicule;

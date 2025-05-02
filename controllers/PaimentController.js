@@ -59,7 +59,6 @@ const generateEmailTemplate = (title, content, actionLink = null, actionText = n
 };
 
 const createPayment = async (req, res) => {
-  let connection;
   try {
     const { id_credit, montant_paye, mode_paiement, description } = req.body;
 
@@ -72,51 +71,35 @@ const createPayment = async (req, res) => {
     }
 
     const montant = parseFloat(montant_paye);
-    if (isNaN(montant) || montant <= 0) {
-      return res.status(400).json({ 
-        success: false,
-        error: 'Montant invalide (doit être un nombre positif)' 
-      });
-    }
 
-    // 2. Récupération du crédit et utilisateur
-    const [creditRows] = await db.execute(
-      `SELECT dc.*, u.email, u.username 
+    // 2. Création du paiement (sans id_utilisateur)
+    const payment = await Paiments.create(
+      id_credit,
+      montant,
+      mode_paiement,
+      description
+    );
+
+    // 3. Récupération des infos utilisateur pour la notification
+    const [creditInfo] = await db.execute(
+      `SELECT dc.id_utilisateur, u.username, u.email 
        FROM details_credits dc
        JOIN utilisateurs u ON dc.id_utilisateur = u.id
        WHERE dc.id = ?`,
       [id_credit]
     );
 
-    if (!creditRows.length) {
+    if (!creditInfo.length) {
       return res.status(404).json({ 
         success: false,
-        error: 'Crédit non trouvé' 
+        error: 'Informations crédit/utilisateur non trouvées' 
       });
     }
 
-    const credit = creditRows[0];
-    const id_utilisateur = credit.id_utilisateur;
-
-    // 3. Vérification état du crédit
-    if (credit.etat !== 'actif') {
-      return res.status(400).json({ 
-        success: false,
-        error: `Le crédit n'est plus payable (état: ${credit.etat})` 
-      });
-    }
-
-    // 4. Création du paiement
-    const payment = await Paiments.create(
-      id_credit,
-      id_utilisateur,
-      montant,
-      mode_paiement,
-      description
-    );
-
-    // 5. Création notification - CORRIGÉ selon votre structure de table
+    const { id_utilisateur, username, email } = creditInfo[0];
     const isFullPayment = payment.montant_restant <= 0;
+
+    // 4. Création notification
     const notificationType = isFullPayment ? 'remboursement' : 'paiement_reussi';
     const notificationMessage = isFullPayment
       ? `Crédit #${id_credit} complètement remboursé (${montant} DT)`
@@ -124,16 +107,16 @@ const createPayment = async (req, res) => {
 
     await Notification.create(
       id_utilisateur,
-      'credit', // entity_type
-      id_credit, // entity_id
-      notificationType, // type
-      notificationMessage // message
+      'credit',
+      id_credit,
+      notificationType,
+      notificationMessage
     );
 
-    // 6. Envoi email
-    if (credit.email) {
+    // 5. Envoi email
+    if (email) {
       const emailContent = `
-        <p>Bonjour ${credit.username},</p>
+        <p>Bonjour ${username},</p>
         <p>Votre paiement a été enregistré avec succès :</p>
         <ul>
           <li>Montant: ${montant} DT</li>
@@ -146,7 +129,7 @@ const createPayment = async (req, res) => {
 
       await transporter.sendMail({
         from: `"Carbotrack" <${process.env.EMAIL_USER}>`,
-        to: credit.email,
+        to: email,
         subject: isFullPayment ? 'Crédit remboursé' : 'Confirmation de paiement',
         html: generateEmailTemplate(
           isFullPayment ? 'Remboursement complet' : 'Paiement enregistré', 
@@ -160,7 +143,7 @@ const createPayment = async (req, res) => {
       });
     }
 
-    // 7. Réponse
+    // 6. Réponse
     res.status(201).json({
       success: true,
       message: 'Paiement enregistré avec succès',
@@ -170,7 +153,8 @@ const createPayment = async (req, res) => {
         montant_paye: montant,
         montant_restant: payment.montant_restant,
         etat_credit: payment.etat,
-        notification_sent: !!credit.email
+        id_utilisateur, // Ajouté pour référence
+        notification_sent: !!email
       }
     });
 

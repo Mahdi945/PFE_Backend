@@ -1,191 +1,189 @@
 import db from '../config/db.js';
 
 const AffectationCalendrier = {
-  // ➕ Ajouter une affectation manuelle
-  addAffectationManuelle: async (pompiste_id, poste_id, pompe_id, calendrier_id) => {
-    const query = `
-      INSERT INTO affectations (pompiste_id, poste_id, pompe_id, calendrier_id, statut)
-      VALUES (?, ?, ?, ?, 'occupé')
-    `;
-    return db.execute(query, [pompiste_id, poste_id, pompe_id, calendrier_id]);
-  },
-
-  checkPompisteAffectation: async (pompiste_id, calendrier_id, poste_id) => {
-    const query = `
-      SELECT COUNT(*) AS count 
-      FROM affectations 
-      WHERE pompiste_id = ? 
-      AND calendrier_id = ? 
-      AND poste_id = ?
-    `;
-    const [rows] = await db.execute(query, [pompiste_id, calendrier_id, poste_id]);
-    return rows[0].count > 0;
-  },
-
-  // Vérifier si une pompe est déjà occupée dans un créneau
-  checkPompeOccupied: async (pompe_id, calendrier_id, poste_id) => {
-    const query = `
-      SELECT COUNT(*) AS count 
-      FROM affectations 
-      WHERE pompe_id = ? 
-      AND calendrier_id = ? 
-      AND poste_id = ?
-    `;
-    const [rows] = await db.execute(query, [pompe_id, calendrier_id, poste_id]);
-    return rows[0].count > 0;
-  },
-
-  // Ajouter une affectation manuelle avec vérifications
-  addAffectationManuelle: async (pompiste_id, poste_id, pompe_id, calendrier_id) => {
-    // Vérifier si le pompiste est déjà affecté à ce poste dans ce créneau
+  addAffectationManuelle: async (pompiste_id, poste_id, pompe_id, date) => {
+    // Vérifier si le pompiste est déjà affecté ce jour-là
     const isPompisteAffected = await AffectationCalendrier.checkPompisteAffectation(
       pompiste_id, 
-      calendrier_id, 
+      date, 
       poste_id
     );
     
     if (isPompisteAffected) {
-      throw new Error('Ce pompiste est déjà affecté à ce poste pour ce créneau.');
+      throw new Error('Ce pompiste est déjà affecté à ce poste pour cette date.');
     }
 
-    // Vérifier si la pompe est déjà occupée dans ce créneau
+    // Vérifier si la pompe est déjà occupée ce jour-là
     const isPompeOccupied = await AffectationCalendrier.checkPompeOccupied(
       pompe_id, 
-      calendrier_id, 
+      date, 
       poste_id
     );
     
     if (isPompeOccupied) {
-      throw new Error('Cette pompe est déjà occupée pour ce créneau.');
+      throw new Error('Cette pompe est déjà occupée pour cette date.');
     }
 
     const query = `
-      INSERT INTO affectations (pompiste_id, poste_id, pompe_id, calendrier_id, statut)
+      INSERT INTO affectations (pompiste_id, poste_id, pompe_id, date, statut)
       VALUES (?, ?, ?, ?, 'occupé')
     `;
-    return db.execute(query, [pompiste_id, poste_id, pompe_id, calendrier_id]);
+    return db.execute(query, [pompiste_id, poste_id, pompe_id, date]);
   },
 
-// Génération automatique avec contraintes
-addAffectationAutomatiqueEquitable: async (mois, annee, regenerate = false) => {
-  try {
-    // Vérifier si des affectations existent déjà pour ce mois
-    const [existingAffectations] = await db.execute(
-      `SELECT * FROM affectations a
-       JOIN calendrier c ON a.calendrier_id = c.id
-       WHERE c.mois = ? AND c.annee = ?`,
-      [mois, annee]
-    );
+  checkPompisteAffectation: async (pompiste_id, date, poste_id) => {
+    const query = `
+      SELECT COUNT(*) AS count 
+      FROM affectations 
+      WHERE pompiste_id = ? 
+      AND date = ? 
+      AND poste_id = ?
+    `;
+    const [rows] = await db.execute(query, [pompiste_id, date, poste_id]);
+    return rows[0].count > 0;
+  },
 
-    if (existingAffectations.length > 0 && !regenerate) {
-      throw new Error('Les affectations automatiques pour ce mois existent déjà.');
-    }
+  checkPompeOccupied: async (pompe_id, date, poste_id) => {
+    const query = `
+      SELECT COUNT(*) AS count 
+      FROM affectations 
+      WHERE pompe_id = ? 
+      AND date = ? 
+      AND poste_id = ?
+    `;
+    const [rows] = await db.execute(query, [pompe_id, date, poste_id]);
+    return rows[0].count > 0;
+  },
 
-    // Si en mode régénération, supprimer les anciennes affectations
-    if (regenerate && existingAffectations.length > 0) {
-      await AffectationCalendrier.deleteAffectationsByMonthYear(mois, annee);
-    }
-
-    // Récupérer les données nécessaires
-    const [pompistes] = await db.execute('SELECT id FROM utilisateurs WHERE role = "pompiste"');
-    const [postes] = await db.execute('SELECT * FROM postes');
-    const [pompes] = await db.execute('SELECT * FROM pompes');
-
-    // Créer le calendrier s'il n'existe pas
-    const [calendrierExist] = await db.execute(
-      'SELECT * FROM calendrier WHERE mois = ? AND annee = ?',
-      [mois, annee]
-    );
-
-    if (!calendrierExist.length) {
-      const dateEnd = new Date(annee, mois, 0);
-      for (let day = 1; day <= dateEnd.getDate(); day++) {
-        const date = new Date(annee, mois - 1, day);
-        await db.execute(
-          'INSERT INTO calendrier (date, statut, mois, annee) VALUES (?, "disponible", ?, ?)',
-          [date, mois, annee]
+  addAffectationAutomatiqueEquitable: async (mois, annee, regenerate = false) => {
+    try {
+        // 1. Vérification des affectations existantes
+        const [existingAffectations] = await db.execute(
+            `SELECT id FROM affectations 
+             WHERE MONTH(date) = ? AND YEAR(date) = ?`,
+            [mois, annee]
         );
-      }
-    }
 
-    // Récupérer les jours du calendrier
-    const [calendriers] = await db.execute(
-      'SELECT * FROM calendrier WHERE mois = ? AND annee = ? ORDER BY date',
-      [mois, annee]
-    );
+        if (existingAffectations.length > 0 && !regenerate) {
+            throw new Error('Les affectations pour ce mois existent déjà. Utilisez la régénération pour les recréer.');
+        }
 
-    // Algorithme d'affectation équitable
-    for (const jour of calendriers) {
-      for (const poste of postes) {
-        const shuffledPompistes = [...pompistes].sort(() => 0.5 - Math.random());
-
-        for (const pompe of pompes) {
-          let affectationValide = false;
-          let tentative = 0;
-
-          while (!affectationValide && tentative < shuffledPompistes.length) {
-            const pompiste = shuffledPompistes[tentative];
-
-            // ✅ Vérifier que le pompiste n'est affecté à aucun poste ce jour-là
-            const [dejaAffecteCeJour] = await db.execute(
-              `SELECT 1 FROM affectations 
-               WHERE pompiste_id = ? AND calendrier_id = ?`,
-              [pompiste.id, jour.id]
+        // 2. Suppression des anciennes affectations en mode régénération
+        if (regenerate && existingAffectations.length > 0) {
+            await db.execute(
+                `DELETE FROM affectations 
+                 WHERE MONTH(date) = ? AND YEAR(date) = ?`,
+                [mois, annee]
             );
+        }
 
-            if (dejaAffecteCeJour.length === 0) {
-              // Vérifier que la pompe n'est pas déjà affectée pour ce poste ce jour-là
-              const pompeOccupee = await AffectationCalendrier.checkPompeOccupied(
-                pompe.id,
-                jour.id,
-                poste.id
-              );
+        // 3. Récupération des données de base
+        const [pompistes] = await db.execute('SELECT id FROM utilisateurs WHERE role = "pompiste"');
+        const [postes] = await db.execute('SELECT id FROM postes');
+        const [pompes] = await db.execute('SELECT id FROM pompes');
 
-              if (!pompeOccupee) {
-                await db.execute(
-                  `INSERT INTO affectations (pompiste_id, poste_id, pompe_id, calendrier_id)
-                   VALUES (?, ?, ?, ?)`,
-                  [pompiste.id, poste.id, pompe.id, jour.id]
-                );
-                affectationValide = true;
-              }
+        if (pompistes.length === 0 || postes.length === 0 || pompes.length === 0) {
+            throw new Error('Données insuffisantes (pompistes, postes ou pompes manquants)');
+        }
+
+        // 4. Génération des dates strictement dans le mois demandé
+        const dates = [];
+        const daysInMonth = new Date(annee, mois, 0).getDate();
+        
+        for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(annee, mois - 1, day);
+            dates.push(date.toISOString().split('T')[0]);
+        }
+
+        // 5. Algorithme d'affectation équitable
+        for (const date of dates) {
+            // Vérification de sécurité de la date
+            const dateObj = new Date(date);
+            if (dateObj.getMonth() + 1 !== mois || dateObj.getFullYear() !== annee) {
+                console.error(`Date incohérente générée: ${date}`);
+                continue;
             }
 
-            tentative++;
-          }
+            // Pour chaque poste et pompe
+            for (const poste of postes) {
+                // Mélanger aléatoirement les pompistes
+                const shuffledPompistes = [...pompistes].sort(() => Math.random() - 0.5);
+                let pompistesAffectes = new Set();
 
-          if (!affectationValide) {
-            throw new Error(`Impossible d'affecter toutes les pompes pour le ${jour.date} (poste: ${poste.nom})`);
-          }
+                for (const pompe of pompes) {
+                    let affectationReussie = false;
+
+                    // Trouver un pompiste disponible
+                    for (const pompiste of shuffledPompistes) {
+                        // Vérifier si le pompiste est déjà affecté ce jour
+                        const [dejaAffecte] = await db.execute(
+                            `SELECT 1 FROM affectations 
+                             WHERE pompiste_id = ? AND date = ?`,
+                            [pompiste.id, date]
+                        );
+
+                        if (dejaAffecte.length === 0) {
+                            // Vérifier si la pompe est déjà affectée pour ce poste ce jour
+                            const [pompeOccupee] = await db.execute(
+                                `SELECT 1 FROM affectations 
+                                 WHERE pompe_id = ? AND poste_id = ? AND date = ?`,
+                                [pompe.id, poste.id, date]
+                            );
+
+                            if (pompeOccupee.length === 0) {
+                                // Créer l'affectation
+                                await db.execute(
+                                    `INSERT INTO affectations 
+                                    (pompiste_id, poste_id, pompe_id, date)
+                                    VALUES (?, ?, ?, ?)`,
+                                    [pompiste.id, poste.id, pompe.id, date]
+                                );
+                                pompistesAffectes.add(pompiste.id);
+                                affectationReussie = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!affectationReussie) {
+                        throw new Error(`Impossible d'affecter la pompe ${pompe.id} pour le ${date} (poste: ${poste.id})`);
+                    }
+                }
+            }
         }
-      }
-    }
-  } catch (error) {
-    console.error('Erreur dans addAffectationAutomatiqueEquitable:', error);
-    throw error;
-  }
-},
 
-// Supprimer les affectations d'un mois/année
-deleteAffectationsByMonthYear: async (mois, annee) => {
-  const [result] = await db.execute(
-    `DELETE a FROM affectations a
-     JOIN calendrier c ON a.calendrier_id = c.id
-     WHERE c.mois = ? AND c.annee = ?`,
-    [mois, annee]
-  );
-  return result;
+        return { 
+            success: true, 
+            message: `Affectations ${regenerate ? 'régénérées' : 'générées'} avec succès pour ${mois}/${annee}`,
+            count: dates.length * postes.length * pompes.length
+        };
+
+    } catch (error) {
+        console.error('Erreur dans la génération des affectations:', {
+            mois,
+            annee,
+            error: error.message
+        });
+        throw error;
+    }
 },
-  // 📆 Obtenir les affectations d'un jour spécifique
-  getAffectationsByJour: async (calendrier_id) => {
+  deleteAffectationsByMonthYear: async (mois, annee) => {
+    const [result] = await db.execute(
+      `DELETE FROM affectations
+       WHERE MONTH(date) = ? AND YEAR(date) = ?`,
+      [mois, annee]
+    );
+    return result;
+  },
+
+  getAffectationsByDate: async (date) => {
     const query = `
       SELECT 
         a.id AS affectation_id,
         u.username AS pompiste,
         p.numero_pompe,
         po.nom AS poste,
-        c.date,
-        a.calendrier_id,
+        a.date,
         p.id AS pompe_id,
         po.heure_debut,
         po.heure_fin
@@ -193,14 +191,12 @@ deleteAffectationsByMonthYear: async (mois, annee) => {
       JOIN utilisateurs u ON a.pompiste_id = u.id
       JOIN pompes p ON a.pompe_id = p.id
       JOIN postes po ON a.poste_id = po.id
-      JOIN calendrier c ON a.calendrier_id = c.id
-      WHERE a.calendrier_id = ?
+      WHERE a.date = ?
     `;
-    const [rows] = await db.execute(query, [calendrier_id]);
+    const [rows] = await db.execute(query, [date]);
     return rows;
   },
 
-  // 📅 Obtenir les affectations d’un mois/année
   getAffectationsByMonthYear: async (mois, annee) => {
     const query = `
       SELECT 
@@ -208,13 +204,14 @@ deleteAffectationsByMonthYear: async (mois, annee) => {
         u.username AS pompiste,
         p.numero_pompe,
         po.nom AS poste,
-        c.date
+        a.date,
+        po.heure_debut
       FROM affectations a
       JOIN utilisateurs u ON a.pompiste_id = u.id
       JOIN pompes p ON a.pompe_id = p.id
       JOIN postes po ON a.poste_id = po.id
-      JOIN calendrier c ON a.calendrier_id = c.id
-      WHERE c.mois = ? AND c.annee = ?
+      WHERE MONTH(a.date) = ? AND YEAR(a.date) = ?
+      ORDER BY a.date
     `;
     const [rows] = await db.execute(query, [mois, annee]);
     return rows;
@@ -222,6 +219,12 @@ deleteAffectationsByMonthYear: async (mois, annee) => {
 
   updateAffectation: async (id, updates) => {
     try {
+      console.log('Début de la mise à jour - Données reçues:', {id, updates});
+  
+      // Validation des données
+      if (!id) throw new Error('ID de l\'affectation manquant');
+      if (!updates) throw new Error('Données de mise à jour manquantes');
+  
       // Récupérer l'affectation actuelle
       const [currentAffectation] = await db.execute(
         'SELECT * FROM affectations WHERE id = ?', 
@@ -233,96 +236,37 @@ deleteAffectationsByMonthYear: async (mois, annee) => {
       }
   
       const current = currentAffectation[0];
-      const calendrier_id = updates.calendrier_id || current.calendrier_id;
-      const poste_id = updates.poste_id || current.poste_id;
+      console.log('Affectation actuelle:', current);
   
-      // Convertir les noms en IDs si nécessaire
-      if (updates.pompiste) {
-        const [result] = await db.execute('SELECT id FROM utilisateurs WHERE username = ?', [updates.pompiste]);
-        if (result.length === 0) throw new Error(`Pompiste "${updates.pompiste}" introuvable.`);
-        updates.pompiste_id = result[0].id;
-      }
-      
-      if (updates.numero_pompe) {
-        const [result] = await db.execute('SELECT id FROM pompes WHERE numero_pompe = ?', [updates.numero_pompe]);
-        if (result.length === 0) throw new Error(`Pompe "${updates.numero_pompe}" introuvable.`);
-        updates.pompe_id = result[0].id;
-      }
-      
-      if (updates.poste) {
-        const [result] = await db.execute('SELECT id FROM postes WHERE nom = ?', [updates.poste]);
-        if (result.length === 0) throw new Error(`Poste "${updates.poste}" introuvable.`);
-        updates.poste_id = result[0].id;
-      }
+      // Convertir les noms en IDs
+      const getIds = async () => {
+        if (updates.pompiste) {
+          const [result] = await db.execute('SELECT id FROM utilisateurs WHERE username = ?', [updates.pompiste]);
+          if (result.length === 0) throw new Error(`Pompiste "${updates.pompiste}" introuvable.`);
+          updates.pompiste_id = result[0].id;
+        }
+        
+        if (updates.numero_pompe) {
+          const [result] = await db.execute('SELECT id FROM pompes WHERE numero_pompe = ?', [updates.numero_pompe]);
+          if (result.length === 0) throw new Error(`Pompe "${updates.numero_pompe}" introuvable.`);
+          updates.pompe_id = result[0].id;
+        }
+        
+        if (updates.poste) {
+          const [result] = await db.execute('SELECT id FROM postes WHERE nom = ?', [updates.poste]);
+          if (result.length === 0) throw new Error(`Poste "${updates.poste}" introuvable.`);
+          updates.poste_id = result[0].id;
+        }
+      };
   
-      // Démarrer une transaction pour garantir l'intégrité des données
+      await getIds();
+  
+      // Démarrer une transaction
       const connection = await db.getConnection();
       await connection.beginTransaction();
   
       try {
-        // Cas 1: Changement de pompiste seulement
-        if (updates.pompiste_id && !updates.pompe_id && !updates.poste_id) {
-          // Vérifier si le nouveau pompiste est déjà affecté à un autre poste ce jour-là
-          const [existingAffectation] = await connection.execute(
-            `SELECT id FROM affectations 
-             WHERE pompiste_id = ? AND calendrier_id = ?`,
-            [updates.pompiste_id, calendrier_id]
-          );
-  
-          if (existingAffectation.length > 0) {
-            // Échanger les affectations entre les deux pompistes
-            await connection.execute(
-              `UPDATE affectations 
-               SET pompiste_id = ?
-               WHERE id = ?`,
-              [current.pompiste_id, existingAffectation[0].id]
-            );
-          }
-        }
-        
-        // Cas 2: Changement de pompe seulement
-        if (updates.pompe_id && !updates.pompiste_id && !updates.poste_id) {
-          // Vérifier si la nouvelle pompe est déjà affectée à un autre pompiste ce jour-là
-          const [existingAffectation] = await connection.execute(
-            `SELECT id, pompiste_id FROM affectations 
-             WHERE pompe_id = ? AND calendrier_id = ? AND poste_id = ?`,
-            [updates.pompe_id, calendrier_id, poste_id]
-          );
-  
-          if (existingAffectation.length > 0) {
-            // Échanger les pompes entre les deux affectations
-            await connection.execute(
-              `UPDATE affectations 
-               SET pompe_id = ?
-               WHERE id = ?`,
-              [current.pompe_id, existingAffectation[0].id]
-            );
-          }
-        }
-        
-        // Cas 3: Changement de poste seulement
-        if (updates.poste_id && !updates.pompiste_id && !updates.pompe_id) {
-          // Vérifier si le pompiste est déjà affecté à un autre poste ce jour-là
-          const [existingAffectation] = await connection.execute(
-            `SELECT id, poste_id, pompe_id FROM affectations 
-             WHERE pompiste_id = ? AND calendrier_id = ?`,
-            [current.pompiste_id, calendrier_id]
-          );
-  
-          if (existingAffectation.length > 0) {
-            // Échanger les postes entre les deux affectations
-            await connection.execute(
-              `UPDATE affectations 
-               SET poste_id = ?
-               WHERE id = ?`,
-              [current.poste_id, existingAffectation[0].id]
-            );
-          }
-        }
-  
-       
-  
-        // Mettre à jour l'affectation courante avec les nouveaux valeurs
+        // Construction de la requête de mise à jour
         const fields = [];
         const values = [];
         
@@ -338,9 +282,9 @@ deleteAffectationsByMonthYear: async (mois, annee) => {
           fields.push('poste_id = ?');
           values.push(updates.poste_id);
         }
-        if (updates.calendrier_id !== undefined) {
-          fields.push('calendrier_id = ?');
-          values.push(updates.calendrier_id);
+        if (updates.date !== undefined) {
+          fields.push('date = ?');
+          values.push(updates.date);
         }
   
         if (fields.length === 0) {
@@ -349,17 +293,26 @@ deleteAffectationsByMonthYear: async (mois, annee) => {
   
         const query = `UPDATE affectations SET ${fields.join(', ')} WHERE id = ?`;
         values.push(id);
-        await connection.execute(query, values);
+        
+        console.log('Requête SQL:', query);
+        console.log('Valeurs:', values);
   
-        // Valider la transaction
+        // Exécution de la mise à jour
+        const [result] = await connection.execute(query, values);
+        console.log('Résultat de la mise à jour:', result);
+  
         await connection.commit();
         connection.release();
   
-        return { success: true, message: 'Affectation mise à jour avec succès.' };
+        return { 
+          success: true, 
+          message: 'Affectation mise à jour avec succès.',
+          affectedRows: result.affectedRows 
+        };
       } catch (error) {
-        // En cas d'erreur, annuler la transaction
         await connection.rollback();
         connection.release();
+        console.error('Erreur lors de la transaction:', error);
         throw error;
       }
     } catch (error) {
@@ -367,86 +320,102 @@ deleteAffectationsByMonthYear: async (mois, annee) => {
       throw error;
     }
   },
-  // 🔎 Obtenir un calendrier par date
-  getCalendrierByDate: async (date) => {
-    const query = 'SELECT * FROM calendrier WHERE date = ?';
-    const [rows] = await db.execute(query, [date]);
-    return rows[0];
-  },
-  getCurrentAffectation: async (pompiste_id) => {
-    console.log(`Recherche affectation pour pompiste ${pompiste_id}`);
-    const now = new Date();
-    const currentHour = now.getHours();
-    
-    let poste_id = 1; // Matin par défaut
-    if (currentHour >= 14 && currentHour < 22) poste_id = 2;
-    else if (currentHour >= 22 || currentHour < 6) poste_id = 3;
+
+ // Modifiez la méthode getCurrentAffectation comme suit :
+getCurrentAffectation: async (pompiste_id) => {
+  const now = new Date();
+  const currentHour = now.getHours();
   
-    let queryDate = formatDate(now);
-    if (currentHour < 6) {
-      const yesterday = new Date(now);
-      yesterday.setDate(yesterday.getDate() - 1);
-      queryDate = formatDate(yesterday);
-    }
-  
-    console.log(`Date recherchée: ${queryDate}, Poste ID: ${poste_id}`);
-  
-    const query = `
-      SELECT 
-        a.id AS affectation_id,
-        a.pompiste_id,
-        a.poste_id,
-        a.pompe_id,
-        a.calendrier_id,
-        u.username AS pompiste,
-        p.numero_pompe,
-        po.nom AS poste,
-        c.date,
-        po.heure_debut,
-        po.heure_fin
-      FROM affectations a
-      JOIN utilisateurs u ON a.pompiste_id = u.id
-      JOIN pompes p ON a.pompe_id = p.id
-      JOIN postes po ON a.poste_id = po.id
-      JOIN calendrier c ON a.calendrier_id = c.id
-      WHERE a.pompiste_id = ? 
-      AND c.date = ?
-      AND a.poste_id = ?
-    `;
-  
-    console.log('Requête SQL:', query.replace(/\s+/g, ' ').trim());
-    console.log('Paramètres:', [pompiste_id, queryDate, poste_id]);
-  
-    const [rows] = await db.execute(query, [pompiste_id, queryDate, poste_id]);
-    console.log('Résultats:', rows);
-    
-    return rows[0];
-  },
-// Obtenir les pistolets disponibles pour une affectation
-getAvailablePistoletsByAffectation: async (affectation_id) => {
+  let poste_id = 1; // Matin par défaut
+  if (currentHour >= 14 && currentHour < 22) poste_id = 2; // Après-midi
+  else if (currentHour >= 22 || currentHour < 6) poste_id = 3; // Nuit
+
+  let queryDate = formatDate(now);
+  if (currentHour < 6) {
+    // Pour le poste de nuit qui commence la veille à 22h
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    queryDate = formatDate(yesterday);
+  }
+
   const query = `
-    SELECT pt.* 
-    FROM pistolets pt
-    JOIN pompes p ON pt.pompe_id = p.id
-    JOIN affectations a ON p.id = a.pompe_id
-    WHERE a.id = ? 
-    AND pt.statut = 'disponible'
+    SELECT 
+      a.id AS affectation_id,
+      a.pompiste_id,
+      a.poste_id,
+      a.pompe_id,
+      a.date,
+      u.username AS pompiste,
+      p.numero_pompe,
+      po.nom AS poste,
+      po.heure_debut,
+      po.heure_fin
+    FROM affectations a
+    JOIN utilisateurs u ON a.pompiste_id = u.id
+    JOIN pompes p ON a.pompe_id = p.id
+    JOIN postes po ON a.poste_id = po.id
+    WHERE a.pompiste_id = ? 
+    AND a.date = ?
+    AND a.poste_id = ?
+    LIMIT 1
   `;
-  const [rows] = await db.execute(query, [affectation_id]);
-  return rows;
+
+  try {
+    const [rows] = await db.execute(query, [pompiste_id, queryDate, poste_id]);
+    if (rows.length === 0) {
+      return null;
+    }
+    return rows[0];
+  } catch (error) {
+    console.error('Error in getCurrentAffectation:', error);
+    throw error;
+  }
 },
+// Ajoutez cette méthode pour récupérer l'historique des relevés
+getHistoriqueReleves: async (pistolet_id, date_debut, date_fin) => {
+  const query = `
+    SELECT 
+      id,
+      index_ouverture,
+      index_fermeture,
+      date_heure_saisie
+    FROM releves_postes
+    WHERE pistolet_id = ?
+    AND DATE(date_heure_saisie) BETWEEN ? AND ?
+    ORDER BY date_heure_saisie DESC
+  `;
+
+  try {
+    const [rows] = await db.execute(query, [pistolet_id, date_debut, date_fin]);
+    return rows;
+  } catch (error) {
+    console.error('Error in getHistoriqueReleves:', error);
+    throw new Error('Erreur lors de la récupération de l\'historique');
+  }
+},
+
+  getAvailablePistoletsByAffectation: async (affectation_id) => {
+    const query = `
+      SELECT pt.* 
+      FROM pistolets pt
+      JOIN pompes p ON pt.pompe_id = p.id
+      JOIN affectations a ON p.id = a.pompe_id
+      WHERE a.id = ? 
+      AND pt.statut = 'disponible'
+    `;
+    const [rows] = await db.execute(query, [affectation_id]);
+    return rows;
+  },
 };
-// Fonction utilitaire pour formater une date au format YYYY-MM-DD
+
 function formatDate(date) {
   const d = new Date(date);
   let month = '' + (d.getMonth() + 1);
   let day = '' + d.getDate();
   const year = d.getFullYear();
 
-  if (month.length < 2) 
-    month = '0' + month;
-  if (day.length < 2) 
-    day = '0' + day;
+  if (month.length < 2) month = '0' + month;
+  if (day.length < 2) day = '0' + day;
 
   return [year, month, day].join('-');
 }

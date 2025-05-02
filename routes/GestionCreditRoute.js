@@ -12,6 +12,8 @@ router.get('/credits/all', CreditController.getAllCredits);
 router.get('/credits/:id_credit', CreditController.getCreditById);
 router.put('/credits/update', CreditController.updateCredit);
 router.put('/credits/state', CreditController.updateCreditState); // Mettre à jour l'état d'un crédit
+router.post('/credits/renew', CreditController.renewCredit);
+
 
 // Routes pour les paiements
 router.post('/paiments/create', PaimentController.createPayment);

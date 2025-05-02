@@ -88,7 +88,22 @@ getCreditsByUser: async (id_utilisateur) => {
   `;
   return db.execute(query, [id_utilisateur]);
 },
-
+// Renouveler un crédit
+renewCredit: (id_credit, new_solde, new_duree, new_date_debut) => {
+  const query = `
+    INSERT INTO details_credits (id_utilisateur, type_credit, solde_credit, date_debut, duree_credit, etat)
+    SELECT 
+      id_utilisateur, 
+      type_credit, 
+      ?, 
+      ?, 
+      ?, 
+      'actif'
+    FROM details_credits 
+    WHERE id = ?
+  `;
+  return db.execute(query, [new_solde, new_date_debut, new_duree, id_credit]);
+},
 // Statistiques des crédits pour un utilisateur
 getCreditStats: async (id_utilisateur) => {
   const query = `

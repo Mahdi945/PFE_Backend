@@ -89,7 +89,33 @@ const updateCreditState = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+const renewCredit = async (req, res) => {
+  try {
+    const { id_credit, solde_credit, date_debut, duree_credit } = req.body;
 
+    // Vérifier que le crédit existe et est remboursé
+    const [credit] = await Credit.getCreditById(id_credit);
+    if (credit.length === 0) {
+      return res.status(404).json({ error: 'Crédit introuvable' });
+    }
+  
+
+    // Créer un nouveau crédit
+    const [result] = await Credit.renewCredit(
+      id_credit,
+      solde_credit,
+      duree_credit,
+      date_debut
+    );
+
+    res.status(201).json({ 
+      message: 'Crédit renouvelé avec succès', 
+      newCreditId: result.insertId 
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 const updateExpiredCredits = async (req, res) => {
   try {
     await Credit.updateExpiredCredits();
@@ -118,4 +144,4 @@ const getCreditStats = async (req, res) => {
   }
 };
 
-export default { createCredit, getAllCredits, getCreditById, updateCredit, updateCreditState, updateExpiredCredits,getCreditStats,getCreditsByUser };
+export default { createCredit,renewCredit, getAllCredits, getCreditById, updateCredit, updateCreditState, updateExpiredCredits,getCreditStats,getCreditsByUser };

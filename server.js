@@ -208,10 +208,11 @@ cron.schedule('0 9 * * 1', async () => {
   try {
     console.log('🔄 Running weekly summary...');
     
-    // Get all active users
-    const [users] = await pool.query(`
-      SELECT id, username, email FROM utilisateurs WHERE actif = 1
-    `);
+// Get all active users
+const [users] = await pool.query(`
+  SELECT id, username, email FROM utilisateurs WHERE status = 'active'
+`);
+
     
     for (const user of users) {
       // Get weekly stats
