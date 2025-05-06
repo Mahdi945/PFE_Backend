@@ -1,23 +1,35 @@
 import express from 'express';
+import passport from 'passport';
 import PistoletController from '../controllers/PistoletController.js';
 
 const router = express.Router();
 
-// Routes existantes
-router.post('/add', PistoletController.addPistolet);
-router.put('/update-ouverture', PistoletController.updateIndexOuverture); // À marquer comme déprécié
-router.put('/update-fermeture', PistoletController.updateIndexFermeture); // À marquer comme déprécié
-router.get('/pompe/:pompe_id', PistoletController.getPistoletsByPompeId);
-router.put('/update-statut', PistoletController.updateStatutPistolet);
-router.get('/', PistoletController.getAllPistolets);
+// Middleware d'authentification JWT
+const requireAuth = passport.authenticate('jwt', { session: false });
 
-// Nouvelles routes
-router.post('/releves', PistoletController.enregistrerReleve);
-router.post('/rapports/generer', PistoletController.genererRapportJournalier);
-router.get('/:pistolet_id/historique', PistoletController.getHistoriqueReleves);
-router.get('/revenus-journaliers', PistoletController.getRevenusJournaliers);
-router.put('/:id/statut',PistoletController.updateStatut);
-router.post('/releves/manuel', PistoletController.ajouterReleveManuel);
-// Ajouter cette route dans le fichier de routes
-router.post('/rapports/manuel', PistoletController.ajouterRapportManuel);
+// ==================== ROUTES PROTÉGÉES ====================
+
+// CRUD de base
+router.post('/add', requireAuth, PistoletController.addPistolet);
+router.get('/', requireAuth, PistoletController.getAllPistolets);
+router.get('/pompe/:pompe_id', requireAuth, PistoletController.getPistoletsByPompeId);
+
+// Gestion des statuts
+router.put('/update-statut', requireAuth, PistoletController.updateStatutPistolet);
+router.put('/:id/statut', requireAuth, PistoletController.updateStatut);
+
+// Routes dépréciées (à remplacer)
+router.put('/update-ouverture', requireAuth, PistoletController.updateIndexOuverture);
+router.put('/update-fermeture', requireAuth, PistoletController.updateIndexFermeture);
+
+// Gestion des relevés
+router.post('/releves', requireAuth, PistoletController.enregistrerReleve);
+router.post('/releves/manuel', requireAuth, PistoletController.ajouterReleveManuel);
+router.get('/:pistolet_id/historique', requireAuth, PistoletController.getHistoriqueReleves);
+
+// Rapports
+router.post('/rapports/generer', requireAuth, PistoletController.genererRapportJournalier);
+router.post('/rapports/manuel', requireAuth, PistoletController.ajouterRapportManuel);
+router.get('/revenus-journaliers', requireAuth, PistoletController.getRevenusJournaliers);
+
 export default router;

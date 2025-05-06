@@ -1,33 +1,43 @@
+// permission.model.js
 import db from '../config/db.js';
 
 const Permission = {
-  // Récupérer toutes les permissions sauf Dashboard
+  // Récupérer toutes les permissions
   getAll: async () => {
-    const [rows] = await db.query("SELECT * FROM permissions WHERE element_name != 'Dashboard'");
+    const [rows] = await db.query("SELECT * FROM permissions");
     return rows;
   },
-
-  // Récupérer les permissions par rôle (tous les éléments sauf Dashboard)
   getByRole: async (role) => {
+    const normalizedRole = role.toLowerCase();
     const [rows] = await db.query(
-      "SELECT * FROM permissions WHERE role = ? AND element_name != 'Dashboard' ORDER BY element_name", 
-      [role]
+      "SELECT * FROM permissions WHERE role = ? AND is_visible = 1", 
+      [normalizedRole]
     );
     return rows;
+  },
+  // Récupérer la permission dashboard spécifique au rôle
+  getDashboardPermission: async (role) => {
+    const [rows] = await db.query(
+      "SELECT * FROM permissions WHERE role = ? AND element_name LIKE 'Dashboard-%'", 
+      [role]
+    );
+    return rows[0];
   },
 
   // Récupérer tous les rôles distincts
   getAllRoles: async () => {
     const [rows] = await db.query("SELECT DISTINCT role FROM permissions ORDER BY role");
-    return rows.map(row => row.role);
+    return rows.map(row => row.role); // Correction de 'roale' à 'role'
   },
 
-  // Récupérer les permissions par rôle et élément parent (sauf Dashboard)
+  // Récupérer les permissions par rôle et élément parent
   getByRoleAndParent: async (role, parent) => {
     const [rows] = await db.query(
-      "SELECT * FROM permissions WHERE role = ? AND parent_element = ? AND element_name != 'Dashboard' ORDER BY element_name", 
+      "SELECT * FROM permissions WHERE role = ? AND parent_element = ? ORDER BY element_name", 
       [role, parent]
-    )},
+    );
+    return rows;
+  },
 
   // Mettre à jour une permission
   update: async (role, element_name, is_visible) => {
@@ -40,18 +50,15 @@ const Permission = {
 
   // Mettre à jour plusieurs permissions en une seule requête
   updateMultiple: async (updates) => {
-    // Préparer les requêtes batch
     const queries = updates.map(update => ({
       sql: 'UPDATE permissions SET is_visible = ? WHERE role = ? AND element_name = ?',
       values: [update.is_visible, update.role, update.element_name]
     }));
 
-    // Exécuter toutes les requêtes
     const results = await Promise.all(
       queries.map(q => db.query(q.sql, q.values))
     );
 
-    // Retourner le nombre total de lignes affectées
     return results.reduce((total, [result]) => total + result.affectedRows, 0);
   }
 };

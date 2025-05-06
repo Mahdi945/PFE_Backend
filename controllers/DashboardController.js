@@ -56,7 +56,6 @@ class DashboardController {
     try {
       const filter = req.query.filter || { type: 'month' };
       
-      // Définir les valeurs par défaut
       if (filter.type === 'month') {
         filter.month = filter.month || new Date().getMonth() + 1;
         filter.year = filter.year || new Date().getFullYear();
@@ -87,13 +86,13 @@ class DashboardController {
       res.json({ 
         success: true,
         data: {
-          userStats: userStats[0][0] || {}, // Prendre le premier élément des résultats
+          userStats: userStats[0][0] || {},
           creditStats: creditStats[0][0] || {},
           pompeStats: pompeStats[0] || [],
           dailyRevenues: dailyRevenues || [],
           allTransactions: allTransactions[0] || [],
           creditsWithVehicules: creditsWithVehicules[0] || [],
-          paymentStats: paymentStats || []
+          paymentStats: paymentStats[0] || []
         },
         filter: filter
       });
@@ -104,6 +103,7 @@ class DashboardController {
         message: 'Erreur lors de la récupération des données du dashboard gérant'
       });
     }
-  }}
+  }
+}
 
 export default DashboardController;

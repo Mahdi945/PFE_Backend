@@ -126,14 +126,14 @@ const Pistolet = {
     addRapportJournalierManuel: async (date_rapport, pistolet_id, total_quantite, total_montant) => {
       try {
         // Vérifier si un rapport existe déjà pour cette date et ce pistolet
-        const [existingReport] = await db.query(
-          'SELECT id FROM rapports_journaliers WHERE date_rapport = ? AND pistolet_id = ?',
-          [date_rapport, pistolet_id]
-        );
+        //const [existingReport] = await db.query(
+          //'SELECT id FROM rapports_journaliers WHERE date_rapport = ? AND pistolet_id = ?',
+          //[date_rapport, pistolet_id]
+        //);
     
-        if (existingReport.length > 0) {
-          throw new Error('Un rapport existe déjà pour cette date et ce pistolet');
-        }
+        //if (existingReport.length > 0) {
+         // throw new Error('Un rapport existe déjà pour cette date et ce pistolet');
+        //}
     
         // Insérer le nouveau rapport
         const [result] = await db.query(
@@ -225,32 +225,43 @@ const Pistolet = {
     
     // Récupérer les revenus journaliers avec jointure via affectations
  // Version corrigée de getRevenusJournaliers
+// Version mise à jour pour utiliser rapports_journaliers
 getRevenusJournaliers: async (date_debut, date_fin, pistolet_id = null) => {
   let query = `
     SELECT 
-      DATE(r.date_heure_saisie) as date,
-      r.pistolet_id,
+      rj.date_rapport as date,
+      rj.pistolet_id,
       p.nom_produit,
       p.prix_unitaire,
-      a.poste_id,
+      r.poste_id,
       u.username as nom_pompiste,
-      SUM(r.index_fermeture - r.index_ouverture) AS quantite,
-      SUM((r.index_fermeture - r.index_ouverture) * p.prix_unitaire) AS montant
-    FROM releves_postes r
-    JOIN affectations a ON r.affectation_id = a.id
-    JOIN pistolets p ON r.pistolet_id = p.id
-    JOIN utilisateurs u ON a.pompiste_id = u.id
-    WHERE DATE(r.date_heure_saisie) BETWEEN ? AND ? 
-    AND r.statut = 'saisie'`;
+      rj.total_quantite as quantite,
+      rj.total_montant as montant,
+      rj.nombre_postes
+    FROM rapports_journaliers rj
+    JOIN pistolets p ON rj.pistolet_id = p.id
+    LEFT JOIN (
+      SELECT 
+        r.pistolet_id,
+        DATE(r.date_heure_saisie) as date_releve,
+        a.poste_id,
+        a.pompiste_id
+      FROM releves_postes r
+      JOIN affectations a ON r.affectation_id = a.id
+      WHERE r.statut = 'valide'
+      GROUP BY r.pistolet_id, DATE(r.date_heure_saisie), a.poste_id, a.pompiste_id
+    ) r ON rj.pistolet_id = r.pistolet_id AND rj.date_rapport = r.date_releve
+    LEFT JOIN utilisateurs u ON r.pompiste_id = u.id
+    WHERE rj.date_rapport BETWEEN ? AND ?`;
   
   const params = [date_debut, date_fin];
   
   if (pistolet_id) {
-    query += ' AND r.pistolet_id = ?';
+    query += ' AND rj.pistolet_id = ?';
     params.push(pistolet_id);
   }
   
-  query += ' GROUP BY DATE(r.date_heure_saisie), r.pistolet_id, a.poste_id, a.pompiste_id ORDER BY date, r.pistolet_id';
+  query += ' ORDER BY rj.date_rapport, rj.pistolet_id';
   
   try {
     const [rows] = await db.query(query, params);

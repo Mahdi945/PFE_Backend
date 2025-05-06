@@ -1,3 +1,4 @@
+// permission.controller.js
 import Permission from '../models/Permission.js';
 
 const getPermissions = async (req, res) => {
@@ -23,6 +24,17 @@ const getPermissionsParRole = async (req, res) => {
     } catch (err) {
       console.error('Error in getPermissionsParRole:', err);
       res.status(500).json({ error: 'Erreur lors de la récupération des permissions' });
+    }
+};
+
+const getDashboardPermission = async (req, res) => {
+    try {
+      const { role } = req.params;
+      const result = await Permission.getDashboardPermission(role);
+      res.json(result || {});
+    } catch (err) {
+      console.error('Error in getDashboardPermission:', err);
+      res.status(500).json({ error: 'Erreur lors de la récupération de la permission dashboard' });
     }
 };
 
@@ -78,6 +90,7 @@ export default {
     getPermissions, 
     updatePermission,
     getPermissionsParRole,
+    getDashboardPermission,
     getAllRoles,
     updateMultiplePermissions
 };

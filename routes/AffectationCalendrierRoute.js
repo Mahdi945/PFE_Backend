@@ -1,31 +1,36 @@
 import express from 'express';
 import AffectationCalendrierController from '../controllers/AffectationCalendrierController.js';
+import passport from 'passport';
 
 const router = express.Router();
 
+// Middleware d'authentification JWT
+const requireAuth = passport.authenticate('jwt', { session: false });
+
+// ==================== ROUTES PROTÉGÉES ====================
+
 // Ajouter une affectation manuelle
-router.post('/add-manual', AffectationCalendrierController.addAffectationManuelle);
+router.post('/add-manual', requireAuth, AffectationCalendrierController.addAffectationManuelle);
 
 // Ajouter une affectation automatique équitable
-router.post('/add-automatic', AffectationCalendrierController.addAffectationAutomatiqueEquitable);
-
-// Récupérer les affectations d'un jour spécifique
-//router.get('/jour/:calendrier_id', AffectationCalendrierController.getAffectationsByJour);
+router.post('/add-automatic', requireAuth, AffectationCalendrierController.addAffectationAutomatiqueEquitable);
 
 // Récupérer les affectations d'un mois et année
-router.get('/month/:mois/year/:annee', AffectationCalendrierController.getAffectationsByMonthYear);
+router.get('/month/:mois/year/:annee', requireAuth, AffectationCalendrierController.getAffectationsByMonthYear);
 
 // Mettre à jour une affectation
-router.put('/update/:id', AffectationCalendrierController.updateAffectation);
-router.post('/regenerate', AffectationCalendrierController.regenerateAffectations);
+router.put('/update/:id', requireAuth, AffectationCalendrierController.updateAffectation);
+
+// Régénérer les affectations
+router.post('/regenerate', requireAuth, AffectationCalendrierController.regenerateAffectations);
+
 // Récupérer un enregistrement calendrier par date
-router.get('/date/:date', AffectationCalendrierController.getAffectationsByDate);
+router.get('/date/:date', requireAuth, AffectationCalendrierController.getAffectationsByDate);
 
-// Nouvelle route: Obtenir l'affectation actuelle d'un pompiste (avec gestion des shifts)
-router.get('/current/:pompiste_id', AffectationCalendrierController.getCurrentAffectation);
+// Obtenir l'affectation actuelle d'un pompiste
+router.get('/current/:pompiste_id', requireAuth, AffectationCalendrierController.getCurrentAffectation);
 
-// Nouvelle route: Obtenir les pistolets disponibles pour une affectation
-router.get('/pistolets/:affectation_id', AffectationCalendrierController.getAvailablePistolets);
-
+// Obtenir les pistolets disponibles pour une affectation
+router.get('/pistolets/:affectation_id', requireAuth, AffectationCalendrierController.getAvailablePistolets);
 
 export default router;

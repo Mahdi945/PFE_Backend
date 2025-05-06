@@ -131,6 +131,7 @@ updateUserPhoto: (userId, photoPath) => {
   const query = 'UPDATE utilisateurs SET photo = ? WHERE id = ?';
   return db.execute(query, [photoPath, userId]);
 },
+
 getUserStats: async (filter = {}) => {
   let query = `
     SELECT 
@@ -140,33 +141,26 @@ getUserStats: async (filter = {}) => {
       COUNT(CASE WHEN role = 'client' THEN 1 END) AS clients,
       COUNT(CASE WHEN role = 'pompiste' THEN 1 END) AS pompistes,
       COUNT(CASE WHEN role = 'gerant' THEN 1 END) AS gerants,
-      COUNT(CASE WHEN role = 'Cogerant' THEN 1 END) AS cogerants
+      COUNT(CASE WHEN role = 'cogerant' THEN 1 END) AS cogerants
     FROM utilisateurs
     WHERE 1=1
   `;
 
   const params = [];
 
-  // Gestion des filtres avec validation des dates
   if (filter.type === 'day') {
     query += ' AND DATE(temps_de_creation) = CURDATE()';
   } else if (filter.type === 'month' && filter.month && filter.year) {
     query += ' AND MONTH(temps_de_creation) = ? AND YEAR(temps_de_creation) = ?';
-    params.push(parseInt(filter.month), parseInt(filter.year));
+    params.push(filter.month, filter.year);
   } else if (filter.type === 'year' && filter.year) {
     query += ' AND YEAR(temps_de_creation) = ?';
-    params.push(parseInt(filter.year));
+    params.push(filter.year);
   } else if (filter.startDate && filter.endDate) {
-    // Validation des formats de date
-    if (this.isValidDate(filter.startDate) && this.isValidDate(filter.endDate)) {
-      query += ' AND DATE(temps_de_creation) BETWEEN ? AND ?';
-      params.push(filter.startDate, filter.endDate);
-    } else {
-      throw new Error('Format de date invalide');
-    }
+    query += ' AND DATE(temps_de_creation) BETWEEN ? AND ?';
+    params.push(filter.startDate, filter.endDate);
   }
 
-  // Exécution sécurisée
   try {
     const [result] = await db.execute(query, params);
     return [result];

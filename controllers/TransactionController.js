@@ -5,10 +5,16 @@ import nodemailer from 'nodemailer';
 import path from 'path';
 import dotenv from 'dotenv';
 import db from '../config/db.js';
-// Configuration de l'environnement
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 dotenv.config();
 
-// Configuration du transporteur email
+// Email transporter configuration
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -17,25 +23,20 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Fonction pour générer un template email avec le logo
+// Email template function
 const generateEmailTemplate = (title, content, actionLink = null, actionText = null) => {
   return `
     <div style="font-family: 'Poppins', 'Segoe UI', sans-serif; max-width: 650px; margin: 0 auto; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 30px rgba(0, 0, 0, 0.1);">
-      <!-- Header orange vif avec logo très grand -->
       <div style="padding: 50px 20px; text-align: center; background: linear-gradient(135deg, #FF7F33 0%, #FF5E1A 100%);">
         <img src="cid:logo" alt="Carbotrack Logo" style="height: 50px; width: auto; max-width: 100%;"/>
       </div>
-      
-      <!-- Contenu principal -->
       <div style="padding: 50px 40px; color: #333333; line-height: 1.6; background: #ffffff;">
         <h1 style="color: #2c3e50; margin: 0 0 30px 0; font-size: 30px; font-weight: 600; text-align: center; letter-spacing: -0.5px;">
           ${title}
         </h1>
-        
         <div style="font-size: 16px; color: #555555;">
           ${content}
         </div>
-        
         ${actionLink && actionText ? `
           <div style="text-align: center; margin: 50px 0 40px;">
             <a href="${actionLink}" style="
@@ -56,8 +57,6 @@ const generateEmailTemplate = (title, content, actionLink = null, actionText = n
           </div>
         ` : ''}
       </div>
-      
-      <!-- Footer léger -->
       <div style="padding: 24px; text-align: center; font-size: 14px; color: #95a5a6; background: #f9f9f9;">
         <p style="margin: 0;">
           © ${new Date().getFullYear()} Carbotrack. Tous droits réservés.
@@ -69,12 +68,14 @@ const generateEmailTemplate = (title, content, actionLink = null, actionText = n
     </div>
   `;
 };
+
 const createTransaction = async (req, res) => {
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
     
     const { id_vehicule, quantite, montant, id_credit } = req.body;
+    let preuvePath = null;
 
     // Validation des données
     if (!id_vehicule || !quantite || !montant) {
@@ -82,6 +83,11 @@ const createTransaction = async (req, res) => {
         success: false,
         error: 'Tous les champs obligatoires doivent être fournis' 
       });
+    }
+
+    // Le fichier est déjà enregistré dans le dossier final par Multer
+    if (req.file) {
+      preuvePath = `${process.env.BASE_URL}/transactions/${req.file.filename}`
     }
 
     let creditInfo = null;
@@ -167,12 +173,13 @@ const createTransaction = async (req, res) => {
 
     const userInfo = info[0];
 
-    // Création de la transaction (sans id_utilisateur)
+    // Création de la transaction avec preuve
     const transactionResult = await Transaction.addTransaction(
       id_vehicule, 
       quantite, 
       montant, 
-      id_credit || null
+      id_credit || null,
+      preuvePath
     );
 
     // Mettre à jour le crédit si nécessaire
@@ -184,8 +191,6 @@ const createTransaction = async (req, res) => {
         [id_credit]
       );
       creditUtilise = parseFloat(updatedCredit[0].credit_utilise);
-
-    
     }
 
     // Envoi de l'email
@@ -202,6 +207,7 @@ const createTransaction = async (req, res) => {
             <li>Crédit consommé: ${(parseFloat(creditUtilise) + parseFloat(montant)).toFixed(2)} DT</li>
             <li>Solde restant: ${(parseFloat(userInfo.solde_credit) - (parseFloat(creditUtilise) + parseFloat(montant))).toFixed(2)} DT</li>
           ` : '<li>Paiement: Direct</li>'}
+          ${preuvePath ? `<li>Preuve: <a href="${preuvePath}">Voir la preuve</a></li>` : ''}
         </ul>
       `;
       
@@ -212,7 +218,7 @@ const createTransaction = async (req, res) => {
         html: generateEmailTemplate('Transaction enregistrée', emailContent),
         attachments: [{
           filename: 'logobg.png',
-          path: path.join(process.cwd(), 'public', 'logobg.png'),
+          path: path.join(__dirname, '../public', 'logobg.png'),
           cid: 'logo'
         }]
       };
@@ -233,6 +239,7 @@ const createTransaction = async (req, res) => {
         utilisateur: userInfo.username,
         quantite,
         montant,
+        preuve: preuvePath ? `${process.env.BASE_URL}/${preuvePath}` : null,
         id_credit: id_credit || null,
         credit_utilise: id_credit ? creditUtilise : null,
         solde_restant: id_credit ? (parseFloat(userInfo.solde_credit) - creditUtilise) : null
@@ -242,6 +249,12 @@ const createTransaction = async (req, res) => {
   } catch (err) {
     await connection.rollback();
     console.error('Erreur création transaction:', err);
+    
+    // Clean up uploaded file if error occurred
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    
     res.status(500).json({ 
       success: false,
       error: 'Erreur lors de la création de la transaction',

@@ -2,15 +2,15 @@ import db from '../config/db.js';
 
 const Transaction = {
   // Ajouter une transaction (sans id_utilisateur)
-  addTransaction: (id_vehicule, quantite, montant, id_credit) => {
+  addTransaction: (id_vehicule, quantite, montant, id_credit, preuve = null) => {
     const query = `
-      INSERT INTO transactions (id_vehicule, quantite, montant, id_credit, date_transaction) 
-      VALUES (?, ?, ?, ?, NOW())
+      INSERT INTO transactions (id_vehicule, quantite, montant, id_credit, preuve, date_transaction) 
+      VALUES (?, ?, ?, ?, ?, NOW())
     `;
-    return db.execute(query, [id_vehicule, quantite, montant, id_credit]);
+    return db.execute(query, [id_vehicule, quantite, montant, id_credit, preuve]);
   },
 
-  // Récupérer toutes les transactions avec jointures
+  // Récupérer toutes les transactions avec jointures (incluant preuve)
   getAllTransactions: () => {
     const query = `
       SELECT 
@@ -19,12 +19,18 @@ const Transaction = {
         t.quantite,
         t.montant,
         t.id_credit,
+        t.preuve,
         t.date_transaction,
         v.immatriculation,
         v.marque,
         v.type_vehicule,
-        dc.id_utilisateur,
+        dc.id_utilisateur,  
+        dc.credit_utilise,
+        dc.solde_credit,
+        dc.montant_restant,
         u.username,
+        u.email,
+        u.numero_telephone,
         dc.type_credit
       FROM transactions t
       JOIN vehicules v ON t.id_vehicule = v.id
@@ -53,7 +59,43 @@ const Transaction = {
     `;
     return db.execute(query, [id_utilisateur]);
   },
+  
+// Nouvelle méthode pour les statistiques de transactions par période
+getTransactionStatsByPeriod: (filter = {}) => {
+  let query = `
+    SELECT 
+      DATE(date_transaction) as date,
+      SUM(montant) as total_montant,
+      COUNT(id) as nombre_transactions
+    FROM transactions
+    WHERE 1=1
+  `;
 
+  const params = [];
+
+  if (filter.type === 'day') {
+    query += ' AND DATE(date_transaction) = CURDATE()';
+  } else if (filter.type === 'month' && filter.month && filter.year) {
+    query += ' AND MONTH(date_transaction) = ? AND YEAR(date_transaction) = ?';
+    params.push(filter.month, filter.year);
+  } else if (filter.type === 'year' && filter.year) {
+    query += ' AND YEAR(date_transaction) = ?';
+    params.push(filter.year);
+  } else if (filter.startDate && filter.endDate) {
+    query += ' AND DATE(date_transaction) BETWEEN ? AND ?';
+    params.push(filter.startDate, filter.endDate);
+  }
+
+  if (filter.type === 'month' && filter.month && filter.year) {
+    query += ' GROUP BY DATE(date_transaction) ORDER BY date ASC';
+  } else if (filter.type === 'year' && filter.year) {
+    query += ' GROUP BY MONTH(date_transaction) ORDER BY MONTH(date_transaction) ASC';
+  } else {
+    query += ' GROUP BY DATE(date_transaction) ORDER BY date DESC';
+  }
+
+  return db.execute(query, params);
+},
   // Récupérer les transactions liées à un crédit
   getTransactionsByCredit: (id_credit) => {
     const query = `

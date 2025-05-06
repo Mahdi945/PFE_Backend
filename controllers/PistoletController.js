@@ -236,7 +236,7 @@ const PistoletController = {
       });
     }
 
-    const result = await Releve.updateStatutReleve(id, statut);
+    const result = await Pistolet.updateStatutReleve(id, statut);
     
     res.json({
       success: true,

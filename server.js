@@ -16,6 +16,7 @@ import cron from 'node-cron';
 import Credit from './models/Credit.js';
 import Notification from './models/Notification.js';
 import nodemailer from 'nodemailer';
+import fs from 'fs';
 
 dotenv.config();
 
@@ -51,11 +52,16 @@ app.use('/api/pistolet', pistoletRouter);
 app.use('/api/affectations', AffectationCalendrierRouter);
 app.use('/api/credit', creditRouter);
 app.use('/api/notifications', notificationRouter);
-
+// Ensure uploads directory exists
+const uploadsDir = path.join(process.cwd(), 'public/transactions');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 // Static files
 const __dirname = path.resolve();
 app.use('/images', express.static(path.join(__dirname, 'public/images')));
 app.use('/qrcodes', express.static(path.join(__dirname, 'public/qrcodes')));
+app.use('/transactions', express.static(path.join(__dirname, 'public/transactions')));
 
 // Database connection check
 (async () => {
@@ -93,7 +99,71 @@ const sendNotificationEmail = async (userId, subject, message) => {
     console.error('Erreur envoi email notification:', err);
   }
 };
+// Nouveau CRON Job pour désactiver les comptes avec plus de 2 crédits expirés
+cron.schedule('0 3 * * *', async () => { // Tous les jours à 3h du matin
+  try {
+    console.log('🔄 Vérification des comptes avec crédits expirés...');
+    
+    // 1. Trouver les utilisateurs avec plus de 2 crédits expirés
+    const [usersWithExpiredCredits] = await pool.query(`
+      SELECT 
+        u.id, 
+        u.username, 
+        u.email, 
+        u.status,
+        COUNT(dc.id) AS expired_credits_count
+      FROM utilisateurs u
+      JOIN details_credits dc ON u.id = dc.id_utilisateur
+      WHERE dc.etat = 'expiré'
+      AND u.role = 'client'
+      AND u.status = 'active'
+      GROUP BY u.id
+      HAVING COUNT(dc.id) > 2
+    `);
 
+    // Récupérer l'ID du gérant
+    const [gerant] = await pool.query(`
+      SELECT id FROM utilisateurs 
+      WHERE role = 'gerant' 
+      LIMIT 1
+    `);
+
+    const gerantId = gerant[0]?.id;
+
+    for (const user of usersWithExpiredCredits) {
+      // 2. Désactiver le compte
+      await pool.query(
+        `UPDATE utilisateurs SET status = 'inactive' WHERE id = ?`,
+        [user.id]
+      );
+      
+      // 3. Créer une notification pour le gérant
+      if (gerantId) {
+        await Notification.create(
+          gerantId, // ID du gérant comme destinataire
+          'systeme',
+          user.id, // ID du client comme entité concernée
+          'compte_desactive',
+          `Le compte client ${user.username} (ID: ${user.id}) a été désactivé automatiquement pour ${user.expired_credits_count} crédits expirés`
+        );
+      }
+
+      // 4. Envoyer un email au client (optionnel)
+      await sendNotificationEmail(
+        user.id,
+        'Compte désactivé',
+        `<p>Votre compte a été désactivé automatiquement car vous avez ${user.expired_credits_count} crédits expirés.</p>
+         <p>Veuillez contacter le support pour plus d'informations.</p>`
+      );
+
+      console.log(`Compte désactivé: ${user.username} (${user.expired_credits_count} crédits expirés)`);
+    }
+
+    console.log('✅ Vérification des comptes avec crédits expirés terminée');
+  } catch (err) {
+    console.error('❌ Erreur lors de la vérification des comptes:', err);
+  }
+});
 // CRON Jobs for automated notifications
 cron.schedule('0 0 * * *', async () => { // Daily at midnight
   try {
