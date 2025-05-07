@@ -325,41 +325,46 @@ getRevenuesByDate: async (date) => {
       SUM((r.index_fermeture - r.index_ouverture) * p.prix_unitaire) AS montant
     FROM releves_postes r
     JOIN pistolets p ON r.pistolet_id = p.id
-    WHERE DATE(r.date_heure_saisie) = ? AND r.statut = 'saisie'
+    WHERE DATE(r.date_heure_saisie) = ? AND r.statut = 'valide'
     GROUP BY r.pistolet_id
   `;
   
   const [rows] = await db.query(query, [date]);
   return rows;
 },
-// Récupérer l'historique des relevés (version corrigée)
 getHistoriqueReleves: async (pistolet_id, date_debut, date_fin) => {
   try {
-    const [rows] = await db.query(
-      `SELECT 
-          r.id,
-          r.affectation_id,
-          r.pistolet_id,
-          r.index_ouverture,
-          r.index_fermeture,
-          r.date_heure_saisie,
-          r.statut,
-          a.pompiste_id,
-          u.username as nom_pompiste
-       FROM releves_postes r
-       JOIN affectations a ON r.affectation_id = a.id
-       LEFT JOIN utilisateurs u ON a.pompiste_id = u.id
-       WHERE r.pistolet_id = ? 
-         AND DATE(r.date_heure_saisie) BETWEEN ? AND ?
-       ORDER BY r.date_heure_saisie DESC`,
-      [pistolet_id, date_debut, date_fin]
-    );
+    let query = `
+      SELECT 
+        r.id,
+        r.affectation_id,
+        r.pistolet_id,
+        r.index_ouverture,
+        r.index_fermeture,
+        r.date_heure_saisie,
+        r.statut,
+        a.pompiste_id,
+        u.username as nom_pompiste
+      FROM releves_postes r
+      JOIN affectations a ON r.affectation_id = a.id
+      LEFT JOIN utilisateurs u ON a.pompiste_id = u.id
+      WHERE DATE(r.date_heure_saisie) BETWEEN ? AND ?`;
     
-    // Retourne toujours un tableau, même vide
+    const params = [date_debut, date_fin];
+    
+    // Ajout condition pistolet_id si fourni
+    if (pistolet_id) {
+      query += ' AND r.pistolet_id = ?';
+      params.push(pistolet_id);
+    }
+    
+    query += ' ORDER BY r.date_heure_saisie DESC';
+
+    const [rows] = await db.query(query, params);
     return rows || [];
     
   } catch (error) {
-    console.error('Erreur dans getHistoriqueReleves:', {
+    console.error('Erreur getHistoriqueReleves:', {
       pistolet_id,
       date_debut,
       date_fin,

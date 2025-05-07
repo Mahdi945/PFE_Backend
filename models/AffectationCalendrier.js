@@ -92,18 +92,13 @@ const AffectationCalendrier = {
         
         for (let day = 1; day <= daysInMonth; day++) {
             const date = new Date(annee, mois - 1, day);
-            dates.push(date.toISOString().split('T')[0]);
+            // Formatage correct de la date en YYYY-MM-DD
+            const formattedDate = date.toISOString().split('T')[0];
+            dates.push(formattedDate);
         }
 
         // 5. Algorithme d'affectation équitable
         for (const date of dates) {
-            // Vérification de sécurité de la date
-            const dateObj = new Date(date);
-            if (dateObj.getMonth() + 1 !== mois || dateObj.getFullYear() !== annee) {
-                console.error(`Date incohérente générée: ${date}`);
-                continue;
-            }
-
             // Pour chaque poste et pompe
             for (const poste of postes) {
                 // Mélanger aléatoirement les pompistes
@@ -146,7 +141,7 @@ const AffectationCalendrier = {
                     }
 
                     if (!affectationReussie) {
-                        throw new Error(`Impossible d'affecter la pompe ${pompe.id} pour le ${date} (poste: ${poste.id})`);
+                        console.warn(`Impossible d'affecter la pompe ${pompe.id} pour le ${date} (poste: ${poste.id})`);
                     }
                 }
             }

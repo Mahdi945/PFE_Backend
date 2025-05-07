@@ -25,7 +25,11 @@ router.put('/update-fermeture', requireAuth, PistoletController.updateIndexFerme
 // Gestion des relevés
 router.post('/releves', requireAuth, PistoletController.enregistrerReleve);
 router.post('/releves/manuel', requireAuth, PistoletController.ajouterReleveManuel);
+// Route pour un pistolet spécifique
 router.get('/:pistolet_id/historique', requireAuth, PistoletController.getHistoriqueReleves);
+
+// Nouvelle route pour tous les pistolets
+router.get('/historique', requireAuth, PistoletController.getHistoriqueReleves);
 
 // Rapports
 router.post('/rapports/generer', requireAuth, PistoletController.genererRapportJournalier);

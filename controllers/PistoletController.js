@@ -335,24 +335,26 @@ const PistoletController = {
     }
   },
 
-  // [NOUVEAU] Récupérer l'historique des relevés
   getHistoriqueReleves: async (req, res) => {
     try {
       const { pistolet_id } = req.params;
       const { date_debut, date_fin } = req.query;
-      
+  
+      // Validation 1: Les dates sont toujours obligatoires
       if (!date_debut || !date_fin) {
         return res.status(400).send({ 
           message: 'Les paramètres date_debut et date_fin sont obligatoires' 
         });
       }
-
+  
+      // Si pistolet_id est fourni, on filtre par pistolet + dates
+      // Sinon, on filtre seulement par dates
       const historique = await Pistolet.getHistoriqueReleves(
-        pistolet_id, 
-        date_debut, 
+        pistolet_id, // peut être undefined
+        date_debut,
         date_fin
       );
-      
+  
       res.status(200).send(historique);
     } catch (error) {
       res.status(500).send({ 

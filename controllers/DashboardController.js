@@ -56,12 +56,14 @@ class DashboardController {
     try {
       const filter = req.query.filter || { type: 'month' };
       
-      if (filter.type === 'month') {
-        filter.month = filter.month || new Date().getMonth() + 1;
-        filter.year = filter.year || new Date().getFullYear();
-      } else if (filter.type === 'year') {
-        filter.year = filter.year || new Date().getFullYear();
-      }
+      // Récupérer l'année et le mois actuels
+      const currentDate = new Date();
+      const currentYear = currentDate.getFullYear();
+      const currentMonth = currentDate.getMonth() + 1;
+  
+      // Appliquer les valeurs par défaut si non spécifiées
+      if (filter.type === 'month' && !filter.month) filter.month = currentMonth;
+      if ((filter.type === 'month' || filter.type === 'year') && !filter.year) filter.year = currentYear;
   
       const [
         userStats,
@@ -71,7 +73,8 @@ class DashboardController {
         allTransactions,
         creditsWithVehicules,
         dailyRevenues,
-        paymentStats
+        paymentStats,
+        transactionTrends
       ] = await Promise.all([
         User.getUserStats(filter),
         Credit.getGlobalCreditStats(filter),
@@ -80,8 +83,24 @@ class DashboardController {
         Transaction.getAllTransactions(),
         Credit.getCreditsWithVehicules(),
         Pistolet.getDailyRevenues(filter),
-        Paiments.getPaymentStats(filter)
+        Paiments.getPaymentStats(filter),
+        Transaction.getTransactionStatsByPeriod(filter) // Utiliser le même filtre
       ]);
+  
+      // Formater les données de tendance
+      const formattedTrends = transactionTrends[0].map((stat, index, array) => {
+        const progressionMois = stat.progression_mois || 0;
+        const progressionAnnee = stat.progression_annee || 0;
+        
+        const prevMonth = index > 0 ? array[index - 1].total_montant : 0;
+        const prevYear = index >= 12 ? array[index - 12].total_montant : 0;
+        
+        return {
+          ...stat,
+          progression_mois_pct: prevMonth !== 0 ? (progressionMois / prevMonth * 100).toFixed(2) : 'N/A',
+          progression_annee_pct: prevYear !== 0 ? (progressionAnnee / prevYear * 100).toFixed(2) : 'N/A'
+        };
+      });
   
       res.json({ 
         success: true,
@@ -92,7 +111,8 @@ class DashboardController {
           dailyRevenues: dailyRevenues || [],
           allTransactions: allTransactions[0] || [],
           creditsWithVehicules: creditsWithVehicules[0] || [],
-          paymentStats: paymentStats[0] || []
+          paymentStats: paymentStats[0] || [],
+          transactionTrends: formattedTrends
         },
         filter: filter
       });
@@ -100,10 +120,8 @@ class DashboardController {
       console.error('Dashboard Gerant Error:', error);
       res.status(500).json({
         success: false,
-        message: 'Erreur lors de la récupération des données du dashboard gérant'
+        message: 'Erreur lors de la récupération des données du dashboard'
       });
     }
-  }
-}
-
+  }} 
 export default DashboardController;
