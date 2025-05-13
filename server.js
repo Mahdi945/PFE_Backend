@@ -17,7 +17,8 @@ import Credit from './models/Credit.js';
 import Notification from './models/Notification.js';
 import nodemailer from 'nodemailer';
 import fs from 'fs';
-
+import OdooService from './services/OdooService.js';
+import odooRouter from './routes/odooRoute.js';
 dotenv.config();
 
 const app = express();
@@ -36,7 +37,7 @@ const transporter = nodemailer.createTransport({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
-  origin: 'http://localhost:4200',
+  origin: ['http://localhost:4200', 'https://www.getpostman.com'], // Autorise à la fois Angular 
   methods: 'GET,POST,PUT,DELETE',
   allowedHeaders: 'Content-Type, Authorization',
   credentials: true
@@ -52,6 +53,7 @@ app.use('/api/pistolet', pistoletRouter);
 app.use('/api/affectations', AffectationCalendrierRouter);
 app.use('/api/credit', creditRouter);
 app.use('/api/notifications', notificationRouter);
+app.use('/api/odoo', odooRouter);
 // Ensure uploads directory exists
 const uploadsDir = path.join(process.cwd(), 'public/transactions');
 if (!fs.existsSync(uploadsDir)) {
@@ -73,6 +75,23 @@ app.use('/transactions', express.static(path.join(__dirname, 'public/transaction
     process.exit(1);
   }
 })();
+//const checkOdooConnection = async () => {
+  //try {
+   // const result = await OdooService.testConnection();
+    //if (result.success) {
+     // console.log('✅ Connexion à Odoo établie:', {
+      //  version: result.version.server_version,
+        //userId: result.userId
+      //});
+      //return true;
+    //} else {
+     // console.error('❌ Échec de la connexion à Odoo:', result.error);
+      //return false;
+    //}
+ // } catch (err) {
+   // console.error('❌ Erreur lors du test de connexion à Odoo:', err);
+    //return false;
+  //}}
 
 // Fonction pour envoyer des emails de notification
 const sendNotificationEmail = async (userId, subject, message) => {
@@ -278,19 +297,19 @@ cron.schedule('0 9 * * 1', async () => {
   try {
     console.log('🔄 Running weekly summary...');
     
-// Get all active users
-const [users] = await pool.query(`
-  SELECT id, username, email FROM utilisateurs WHERE status = 'active'
-`);
+    // Get all active users
+    const [users] = await pool.query(`
+      SELECT id, username, email FROM utilisateurs WHERE status = 'active'
+    `);
 
-    
     for (const user of users) {
-      // Get weekly stats
+      // Get weekly stats - Version corrigée
       const [[{ transactions }]] = await pool.query(`
         SELECT COUNT(*) AS transactions 
-        FROM transactions 
-        WHERE id_utilisateur = ? 
-        AND date_transaction >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        FROM transactions t
+        JOIN details_credits dc ON t.id_credit = dc.id
+        WHERE dc.id_utilisateur = ? 
+        AND t.date_transaction >= DATE_SUB(NOW(), INTERVAL 7 DAY)
       `, [user.id]);
       
       const [[{ payments }]] = await pool.query(`
@@ -330,7 +349,6 @@ const [users] = await pool.query(`
     console.error('❌ Error in weekly summary:', err);
   }
 });
-
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });

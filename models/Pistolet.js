@@ -426,6 +426,77 @@ getHistoriqueReleves: async (pistolet_id, date_debut, date_fin) => {
     const [rows] = await db.query('SELECT * FROM pistolets');
     return rows;
   },
+  updateIndexFermeture: async (id, index_fermeture) => {
+    await db.query('START TRANSACTION');
+    
+    try {
+      // Vérifier que l'index est un nombre valide
+      if (isNaN(index_fermeture) || index_fermeture < 0) {
+        throw new Error('Index de fermeture invalide');
+      }
+  
+      // Vérifier que le pistolet existe
+      const [pistolet] = await db.query('SELECT id, dernier_index FROM pistolets WHERE id = ?', [id]);
+      if (pistolet.length === 0) {
+        throw new Error('Pistolet non trouvé');
+      }
+  
+      // Récupérer le dernier relevé pour ce pistolet
+      const [lastReleve] = await db.query(
+        `SELECT id, index_ouverture, index_fermeture, statut 
+         FROM releves_postes 
+         WHERE pistolet_id = ? 
+         ORDER BY date_heure_saisie DESC LIMIT 1`,
+        [id]
+      );
+  
+      if (lastReleve.length === 0) {
+        throw new Error('Aucun relevé trouvé pour ce pistolet');
+      }
+  
+      // Vérifier si le relevé est déjà validé
+      if (lastReleve[0].statut === 'valide') {
+        throw new Error('Impossible de modifier un relevé déjà validé');
+      }
+  
+      const dernierIndex = parseFloat(pistolet[0].dernier_index);
+      const nouvelIndex = parseFloat(index_fermeture);
+  
+      // Vérifier la cohérence des index
+      if (nouvelIndex < parseFloat(lastReleve[0].index_ouverture)) {
+        throw new Error(`L'index de fermeture ne peut pas être inférieur à l'index d'ouverture (${lastReleve[0].index_ouverture})`);
+      }
+  
+      // Mettre à jour le dernier relevé avec le nouveau champ updated_at
+      await db.query(
+        `UPDATE releves_postes 
+         SET index_fermeture = ?, 
+             updated_at = NOW() 
+         WHERE id = ?`,
+        [index_fermeture, lastReleve[0].id]
+      );
+  
+      // Mettre à jour l'index dans pistolets
+      await db.query(
+        `UPDATE pistolets 
+         SET dernier_index = ?, 
+             date_dernier_index = NOW() 
+         WHERE id = ?`,
+        [index_fermeture, id]
+      );
+  
+      await db.query('COMMIT');
+      return {
+        success: true,
+        message: 'Index de fermeture mis à jour avec succès',
+        updated_at: new Date().toISOString()
+      };
+    } catch (error) {
+      await db.query('ROLLBACK');
+      console.error('Erreur dans updateIndexFermeture:', error);
+      throw error;
+    }
+  },
 };
 
 export default Pistolet;

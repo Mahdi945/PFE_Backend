@@ -148,15 +148,30 @@ getUserStats: async (filter = {}) => {
 
   const params = [];
 
+  // Filtre par type de période
   if (filter.type === 'day') {
-    query += ' AND DATE(temps_de_creation) = CURDATE()';
-  } else if (filter.type === 'month' && filter.month && filter.year) {
-    query += ' AND MONTH(temps_de_creation) = ? AND YEAR(temps_de_creation) = ?';
-    params.push(filter.month, filter.year);
-  } else if (filter.type === 'year' && filter.year) {
-    query += ' AND YEAR(temps_de_creation) = ?';
-    params.push(filter.year);
+    query += ' AND DATE(temps_de_creation) = CURRENT_DATE()';
+  } else if (filter.type === 'month') {
+    if (filter.month && filter.year) {
+      query += ' AND MONTH(temps_de_creation) = ? AND YEAR(temps_de_creation) = ?';
+      params.push(filter.month, filter.year);
+    } else {
+      // Par défaut, le mois et l'année courants
+      const now = new Date();
+      query += ' AND MONTH(temps_de_creation) = ? AND YEAR(temps_de_creation) = ?';
+      params.push(now.getMonth() + 1, now.getFullYear());
+    }
+  } else if (filter.type === 'year') {
+    if (filter.year) {
+      query += ' AND YEAR(temps_de_creation) = ?';
+      params.push(filter.year);
+    } else {
+      // Par défaut, l'année courante
+      query += ' AND YEAR(temps_de_creation) = ?';
+      params.push(new Date().getFullYear());
+    }
   } else if (filter.startDate && filter.endDate) {
+    // Filtre par plage de dates
     query += ' AND DATE(temps_de_creation) BETWEEN ? AND ?';
     params.push(filter.startDate, filter.endDate);
   }

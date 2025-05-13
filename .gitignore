@@ -1,2 +1,47 @@
 # Ignore les fichiers .env
 .env
+### Fichiers Odoo à ignorer ###
+
+# Dossier Odoo cloné (si vous l'avez dans votre projet)
+/odoo/
+
+# Fichiers de cache et compilation Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Fichiers de logs
+*.log
+odoo.log
+
+# Fichiers de base de données de développement
+*.db
+/filestore/
+
+# Fichiers de configuration Odoo
+odoo.conf
+odoo-bin
+*.conf
+
+# Fichiers temporaires
+*.swp
+*.swo
+*.swn
+*.swm
+*.pid
+
+# Dossiers générés
+/addons/
+/data/
+/sessions/
+/static/
+/translations/
+
+# Fichiers de sauvegarde
+*.bak
+*.backup
+
+# Fichiers de tests
+/test_results/
+/.coverage
