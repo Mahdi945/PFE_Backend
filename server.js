@@ -17,8 +17,12 @@ import Credit from './models/Credit.js';
 import Notification from './models/Notification.js';
 import nodemailer from 'nodemailer';
 import fs from 'fs';
-import OdooService from './services/OdooService.js';
-import odooRouter from './routes/odooRoute.js';
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './swagger-config.js';
+import stockRouter from './routes/stockRoute.js';
+import reclamationRouter from './routes/reclamationRoute.js';
+//import OdooService from './services/OdooService.js';
+//import odooRouter from './routes/odooRoute.js';
 dotenv.config();
 
 const app = express();
@@ -52,8 +56,24 @@ app.use('/api/pompe', pompeRouter);
 app.use('/api/pistolet', pistoletRouter);
 app.use('/api/affectations', AffectationCalendrierRouter);
 app.use('/api/credit', creditRouter);
+app.use('/api/stock', stockRouter);
+app.use('/api/stock', reclamationRouter);
+app.use('/api/Reclamation', reclamationRouter);
 app.use('/api/notifications', notificationRouter);
-app.use('/api/odoo', odooRouter);
+
+// Ajoutez cette ligne APRÈS les autres app.use() et AVANT les routes
+app.use('/api-docs', 
+  swaggerUi.serve, 
+  swaggerUi.setup(swaggerSpec, {
+    swaggerOptions: {
+      withCredentials: true, // Essentiel pour les cookies
+      persistAuthorization: true // Garde l'authentification entre les rafraîchissements
+    },
+    customSiteTitle: "API Carbotrack Documentation",
+    customCss: '.swagger-ui .topbar { display: none }'
+  })
+);
+//app.use('/api/odoo', odooRouter);
 // Ensure uploads directory exists
 const uploadsDir = path.join(process.cwd(), 'public/transactions');
 if (!fs.existsSync(uploadsDir)) {
@@ -64,6 +84,8 @@ const __dirname = path.resolve();
 app.use('/images', express.static(path.join(__dirname, 'public/images')));
 app.use('/qrcodes', express.static(path.join(__dirname, 'public/qrcodes')));
 app.use('/transactions', express.static(path.join(__dirname, 'public/transactions')));
+app.use('/images_produits', express.static(path.join(__dirname, 'public/images_produits')));
+
 
 // Database connection check
 (async () => {
@@ -75,23 +97,27 @@ app.use('/transactions', express.static(path.join(__dirname, 'public/transaction
     process.exit(1);
   }
 })();
-//const checkOdooConnection = async () => {
+
+// Vérification de la connexion Odoo
+//(async () => {
   //try {
-   // const result = await OdooService.testConnection();
+    //const result = await OdooService.testConnection();
+    
     //if (result.success) {
-     // console.log('✅ Connexion à Odoo établie:', {
-      //  version: result.version.server_version,
-        //userId: result.userId
+      //console.log('✅ Odoo connection successful', {
+        //uid: result.uid,
+        //version: result.version.server_version,
+        //database: result.db
       //});
-      //return true;
     //} else {
-     // console.error('❌ Échec de la connexion à Odoo:', result.error);
-      //return false;
+      //console.error('❌ Odoo connection failed:', result.error);
+      // Optionnel: arrêter le serveur si Odoo est essentiel
+      // process.exit(1);
     //}
- // } catch (err) {
-   // console.error('❌ Erreur lors du test de connexion à Odoo:', err);
-    //return false;
-  //}}
+  //} catch (err) {
+    //console.error('❌ Odoo connection error:', err);
+  //}
+//})();
 
 // Fonction pour envoyer des emails de notification
 const sendNotificationEmail = async (userId, subject, message) => {

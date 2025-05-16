@@ -70,26 +70,46 @@ const generateEmailTemplate = (title, content, actionLink = null, actionText = n
 };
 
 const createTransaction = async (req, res) => {
+ 
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
     
-    const { id_vehicule, quantite, montant, id_credit } = req.body;
+    const { id_vehicule, quantite, montant, id_credit, id_pompiste } = req.body;
     let preuvePath = null;
 
     // Validation des données
-    if (!id_vehicule || !quantite || !montant) {
+    if (!id_vehicule || !quantite || !montant || !id_pompiste) {
       return res.status(400).json({ 
         success: false,
         error: 'Tous les champs obligatoires doivent être fournis' 
       });
     }
+    console.log('Données reçues pour la transaction:', req.body);
+    console.log('ID Pompiste reçu:', req.body.id_pompiste);
+    
+  
 
     // Le fichier est déjà enregistré dans le dossier final par Multer
     if (req.file) {
-      preuvePath = `${process.env.BASE_URL}/transactions/${req.file.filename}`
+      preuvePath = `${process.env.BASE_URL}/transactions/${req.file.filename}`;
     }
 
+    // Vérification que l'utilisateur est bien un pompiste
+    const [userCheck] = await connection.execute(
+      `SELECT id, username, role FROM utilisateurs WHERE id = ?`,
+      [id_pompiste]
+    );
+    
+    if (!userCheck || userCheck.length === 0 || userCheck[0].role !== 'pompiste') {
+      if (req.file) fs.unlinkSync(req.file.path);
+      return res.status(403).json({
+        success: false,
+        error: 'Seuls les pompistes peuvent enregistrer des transactions'
+      });
+    }
+
+    const pompisteInfo = userCheck[0];
     let creditInfo = null;
     let nouveauSolde = null;
     let creditUtilise = 0;
@@ -106,6 +126,7 @@ const createTransaction = async (req, res) => {
       
       if (!credit || credit.length === 0) {
         await connection.rollback();
+        if (req.file) fs.unlinkSync(req.file.path);
         return res.status(404).json({ 
           success: false,
           error: 'Crédit non trouvé' 
@@ -120,6 +141,7 @@ const createTransaction = async (req, res) => {
       
       if (nouveauSolde < 0) {
         await connection.rollback();
+        if (req.file) fs.unlinkSync(req.file.path);
         return res.status(400).json({ 
           success: false,
           error: 'Solde insuffisant', 
@@ -139,6 +161,7 @@ const createTransaction = async (req, res) => {
       
       if (!vehicule || vehicule.length === 0) {
         await connection.rollback();
+        if (req.file) fs.unlinkSync(req.file.path);
         return res.status(404).json({ 
           success: false,
           error: 'Véhicule non trouvé' 
@@ -165,6 +188,7 @@ const createTransaction = async (req, res) => {
 
     if (!info || info.length === 0) {
       await connection.rollback();
+      if (req.file) fs.unlinkSync(req.file.path);
       return res.status(404).json({
         success: false,
         error: 'Informations non trouvées'
@@ -172,14 +196,23 @@ const createTransaction = async (req, res) => {
     }
 
     const userInfo = info[0];
-
-    // Création de la transaction avec preuve
+    // Avant la ligne où vous appelez addTransaction, ajoutez ce log:
+console.log('Paramètres pour addTransaction:', {
+  id_vehicule,
+  quantite,
+  montant,
+  id_credit: id_credit || null,
+  id_pompiste,
+  preuve: preuvePath
+});
+    // Création de la transaction avec preuve et id_pompiste
     const transactionResult = await Transaction.addTransaction(
       id_vehicule, 
       quantite, 
       montant, 
       id_credit || null,
-      preuvePath
+      preuvePath,
+      id_pompiste
     );
 
     // Mettre à jour le crédit si nécessaire
@@ -197,7 +230,7 @@ const createTransaction = async (req, res) => {
     if (userInfo.email) {
       const emailContent = `
         <p>Bonjour ${userInfo.username},</p>
-        <p>Votre transaction a été enregistrée avec succès :</p>
+        <p>Votre transaction a été enregistrée avec succès par ${pompisteInfo.username} :</p>
         <ul>
           <li>Véhicule: ${userInfo.marque} (${userInfo.immatriculation})</li>
           <li>Quantité: ${quantite}L</li>
@@ -239,10 +272,12 @@ const createTransaction = async (req, res) => {
         utilisateur: userInfo.username,
         quantite,
         montant,
-        preuve: preuvePath ? `${process.env.BASE_URL}/${preuvePath}` : null,
+        preuve: preuvePath,
         id_credit: id_credit || null,
         credit_utilise: id_credit ? creditUtilise : null,
-        solde_restant: id_credit ? (parseFloat(userInfo.solde_credit) - creditUtilise) : null
+        solde_restant: id_credit ? (parseFloat(userInfo.solde_credit) - creditUtilise) : null,
+        id_pompiste: id_pompiste,
+        pompiste: pompisteInfo.username
       }
     });
 

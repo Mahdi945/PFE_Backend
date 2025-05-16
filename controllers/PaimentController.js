@@ -60,7 +60,7 @@ const generateEmailTemplate = (title, content, actionLink = null, actionText = n
 
 const createPayment = async (req, res) => {
   try {
-    const { id_credit, montant_paye, mode_paiement, description } = req.body;
+    const { id_credit, montant_paye, mode_paiement, description, id_caissier } = req.body;
 
     // 1. Validation de base
     if (!id_credit || !montant_paye || !mode_paiement) {
@@ -77,7 +77,8 @@ const createPayment = async (req, res) => {
       id_credit,
       montant,
       mode_paiement,
-      description
+      description,
+      id_caissier
     );
 
     // 3. Récupération des infos utilisateur pour la notification

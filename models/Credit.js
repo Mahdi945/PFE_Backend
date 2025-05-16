@@ -104,18 +104,18 @@ renewCredit: (id_credit, new_solde, new_duree, new_date_debut) => {
   `;
   return db.execute(query, [new_solde, new_date_debut, new_duree, id_credit]);
 },
-// Statistiques des crédits pour un utilisateur
+// Dans le modèle (Credit.js)
 getCreditStats: async (id_utilisateur) => {
   const query = `
     SELECT 
       COUNT(*) AS total_credits,
-     SUM(CASE WHEN etat = 'actif' THEN solde_credit ELSE 0 END) AS total_solde,
-
+      SUM(CASE WHEN etat = 'actif' THEN solde_credit ELSE 0 END) AS total_solde,
       SUM(credit_utilise) AS total_utilise,
       SUM(solde_credit - IFNULL(credit_utilise, 0)) AS solde_restant,
       SUM(CASE WHEN etat = 'actif' THEN 1 ELSE 0 END) AS credits_actifs,
       SUM(CASE WHEN etat = 'expiré' THEN 1 ELSE 0 END) AS credits_expires,
-      SUM(CASE WHEN etat = 'annulé' THEN 1 ELSE 0 END) AS credits_annulés
+      SUM(CASE WHEN etat = 'annulé' THEN 1 ELSE 0 END) AS credits_annules,
+      SUM(CASE WHEN etat = 'remboursé' THEN 1 ELSE 0 END) AS credits_rembourses
     FROM details_credits
     WHERE id_utilisateur = ?
   `;
@@ -161,11 +161,11 @@ getGlobalCreditStats: async () => {
   `;
   return db.execute(query);
 },
-// Crédits avec véhicules associés
 getCreditsWithVehicules: async () => {
   const query = `
     SELECT 
       c.id,
+      u.username AS proprietaire,
       c.type_credit,
       c.solde_credit,
       c.credit_utilise,
@@ -174,10 +174,12 @@ getCreditsWithVehicules: async () => {
       COUNT(v.id) AS nombre_vehicules
     FROM details_credits c
     LEFT JOIN vehicules v ON c.id = v.id_credit
-    GROUP BY c.id
+    LEFT JOIN utilisateurs u ON c.id_utilisateur = u.id
+    GROUP BY c.id, u.username
   `;
   return db.execute(query);
 }
+
 };
 
 export default Credit;

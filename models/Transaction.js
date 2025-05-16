@@ -1,46 +1,139 @@
 import db from '../config/db.js';
 
 const Transaction = {
-  // Ajouter une transaction (sans id_utilisateur)
-  addTransaction: (id_vehicule, quantite, montant, id_credit, preuve = null) => {
-    const query = `
-      INSERT INTO transactions (id_vehicule, quantite, montant, id_credit, preuve, date_transaction) 
-      VALUES (?, ?, ?, ?, ?, NOW())
-    `;
-    return db.execute(query, [id_vehicule, quantite, montant, id_credit, preuve]);
-  },
+// Modèle transaction.js
+addTransaction: (id_vehicule, quantite, montant, id_credit, preuve = null, id_pompiste) => {
+  const query = `
+    INSERT INTO transactions 
+      (id_vehicule, quantite, montant, id_credit, preuve, date_transaction, id_pompiste) 
+    VALUES (?, ?, ?, ?, ?, NOW(), ?)
+  `;
+  return db.execute(query, [
+    id_vehicule,   // 1er paramètre
+    quantite,      // 2ème paramètre
+    montant,       // 3ème paramètre
+    id_credit,     // 4ème paramètre
+    preuve,        // 5ème paramètre (peut être null)
+    id_pompiste    // 7ème paramètre (NOW() est le 6ème)
+  ]);
+},
+// Dans votre modèle Transaction (transaction.js)
+getTransactionTrends: (filter = {}) => {
+  let query = `
+    SELECT 
+      YEAR(date_transaction) as year,
+      MONTH(date_transaction) as month,
+      DAY(date_transaction) as day,
+      DATE(date_transaction) as date,
+      SUM(montant) as total_montant,
+      COUNT(id) as count,
+      (SUM(montant) - LAG(SUM(montant), 1) OVER (ORDER BY DATE(date_transaction))) as daily_change,
+      (SUM(montant) - LAG(SUM(montant), 1) OVER (ORDER BY YEAR(date_transaction), MONTH(date_transaction))) as monthly_change,
+      (SUM(montant) - LAG(SUM(montant), 12) OVER (ORDER BY YEAR(date_transaction), MONTH(date_transaction))) as yearly_change
+    FROM transactions
+    WHERE 1=1
+  `;
 
-  // Récupérer toutes les transactions avec jointures (incluant preuve)
-  getAllTransactions: () => {
-    const query = `
-      SELECT 
-        t.id,
-        t.id_vehicule,
-        t.quantite,
-        t.montant,
-        t.id_credit,
-        t.preuve,
-        t.date_transaction,
-        v.immatriculation,
-        v.marque,
-        v.type_vehicule,
-        dc.id_utilisateur,  
-        dc.credit_utilise,
-        dc.solde_credit,
-        dc.montant_restant,
-        u.username,
-        u.email,
-        u.numero_telephone,
-        dc.type_credit
-      FROM transactions t
-      JOIN vehicules v ON t.id_vehicule = v.id
-      LEFT JOIN details_credits dc ON t.id_credit = dc.id
-      LEFT JOIN utilisateurs u ON dc.id_utilisateur = u.id
-      ORDER BY t.date_transaction DESC
-    `;
-    return db.execute(query);
-  },
+  const params = [];
 
+  if (filter.type === 'day') {
+    query += ' AND DATE(date_transaction) = CURDATE()';
+  } else if (filter.type === 'month') {
+    query += ' AND MONTH(date_transaction) = ? AND YEAR(date_transaction) = ?';
+    params.push(filter.month || new Date().getMonth() + 1, filter.year || new Date().getFullYear());
+  } else if (filter.type === 'year') {
+    query += ' AND YEAR(date_transaction) = ?';
+    params.push(filter.year || new Date().getFullYear());
+  }
+
+  if (filter.type === 'day') {
+    query += ' GROUP BY DATE(date_transaction), DAY(date_transaction) ORDER BY date';
+  } else if (filter.type === 'month') {
+    query += ' GROUP BY YEAR(date_transaction), MONTH(date_transaction) ORDER BY year, month';
+  } else if (filter.type === 'year') {
+    query += ' GROUP BY YEAR(date_transaction) ORDER BY year';
+  } else {
+    query += ' GROUP BY DATE(date_transaction) ORDER BY date';
+  }
+
+  return db.execute(query, params);
+},
+getTransactionStats: async (filterOrUserId) => {
+  let query = `
+    SELECT 
+      SUM(t.montant) as total_montant,
+      COUNT(*) as nombre_transactions,
+      v.type_vehicule,
+      dc.type_credit
+    FROM transactions t
+    JOIN vehicules v ON t.id_vehicule = v.id
+    LEFT JOIN details_credits dc ON t.id_credit = dc.id
+  `;
+
+  const params = [];
+
+  if (typeof filterOrUserId === 'object') {
+    const filter = filterOrUserId;
+    query += ' WHERE 1=1';
+
+    if (filter.type === 'day') {
+      query += ' AND DATE(t.date_transaction) = CURDATE()';
+    } else if (filter.type === 'month' && filter.month && filter.year) {
+      query += ' AND MONTH(t.date_transaction) = ? AND YEAR(t.date_transaction) = ?';
+      params.push(filter.month, filter.year);
+    } else if (filter.type === 'year' && filter.year) {
+      query += ' AND YEAR(t.date_transaction) = ?';
+      params.push(filter.year);
+    } else if (filter.startDate && filter.endDate) {
+      query += ' AND DATE(t.date_transaction) BETWEEN ? AND ?';
+      params.push(filter.startDate, filter.endDate);
+    }
+  } else {
+    query += ' WHERE dc.id_utilisateur = ?';
+    params.push(filterOrUserId);
+  }
+
+  query += ' GROUP BY v.type_vehicule, dc.type_credit';
+
+  const [rows] = await db.query(query, params);
+  return rows;
+},
+ // Récupérer toutes les transactions avec jointures (incluant preuve et pompiste)
+getAllTransactions: () => {
+  const query = `
+    SELECT 
+      t.id,
+      t.id_vehicule,
+      t.quantite,
+      t.montant,
+      t.id_credit,
+      t.preuve,
+      t.date_transaction,
+      v.immatriculation,
+      v.marque,
+      v.type_vehicule,
+      dc.id_utilisateur,  
+      dc.credit_utilise,
+      dc.solde_credit,
+      dc.montant_restant,
+      u.username,
+      u.email,
+      u.numero_telephone,
+      dc.type_credit,
+      up.id AS pompiste_id,
+      up.username AS pompiste_username,
+      up.email AS pompiste_email,
+      up.numero_telephone AS pompiste_telephone,
+      up.role AS pompiste_role
+    FROM transactions t
+    JOIN vehicules v ON t.id_vehicule = v.id
+    LEFT JOIN details_credits dc ON t.id_credit = dc.id
+    LEFT JOIN utilisateurs u ON dc.id_utilisateur = u.id
+    LEFT JOIN utilisateurs up ON t.id_pompiste = up.id
+    ORDER BY t.date_transaction DESC
+  `;
+  return db.execute(query);
+},
   // Récupérer les transactions par utilisateur (via details_credits)
   getTransactionsByUser: (id_utilisateur) => {
     const query = `
@@ -151,34 +244,41 @@ const Transaction = {
       });
   },
 
-// models/Transaction.js
-getTransactionStatsByPeriod: (filter = {}) => {
-  let query = `
-    SELECT 
-      YEAR(date_transaction) as year,
-      MONTH(date_transaction) as month,
-      SUM(montant) as total_montant,
-      COUNT(id) as nombre_transactions
-    FROM transactions
-    WHERE 1=1
-  `;
-
-  const params = [];
-
-  if (filter.type === 'day') {
-    query += ' AND DATE(date_transaction) = CURDATE()';
-  } else if (filter.type === 'month') {
-    query += ' AND MONTH(date_transaction) = ? AND YEAR(date_transaction) = ?';
-    params.push(filter.month || new Date().getMonth() + 1, filter.year || new Date().getFullYear());
-  } else if (filter.type === 'year') {
-    query += ' AND YEAR(date_transaction) = ?';
-    params.push(filter.year || new Date().getFullYear());
-  }
-
-  query += ' GROUP BY YEAR(date_transaction), MONTH(date_transaction) ORDER BY year, month';
-
-  return db.execute(query, params);
-},
+  getTransactionStatsByPeriod: (filter = {}) => {
+    let query = `
+      SELECT 
+        YEAR(date_transaction) as year,
+        MONTH(date_transaction) as month,
+        SUM(montant) as total_montant,
+        COUNT(id) as nombre_transactions
+      FROM transactions
+      WHERE 1=1
+    `;
+  
+    const params = [];
+  
+    if (filter.type === 'day') {
+      query += ' AND DATE(date_transaction) = CURDATE()';
+    } else if (filter.type === 'month') {
+      query += ' AND MONTH(date_transaction) = ? AND YEAR(date_transaction) = ?';
+      params.push(filter.month || new Date().getMonth() + 1, filter.year || new Date().getFullYear());
+    } else if (filter.type === 'year') {
+      query += ' AND YEAR(date_transaction) = ?';
+      params.push(filter.year || new Date().getFullYear());
+    }
+  
+    if (filter.type === 'month') {
+      query += ' GROUP BY YEAR(date_transaction), MONTH(date_transaction)';
+    } else if (filter.type === 'year') {
+      query += ' GROUP BY YEAR(date_transaction), MONTH(date_transaction)';
+    } else {
+      query += ' GROUP BY DATE(date_transaction)';
+    }
+  
+    query += ' ORDER BY year, month';
+  
+    return db.execute(query, params);
+  },
 
 getDailyTransactionStats: (filter = {}) => {
   let query = `

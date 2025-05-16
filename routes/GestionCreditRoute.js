@@ -86,5 +86,6 @@ router.get('/dashboard/transaction-stats/:id_utilisateur', requireAuth, Transact
 router.get('/dashboard/recent-transactions/:id_utilisateur', requireAuth, TransactionController.getRecentTransactions);
 router.get('/dashboard/client/:id_utilisateur', requireAuth, DashboardController.getClientDashboard);
 router.get('/dashboard/gerant', requireAuth, DashboardController.getGerantDashboard);
+router.get('/dashboard/caissier/:id_caissier', requireAuth, DashboardController.getCaissierDashboard);
 
 export default router;

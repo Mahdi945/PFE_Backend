@@ -1,65 +1,37 @@
 import express from 'express';
 import odooController from '../controllers/OdooController.js';
 import passport from '../config/passport.js';
+import cors from 'cors';
 
 const router = express.Router();
 
-// Test connexion (sans auth pour faciliter le debug)
-router.get('/test', odooController.testConnection);
-
-// ============ PRODUITS ============
-router.post('/products', 
-  passport.authenticate('jwt', { session: false }), 
-  odooController.createProduct
-);
-
-router.get('/products/:id', 
-  passport.authenticate('jwt', { session: false }), 
-  odooController.getProduct
-);
-
-router.post('/products/search', 
-  passport.authenticate('jwt', { session: false }), 
-  odooController.searchProducts
-);
 
 // ============ CATÉGORIES ============
-router.post('/categories', 
-  passport.authenticate('jwt', { session: false }), 
-  odooController.createCategory
-);
+router.get('/categories', odooController.getAllCategories);
+router.post('/categories', passport.authenticate('jwt', { session: false }), odooController.createCategory);
 
-router.get('/categories', 
-  passport.authenticate('jwt', { session: false }), 
-  odooController.getCategories
-);
-
+// ============ PRODUITS ============
+router.get('/products', odooController.getAllProducts);
+router.get('/products/:id/image', odooController.getProductImage);
+router.post('/products', passport.authenticate('jwt', { session: false }),odooController.createProduct);
+router.put('/products/:id', passport.authenticate('jwt', { session: false }), odooController.updateProduct);
+router.delete('/products/:id', passport.authenticate('jwt', { session: false }), odooController.deleteProduct);
+// Ajoutez cette ligne avec les autres routes produits
+router.post('/products/:id/upload-image', passport.authenticate('jwt', { session: false }), odooController.uploadProductImage);
 // ============ STOCK ============
-router.post('/stock', 
-  passport.authenticate('jwt', { session: false }), 
-  odooController.updateStock
-);
+router.get('/stock', odooController.getStock);
+router.post('/stock', passport.authenticate('jwt', { session: false }), odooController.updateStock);
+router.get('/stock/moves', odooController.getStockMoves);
+router.get('/stock/alerts', odooController.getLowStock);
+router.post('/stock/alerts', passport.authenticate('jwt', { session: false }), odooController.setAlertThreshold);
 
-// ============ PARTENAIRES ============
-router.post('/partners', 
-  passport.authenticate('jwt', { session: false }), 
-  odooController.createPartner
-);
+// ============ VENTES ============
+router.post('/sales', passport.authenticate('jwt', { session: false }), odooController.createSale);
+router.post('/sales/:id/confirm', passport.authenticate('jwt', { session: false }), odooController.confirmSale);
 
-router.get('/partners', 
-  passport.authenticate('jwt', { session: false }), 
-  odooController.getPartners
-);
-
-// ============ COMMANDES ============
-router.post('/purchases', 
-  passport.authenticate('jwt', { session: false }), 
-  odooController.createPurchaseOrder
-);
-
-router.post('/purchases/:id/confirm', 
-  passport.authenticate('jwt', { session: false }), 
-  odooController.confirmPurchase
-);
+// ============ COMMANDES FOURNISSEUR ============
+router.get('/vendors', odooController.getVendors);
+router.post('/purchases', passport.authenticate('jwt', { session: false }), odooController.createPurchase);
+router.post('/purchases/:id/confirm', passport.authenticate('jwt', { session: false }), odooController.confirmPurchase);
 
 export default router;

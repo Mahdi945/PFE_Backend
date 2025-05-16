@@ -129,6 +129,7 @@ const Vehicule = {
                 v.*,
                 u.username,
                 u.email
+                
             FROM vehicules v
             JOIN details_credits dc ON v.id_credit = dc.id
             JOIN utilisateurs u ON dc.id_utilisateur = u.id

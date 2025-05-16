@@ -141,7 +141,8 @@ getUserStats: async (filter = {}) => {
       COUNT(CASE WHEN role = 'client' THEN 1 END) AS clients,
       COUNT(CASE WHEN role = 'pompiste' THEN 1 END) AS pompistes,
       COUNT(CASE WHEN role = 'gerant' THEN 1 END) AS gerants,
-      COUNT(CASE WHEN role = 'cogerant' THEN 1 END) AS cogerants
+      COUNT(CASE WHEN role = 'cogerant' THEN 1 END) AS cogerants,
+      COUNT(CASE WHEN role = 'caissier' THEN 1 END) AS caissiers
     FROM utilisateurs
     WHERE 1=1
   `;
