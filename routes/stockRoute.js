@@ -99,6 +99,22 @@ router.get('/ventes', requireAuth, StockController.getVentesByDate);
 router.get('/ventes/caissier/:caissierId', requireAuth, StockController.getVentesByCaissier);
 router.delete('/ventes/:id/cancel', requireAuth, StockController.cancelVente);
 
+// Nouvelle route pour les lignes de vente spécifiques
+router.get('/ventes/:id/lignes', requireAuth, async (req, res) => {
+  try {
+    const [lignes] = await db.execute(
+      `SELECT lv.*, p.nom as produit_nom, p.code_barre
+       FROM ligne_vente lv
+       JOIN produits p ON lv.produit_id = p.id
+       WHERE lv.vente_id = ?`,
+      [req.params.id]
+    );
+    res.json(lignes);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ==================== ROUTES STATISTIQUES ====================
 router.get('/stats/stock', requireAuth, StockController.getStockStats);
 router.get('/stats/ventes', requireAuth, StockController.getVentesStats);

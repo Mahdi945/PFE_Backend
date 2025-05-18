@@ -38,10 +38,30 @@ const markAllAsRead = async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+const hideNotification = async (req, res) => {
+  try {
+    const { id, id_utilisateur } = req.body;
+    await Notification.delete(id, id_utilisateur);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+const hideAllNotifications = async (req, res) => {
+  try {
+    const { id_utilisateur } = req.body;
+    await Notification.deleteAll(id_utilisateur);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }}
 
 export default {
   getNotifications,
   markAsRead,
   getUnreadCount,
-  markAllAsRead
+  markAllAsRead,
+  hideAllNotifications,
+  hideNotification
 };

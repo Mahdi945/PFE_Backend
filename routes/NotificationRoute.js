@@ -12,5 +12,8 @@ router.get('/:id_utilisateur', requireAuth, NotificationController.getNotificati
 router.put('/mark-as-read', requireAuth, NotificationController.markAsRead);
 router.put('/mark-all-as-read', requireAuth, NotificationController.markAllAsRead);
 router.get('/unread-count/:id_utilisateur', requireAuth, NotificationController.getUnreadCount);
+router.delete('/hide', requireAuth, NotificationController.hideNotification);
+router.delete('/hide-all', requireAuth, NotificationController.hideAllNotifications);
+
 
 export default router;

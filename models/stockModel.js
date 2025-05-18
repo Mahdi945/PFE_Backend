@@ -174,207 +174,366 @@ const Stock = {
   },
 
   // ==================== MOUVEMENTS STOCK ====================
-  createMouvement: async (mouvementData) => {
+createMouvement: async (mouvementData) => {
     if (!mouvementData.produit_id || !mouvementData.type || mouvementData.quantite === undefined) {
-      throw new Error('produit_id, type et quantite sont obligatoires');
+        throw new Error('produit_id, type et quantite sont obligatoires');
     }
 
     const query = `
-      INSERT INTO mouvements_stock 
-      (produit_id, type, quantite, agent_id, raison)
-      VALUES (?, ?, ?, ?, ?)
+        INSERT INTO mouvements_stock 
+        (produit_id, type, quantite, agent_id, raison)
+        VALUES (?, ?, ?, ?, ?)
     `;
     const values = [
-      mouvementData.produit_id,
-      mouvementData.type,
-      mouvementData.quantite,
-      mouvementData.agent_id || null,
-      mouvementData.raison || null
+        mouvementData.produit_id,
+        mouvementData.type,
+        mouvementData.quantite,
+        mouvementData.agent_id || null,
+        mouvementData.raison || null
     ];
 
     const [result] = await db.execute(query, values);
     
-    // Mise à jour du stock si nécessaire
-    if (mouvementData.type === 'ENTREE' || mouvementData.type === 'SORTIE' || mouvementData.type === 'AJUSTEMENT') {
-      const operation = mouvementData.type === 'ENTREE' ? '+' : '-';
-      await db.execute(
-        `UPDATE produits SET quantite_stock = quantite_stock ${operation} ? WHERE id = ?`,
-        [mouvementData.quantite, mouvementData.produit_id]
-      );
-    }
-    
     return { id: result.insertId, ...mouvementData };
-  },
+},
 
-  getMouvementsByProduit: async (produitId) => {
+getMouvementsByProduit: async (produitId) => {
     const [mouvements] = await db.execute(`
-      SELECT m.*, p.nom AS produit_nom
+      SELECT 
+        m.*, 
+        p.nom AS produit_nom,
+        u.username AS agent_username
       FROM mouvements_stock m
       JOIN produits p ON m.produit_id = p.id
+      LEFT JOIN utilisateurs u ON m.agent_id = u.id
       WHERE m.produit_id = ?
       ORDER BY m.date_mouvement DESC
     `, [produitId]);
     return mouvements;
-  },
+},
+
 
   getMouvementsByDate: async (startDate, endDate) => {
     const [mouvements] = await db.execute(`
-      SELECT m.*, p.nom AS produit_nom
+      SELECT 
+        m.*, 
+        p.nom AS produit_nom,
+        u.username AS agent_username
       FROM mouvements_stock m
       JOIN produits p ON m.produit_id = p.id
+      LEFT JOIN utilisateurs u ON m.agent_id = u.id
       WHERE m.date_mouvement BETWEEN ? AND ?
       ORDER BY m.date_mouvement DESC
     `, [startDate, endDate]);
     return mouvements;
   },
 
-  // ==================== VENTES ====================
-  createVente: async (venteData) => {
+// ==================== VENTES ====================
+// ==================== VENTES ====================
+createVente: async (venteData) => {
     if (!venteData.montant_total || !venteData.montant_paye || !venteData.mode_paiement || 
         !venteData.produits_vendus || !Array.isArray(venteData.produits_vendus)) {
       throw new Error('Données de vente incomplètes');
     }
 
-    await db.beginTransaction();
-
+    // Obtenir une connexion spécifique du pool
+    const conn = await db.getConnection();
+    
     try {
-      // 1. Créer la vente
-      const queryVente = `
-        INSERT INTO ventes 
-        (montant_total, montant_paye, mode_paiement, id_caissier, produits_vendus)
-        VALUES (?, ?, ?, ?, ?)
-      `;
-      const [resultVente] = await db.execute(queryVente, [
-        venteData.montant_total,
-        venteData.montant_paye,
-        venteData.mode_paiement,
-        venteData.id_caissier || null,
-        JSON.stringify(venteData.produits_vendus)
-      ]);
+      await conn.beginTransaction();
 
-      // 2. Traiter chaque produit vendu
+      // 1. Créer l'en-tête de vente
+      const [resultVente] = await conn.execute(
+        `INSERT INTO ventes 
+        (montant_total, montant_paye, mode_paiement, id_caissier)
+        VALUES (?, ?, ?, ?)`,
+        [
+          venteData.montant_total,
+          venteData.montant_paye,
+          venteData.mode_paiement,
+          venteData.id_caissier || null
+        ]
+      );
+
+      const venteId = resultVente.insertId;
+
+      // 2. Ajouter les lignes de vente et gérer le stock
       for (const produit of venteData.produits_vendus) {
-        // Vérification des données du produit
-        if (!produit.id || produit.quantite === undefined) {
+        if (!produit.id || produit.quantite === undefined || produit.prix_unitaire === undefined) {
           throw new Error('Données produit invalides');
         }
 
-        // Mise à jour du stock
-        await db.execute(
+        // Vérifier le stock disponible
+        const [rows] = await conn.execute(
+          'SELECT quantite_stock FROM produits WHERE id = ?',
+          [produit.id]
+        );
+        
+        if (rows.length === 0) {
+          throw new Error(`Produit ${produit.id} non trouvé`);
+        }
+        
+        const stockDisponible = rows[0].quantite_stock;
+        if (stockDisponible < produit.quantite) {
+          throw new Error(`Stock insuffisant pour le produit ${produit.id}`);
+        }
+
+        // Ajouter la ligne de vente
+        await conn.execute(
+          `INSERT INTO ligne_vente 
+          (vente_id, produit_id, quantite, prix_unitaire)
+          VALUES (?, ?, ?, ?)`,
+          [venteId, produit.id, produit.quantite, produit.prix_unitaire]
+        );
+
+        // Mettre à jour le stock
+        await conn.execute(
           'UPDATE produits SET quantite_stock = quantite_stock - ? WHERE id = ?',
           [produit.quantite, produit.id]
         );
 
-        // Enregistrement du mouvement de sortie
-        await db.execute(
-          'INSERT INTO mouvements_stock (produit_id, type, quantite, agent_id, raison) VALUES (?, ?, ?, ?, ?)',
+        // Enregistrer le mouvement de stock
+        await conn.execute(
+          `INSERT INTO mouvements_stock 
+          (produit_id, type, quantite, agent_id, raison)
+          VALUES (?, 'SORTIE', ?, ?, ?)`,
           [
             produit.id,
-            'SORTIE',
             produit.quantite,
             venteData.id_caissier || null,
-            `Vente #${resultVente.insertId}`
+            `Vente #${venteId}`
           ]
         );
       }
 
-      await db.commit();
-      return { id: resultVente.insertId, ...venteData };
+      await conn.commit();
+      
+      // Libérer la connexion
+      conn.release();
+      
+      // Récupérer la vente complète avec la monnaie calculée
+      return await Stock.getVenteById(venteId);
     } catch (err) {
-      await db.rollback();
+      // Annuler la transaction en cas d'erreur
+      if (conn) {
+        await conn.rollback();
+        conn.release();
+      }
       throw err;
     }
-  },
+},
 
-  getVenteById: async (id) => {
-    const [vente] = await db.execute('SELECT * FROM ventes WHERE id = ?', [id]);
-    if (vente.length === 0) return null;
+getVenteById: async (id) => {
+    const [ventes] = await db.execute('SELECT * FROM ventes WHERE id = ?', [id]);
+    if (ventes.length === 0) return null;
     
-    const venteObj = vente[0];
-    venteObj.produits_vendus = JSON.parse(venteObj.produits_vendus);
-    return venteObj;
-  },
-
-  getVentesByDate: async (startDate, endDate) => {
-    const [ventes] = await db.execute(`
-      SELECT v.*
-      FROM ventes v
-      WHERE v.date_vente BETWEEN ? AND ?
-      ORDER BY v.date_vente DESC
-    `, [startDate, endDate]);
+    const [lignes] = await db.execute(
+      `SELECT lv.*, p.nom as produit_nom, p.code_barre 
+       FROM ligne_vente lv
+       JOIN produits p ON lv.produit_id = p.id
+       WHERE lv.vente_id = ?`,
+      [id]
+    );
     
-    return ventes.map(v => {
-      v.produits_vendus = JSON.parse(v.produits_vendus);
-      return v;
-    });
-  },
+    return {
+      ...ventes[0],
+      produits_vendus: lignes.map(l => ({
+        id: l.produit_id,
+        nom: l.produit_nom,
+        code_barre: l.code_barre,
+        quantite: l.quantite,
+        prix_unitaire: l.prix_unitaire
+      }))
+    };
+},
 
-  getVentesByCaissier: async (caissierId, startDate, endDate) => {
-    const [ventes] = await db.execute(`
-      SELECT v.*
-      FROM ventes v
-      WHERE v.id_caissier = ? 
-      AND v.date_vente BETWEEN ? AND ?
-      ORDER BY v.date_vente DESC
-    `, [caissierId, startDate, endDate]);
-    
-    return ventes.map(v => {
-      v.produits_vendus = JSON.parse(v.produits_vendus);
-      return v;
-    });
-  },
+getVentesByDate: async (startDate, endDate) => {
+    const [ventes] = await db.execute(
+      `SELECT v.*, u.username as caissier_nom
+       FROM ventes v
+       LEFT JOIN utilisateurs u ON v.id_caissier = u.id
+       WHERE v.date_vente BETWEEN ? AND ?
+       ORDER BY v.date_vente DESC`,
+      [startDate, endDate]
+    );
 
-  cancelVente: async (id) => {
-    const [vente] = await db.execute('SELECT * FROM ventes WHERE id = ?', [id]);
-    if (vente.length === 0) {
-      throw new Error('Vente non trouvée');
+    // Récupérer les lignes pour chaque vente
+    for (const vente of ventes) {
+      const [lignes] = await db.execute(
+        `SELECT lv.*, p.nom as produit_nom 
+         FROM ligne_vente lv
+         JOIN produits p ON lv.produit_id = p.id
+         WHERE vente_id = ?`,
+        [vente.id]
+      );
+      vente.produits_vendus = lignes;
     }
+
+    return ventes;
+},
+
+getVentesByCaissier: async (caissierId, startDate, endDate) => {
+    const [ventes] = await db.execute(
+      `SELECT v.*, u.username as caissier_nom
+       FROM ventes v
+       LEFT JOIN utilisateurs u ON v.id_caissier = u.id
+       WHERE v.id_caissier = ?
+       AND v.date_vente BETWEEN ? AND ?
+       ORDER BY v.date_vente DESC`,
+      [caissierId, startDate, endDate]
+    );
+
+    // Récupérer les lignes pour chaque vente
+    for (const vente of ventes) {
+      const [lignes] = await db.execute(
+        `SELECT lv.*, p.nom as produit_nom 
+         FROM ligne_vente lv
+         JOIN produits p ON lv.produit_id = p.id
+         WHERE vente_id = ?`,
+        [vente.id]
+      );
+      vente.produits_vendus = lignes;
+    }
+
+    return ventes;
+},
+
+cancelVente: async (id) => {
+    const vente = await Stock.getVenteById(id);
+    if (!vente) throw new Error('Vente non trouvée');
 
     await db.beginTransaction();
 
     try {
-      const produitsVendus = JSON.parse(vente[0].produits_vendus);
-      
-      for (const produit of produitsVendus) {
+      // Restaurer le stock pour chaque produit
+      for (const produit of vente.produits_vendus) {
         await db.execute(
           'UPDATE produits SET quantite_stock = quantite_stock + ? WHERE id = ?',
           [produit.quantite, produit.id]
         );
 
+        // Enregistrer l'annulation
         await db.execute(
-          'INSERT INTO mouvements_stock (produit_id, type, quantite, agent_id, raison) VALUES (?, ?, ?, ?, ?)',
+          `INSERT INTO mouvements_stock 
+          (produit_id, type, quantite, agent_id, raison)
+          VALUES (?, 'AJUSTEMENT', ?, ?, ?)`,
           [
             produit.id,
-            'AJUSTEMENT',
             produit.quantite,
-            vente[0].id_caissier || null,
+            vente.id_caissier || null,
             `Annulation vente #${id}`
           ]
         );
       }
 
-      await db.execute('DELETE FROM ventes WHERE id = ?', [id]);
-      await db.commit();
+      // Supprimer les lignes
+      await db.execute('DELETE FROM ligne_vente WHERE vente_id = ?', [id]);
       
+      // Supprimer la vente
+      await db.execute('DELETE FROM ventes WHERE id = ?', [id]);
+      
+      await db.commit();
       return { id, annule: true };
     } catch (err) {
       await db.rollback();
       throw err;
     }
-  },
+},
 
   // ==================== STATISTIQUES ====================
-  getStockStats: async () => {
-    const [stats] = await db.execute(`
-      SELECT 
-        COUNT(*) AS total_produits,
-        SUM(quantite_stock) AS total_stock,
-        SUM(prix_achat * quantite_stock) AS valeur_stock,
-        SUM(CASE WHEN quantite_stock <= seuil_alerte THEN 1 ELSE 0 END) AS produits_alerte
-      FROM produits
+getStockStats: async () => {
+    // Statistiques de base du stock
+    const [baseStats] = await db.execute(`
+        SELECT 
+            COUNT(*) AS total_produits,
+            SUM(quantite_stock) AS total_stock,
+            SUM(prix_achat * quantite_stock) AS valeur_stock,
+            SUM(CASE WHEN quantite_stock <= seuil_alerte THEN 1 ELSE 0 END) AS produits_alerte
+        FROM produits
     `);
-    return stats[0];
-  },
+
+    // Ventes du jour
+    const today = new Date().toISOString().split('T')[0];
+    const [todaySales] = await db.execute(`
+        SELECT 
+            COUNT(*) AS todaySalesCount,
+            SUM(montant_total) AS todaySalesAmount
+        FROM ventes
+        WHERE DATE(date_vente) = ?
+    `, [today]);
+
+    // Ventes des 7 derniers jours
+    const date = new Date();
+    date.setDate(date.getDate() - 7);
+    const sevenDaysAgo = date.toISOString().split('T')[0];
+    
+    const [last7DaysSales] = await db.execute(`
+        SELECT 
+            DATE(date_vente) AS sale_date,
+            SUM(montant_total) AS daily_amount
+        FROM ventes
+        WHERE DATE(date_vente) BETWEEN ? AND ?
+        GROUP BY DATE(date_vente)
+        ORDER BY sale_date ASC
+    `, [sevenDaysAgo, today]);
+    // Dans votre modèle getStockStats()
+const [todayMovements] = await db.execute(`
+    SELECT 
+        m.*,
+        p.nom AS produit_nom,
+        u.username AS agent_nom
+    FROM mouvements_stock m
+    JOIN produits p ON m.produit_id = p.id
+    LEFT JOIN utilisateurs u ON m.agent_id = u.id
+    WHERE DATE(m.date_mouvement) = ?
+    ORDER BY m.date_mouvement DESC
+`, [today]);
+    // Top 5 produits vendus
+    const [topProducts] = await db.execute(`
+        SELECT 
+            p.nom AS product_name,
+            SUM(lv.quantite) AS total_quantity
+        FROM ligne_vente lv
+        JOIN produits p ON lv.produit_id = p.id
+        GROUP BY p.id, p.nom
+        ORDER BY total_quantity DESC
+        LIMIT 5
+    `);
+
+    // Produits en alerte de stock
+    const [lowStockProducts] = await db.execute(`
+        SELECT 
+            p.*,
+            c.nom AS categorie_nom
+        FROM produits p
+        LEFT JOIN categories c ON p.categorie_id = c.id
+        WHERE p.quantite_stock <= p.seuil_alerte
+    `);
+
+    return {
+        // Stats de base
+        ...baseStats[0],
+        
+        // Ventes aujourd'hui
+        todaySalesCount: todaySales[0]?.todaySalesCount || 0,
+        todaySalesAmount: todaySales[0]?.todaySalesAmount || 0,
+        
+        // Ventes 7 derniers jours
+        last7DaysLabels: last7DaysSales.map(sale => {
+            const date = new Date(sale.sale_date);
+            return date.toLocaleDateString('fr-FR', { weekday: 'short' });
+        }),
+        last7DaysData: last7DaysSales.map(sale => sale.daily_amount),
+        
+        // Top produits
+        topProductsLabels: topProducts.map(product => product.product_name),
+        topProductsData: topProducts.map(product => product.total_quantity),
+        
+        // Produits en alerte
+        lowStockProductsList: lowStockProducts,
+        todayMovements: todayMovements
+    };
+},
 
   getVentesStats: async (startDate, endDate) => {
     const [stats] = await db.execute(`

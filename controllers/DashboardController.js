@@ -108,6 +108,37 @@ static async getClientDashboard(req, res) {
         });
     }
 }
+// Ajoutez cette méthode au contrôleur
+static async getMonthlyPayments(req, res) {
+    try {
+        const { id_utilisateur } = req.params;
+        
+        const query = `
+            SELECT 
+                MONTH(date_paiement) as month,
+                SUM(montant_paye) as amount
+            FROM paiements_credits p
+            JOIN details_credits c ON p.id_credit = c.id
+            WHERE c.id_utilisateur = ?
+            AND YEAR(date_paiement) = YEAR(CURDATE())
+            GROUP BY MONTH(date_paiement)
+            ORDER BY month
+        `;
+        
+        const [results] = await db.execute(query, [id_utilisateur]);
+        
+        res.json({
+            success: true,
+            data: results
+        });
+    } catch (error) {
+        console.error('Error getting monthly payments:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la récupération des paiements mensuels'
+        });
+    }
+}
 static async getGerantDashboard(req, res) {
   try {
     const filter = req.query.filter || { type: 'year' };

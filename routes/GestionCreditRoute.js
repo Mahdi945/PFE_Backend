@@ -87,5 +87,6 @@ router.get('/dashboard/recent-transactions/:id_utilisateur', requireAuth, Transa
 router.get('/dashboard/client/:id_utilisateur', requireAuth, DashboardController.getClientDashboard);
 router.get('/dashboard/gerant', requireAuth, DashboardController.getGerantDashboard);
 router.get('/dashboard/caissier/:id_caissier', requireAuth, DashboardController.getCaissierDashboard);
-
+// Ajoutez cette route
+router.get('/dashboard/monthly-payments/:id_utilisateur', requireAuth, DashboardController.getMonthlyPayments);
 export default router;

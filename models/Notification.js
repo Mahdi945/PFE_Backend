@@ -54,6 +54,23 @@ const Notification = {
       WHERE id_utilisateur = ? AND vue = 0
     `;
     return db.execute(query, [id_utilisateur]);
+  },
+  // Supprimer une notification
+  delete: async (id, id_utilisateur) => {
+    const query = `
+      DELETE FROM notifications 
+      WHERE id = ? AND id_utilisateur = ?
+    `;
+    return db.execute(query, [id, id_utilisateur]);
+  },
+
+  // Supprimer toutes les notifications d'un utilisateur
+  deleteAll: async (id_utilisateur) => {
+    const query = `
+      DELETE FROM notifications 
+      WHERE id_utilisateur = ?
+    `;
+    return db.execute(query, [id_utilisateur]);
   }
 };
 

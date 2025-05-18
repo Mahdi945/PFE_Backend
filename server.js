@@ -317,7 +317,83 @@ cron.schedule('0 * * * *', async () => {
     console.error('❌ Error in hourly notifications check:', err);
   }
 });
+// CRON Job pour les alertes de stock (toutes les 5 minutes)
+cron.schedule('0 * * * *', async () => {
+   try {
+    console.log('🔄 Vérification des produits sous le seuil...');
+    
+    // 1. Récupérer les produits sous le seuil d'alerte
+    const [lowStockProducts] = await pool.query(`
+      SELECT 
+        p.id,
+        p.nom,
+        p.quantite_stock,
+        p.seuil_alerte,
+        p.categorie_id,
+        c.nom AS categorie_nom
+      FROM produits p
+      JOIN categories c ON p.categorie_id = c.id
+      WHERE p.quantite_stock <= p.seuil_alerte
+    `);
 
+    // 2. Récupérer l'ID du gérant
+    const [gerant] = await pool.query(`
+      SELECT id FROM utilisateurs 
+      WHERE role = 'gerant' 
+      LIMIT 1
+    `);
+
+    const gerantId = gerant[0]?.id;
+
+    if (!gerantId) {
+      console.log('Aucun gérant trouvé pour envoyer les notifications');
+      return;
+    }
+
+    // 3. Créer des notifications pour chaque produit sous le seuil
+    for (const product of lowStockProducts) {
+      const message = `Produit "${product.nom}" (${product.categorie_nom}) sous le seuil: ` +
+                     `${product.quantite_stock} restants (seuil: ${product.seuil_alerte})`;
+
+      // Vérifier si une notification existe déjà pour ce produit
+      const [existingNotification] = await pool.query(`
+        SELECT id FROM notifications
+        WHERE entity_type = 'stock' 
+        AND entity_id = ?
+        AND type = 'alerte_stock'
+        AND vue = 0
+        AND created_at >= DATE_SUB(NOW(), INTERVAL 1 HOUR)
+        LIMIT 1
+      `, [product.id]);
+
+      // Si aucune notification récente n'existe, en créer une nouvelle
+      if (!existingNotification || existingNotification.length === 0) {
+        await Notification.create(
+          gerantId,
+          'stock',
+          product.id,
+          'alerte_stock',
+          message
+        );
+
+        console.log(`Notification créée pour: ${product.nom}`);
+
+        // Envoyer un email au gérant
+        await sendNotificationEmail(
+          gerantId,
+          `Alerte stock: ${product.nom}`,
+          `<p>Le produit <strong>${product.nom}</strong> (${product.categorie_nom}) est sous le seuil d'alerte.</p>
+           <p>Stock actuel: ${product.quantite_stock}</p>
+           <p>Seuil d'alerte: ${product.seuil_alerte}</p>`
+        );
+      }
+    }
+
+    console.log('✅ Vérification des produits sous le seuil terminée');
+  } catch (err) {
+    console.error('❌ Erreur lors de la vérification du stock:', err);
+  }
+});
 // Weekly summary every Monday at 9 AM
 cron.schedule('0 9 * * 1', async () => {
   try {

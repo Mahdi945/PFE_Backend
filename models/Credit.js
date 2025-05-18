@@ -104,7 +104,6 @@ renewCredit: (id_credit, new_solde, new_duree, new_date_debut) => {
   `;
   return db.execute(query, [new_solde, new_date_debut, new_duree, id_credit]);
 },
-// Dans le modèle (Credit.js)
 getCreditStats: async (id_utilisateur) => {
   const query = `
     SELECT 
@@ -115,11 +114,19 @@ getCreditStats: async (id_utilisateur) => {
       SUM(CASE WHEN etat = 'actif' THEN 1 ELSE 0 END) AS credits_actifs,
       SUM(CASE WHEN etat = 'expiré' THEN 1 ELSE 0 END) AS credits_expires,
       SUM(CASE WHEN etat = 'annulé' THEN 1 ELSE 0 END) AS credits_annules,
-      SUM(CASE WHEN etat = 'remboursé' THEN 1 ELSE 0 END) AS credits_rembourses
+      SUM(CASE WHEN etat = 'remboursé' THEN 1 ELSE 0 END) AS credits_rembourses,
+      (SELECT SUM(p.montant_paye) 
+       FROM paiements_credits p 
+       JOIN details_credits c ON p.id_credit = c.id 
+       WHERE c.id_utilisateur = ? AND c.etat = 'actif') AS total_paye_actifs,
+     (SELECT COUNT(DISTINCT v.id) 
+       FROM vehicules v
+       JOIN details_credits c ON v.id_credit = c.id
+       WHERE c.id_utilisateur = ? AND c.etat = 'actif') AS total_vehicules
     FROM details_credits
     WHERE id_utilisateur = ?
   `;
-  return db.execute(query, [id_utilisateur]);
+  return db.execute(query, [id_utilisateur, id_utilisateur, id_utilisateur]);
 },
   // Mettre à jour l'état d'un crédit
   updateCreditState: (id_credit, etat) => {

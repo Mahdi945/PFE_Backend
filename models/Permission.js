@@ -10,7 +10,7 @@ const Permission = {
   getByRole: async (role) => {
     const normalizedRole = role.toLowerCase();
     const [rows] = await db.query(
-      "SELECT * FROM permissions WHERE role = ? AND is_visible = 1", 
+      "SELECT * FROM permissions WHERE role = ?", 
       [normalizedRole]
     );
     return rows;

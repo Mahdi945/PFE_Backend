@@ -143,7 +143,7 @@ const stockController = {
         produit_id: req.body.produit_id,
         type: req.body.type,
         quantite: req.body.quantite,
-        agent_id: req.user?.id || null,
+        agent_id: req.body.agent_id || null,
         raison: req.body.raison || null
       });
       
@@ -176,32 +176,33 @@ const stockController = {
     }
   },
 
-  // ==================== VENTES ====================
-  createVente: async (req, res) => {
+// ==================== VENTES ====================
+createVente: async (req, res) => {
     try {
       if (!req.body.montant_total || !req.body.montant_paye || !req.body.mode_paiement || 
           !req.body.produits_vendus || !Array.isArray(req.body.produits_vendus)) {
         return res.status(400).json({ error: 'Données de vente incomplètes' });
       }
 
-      // Validation des produits vendus
+      // Validation des produits
       for (const produit of req.body.produits_vendus) {
-        if (!produit.id || produit.quantite === undefined) {
+        if (!produit.id || produit.quantite === undefined || produit.prix_unitaire === undefined) {
           return res.status(400).json({ error: 'Données produit invalides' });
         }
       }
 
       const vente = await Stock.createVente({
         ...req.body,
-        id_caissier: req.user?.id || null
+        id_caissier: req.body.id_caissier // On utilise directement l'ID envoyé || null
       });
+      
       res.status(201).json(vente);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
-  },
+},
 
-  getVente: async (req, res) => {
+getVente: async (req, res) => {
     try {
       const vente = await Stock.getVenteById(req.params.id);
       if (!vente) {
@@ -211,13 +212,13 @@ const stockController = {
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
-  },
+},
 
-  getVentesByDate: async (req, res) => {
+getVentesByDate: async (req, res) => {
     try {
       const { startDate, endDate } = req.query;
       if (!startDate || !endDate) {
-        return res.status(400).json({ error: 'startDate et endDate sont requis' });
+        return res.status(400).json({ error: 'Dates requises' });
       }
 
       const ventes = await Stock.getVentesByDate(startDate, endDate);
@@ -225,13 +226,13 @@ const stockController = {
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
-  },
+},
 
-  getVentesByCaissier: async (req, res) => {
+getVentesByCaissier: async (req, res) => {
     try {
       const { startDate, endDate } = req.query;
       if (!startDate || !endDate) {
-        return res.status(400).json({ error: 'startDate et endDate sont requis' });
+        return res.status(400).json({ error: 'Dates requises' });
       }
 
       const ventes = await Stock.getVentesByCaissier(req.params.caissierId, startDate, endDate);
@@ -239,16 +240,16 @@ const stockController = {
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
-  },
+},
 
-  cancelVente: async (req, res) => {
+cancelVente: async (req, res) => {
     try {
       const result = await Stock.cancelVente(req.params.id);
       res.json(result);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
-  },
+},
 
   // ==================== STATISTIQUES ====================
   getStockStats: async (req, res) => {
