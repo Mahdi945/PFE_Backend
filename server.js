@@ -57,7 +57,6 @@ app.use('/api/pistolet', pistoletRouter);
 app.use('/api/affectations', AffectationCalendrierRouter);
 app.use('/api/credit', creditRouter);
 app.use('/api/stock', stockRouter);
-app.use('/api/stock', reclamationRouter);
 app.use('/api/Reclamation', reclamationRouter);
 app.use('/api/notifications', notificationRouter);
 
