@@ -2,7 +2,7 @@
 .env
 ### Fichiers Odoo à ignorer ###
 
-# Dossier Odoo cloné (si vous l'avez dans votre projet)
+# Dossier Odoo cloné 
 /odoo/
 
 # Fichiers de cache et compilation Python

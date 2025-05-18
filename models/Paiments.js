@@ -283,6 +283,7 @@ const Paiments = {
     `;
     return db.execute(query, [id_utilisateur, limit]);
   },
+  
   getByCaissier: async (id_caissier, filters = {}) => {
     try {
       let query = `
