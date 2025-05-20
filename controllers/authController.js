@@ -1,6 +1,6 @@
-import bcrypt from 'bcryptjs';  // Remplacer bcrypt par bcryptjs
+import bcrypt from 'bcryptjs'; // Remplacer bcrypt par bcryptjs
 import User from '../models/User.js';
-import jwt from 'jsonwebtoken'; 
+import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import nodemailer from 'nodemailer';
 import multer from 'multer';
@@ -38,7 +38,9 @@ const generateEmailTemplate = (title, content, actionLink = null, actionText = n
           ${content}
         </div>
         
-        ${actionLink && actionText ? `
+        ${
+          actionLink && actionText
+            ? `
           <div style="text-align: center; margin: 50px 0 40px;">
             <a href="${actionLink}" style="
               display: inline-block;
@@ -56,7 +58,9 @@ const generateEmailTemplate = (title, content, actionLink = null, actionText = n
               ${actionText}
             </a>
           </div>
-        ` : ''}
+        `
+            : ''
+        }
       </div>
       
       <!-- Footer léger -->
@@ -72,13 +76,12 @@ const generateEmailTemplate = (title, content, actionLink = null, actionText = n
   `;
 };
 
-
 const updateUserPhoto = async (req, res) => {
   console.log('Début de la mise à jour de la photo de profil');
 
   // Vérifiez si l'utilisateur et le fichier existent
   const userId = req.params.id;
-  console.log("ID utilisateur:", userId);  // ID de l'utilisateur dans la route
+  console.log('ID utilisateur:', userId); // ID de l'utilisateur dans la route
   console.log("Chemin de l'image téléchargée:", req.file ? req.file.filename : 'Aucun fichier');
 
   if (!req.file) {
@@ -109,14 +112,16 @@ const registerUser = async (req, res) => {
 
   // Vérification des champs obligatoires
   if (!username || !password || !role) {
-    return res.status(400).json({ message: 'Nom d\'utilisateur, mot de passe et rôle sont obligatoires.' });
+    return res
+      .status(400)
+      .json({ message: "Nom d'utilisateur, mot de passe et rôle sont obligatoires." });
   }
 
   try {
     // Vérifier si le nom d'utilisateur existe déjà
     const [existingUserByUsername] = await User.findByUsername(username);
     if (existingUserByUsername && existingUserByUsername.length > 0) {
-      return res.status(400).json({ message: 'Ce nom d\'utilisateur est déjà pris.' });
+      return res.status(400).json({ message: "Ce nom d'utilisateur est déjà pris." });
     }
 
     // Vérifier si l'email existe déjà
@@ -172,40 +177,39 @@ const registerUser = async (req, res) => {
       from: `"Carbotrack" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: 'Bienvenue sur Carbotrack',
-      html: generateEmailTemplate(
-        'Bienvenue sur Carbotrack',
-        emailContent
-      ),
-      attachments: [{
-        filename: 'logobg.png',
-        path: path.join(process.cwd(), 'public', 'logobg.png'),
-        cid: 'logo'
-      }]
+      html: generateEmailTemplate('Bienvenue sur Carbotrack', emailContent),
+      attachments: [
+        {
+          filename: 'logobg.png',
+          path: path.join(process.cwd(), 'public', 'logobg.png'),
+          cid: 'logo',
+        },
+      ],
     };
 
     // Envoi de l'email
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
-        console.error('Erreur lors de l\'envoi de l\'email:', error);
-        return res.status(500).json({ message: 'Erreur lors de l\'envoi de l\'email.' });
+        console.error("Erreur lors de l'envoi de l'email:", error);
+        return res.status(500).json({ message: "Erreur lors de l'envoi de l'email." });
       }
       console.log('Email envoyé:', info.response);
     });
 
     res.status(201).json({ message: 'Utilisateur ajouté avec succès et email envoyé.' });
   } catch (err) {
-    console.error('Erreur lors de l\'ajout de l\'utilisateur:', err);
+    console.error("Erreur lors de l'ajout de l'utilisateur:", err);
     res.status(500).json({ message: 'Erreur du serveur.' });
   }
 };
 
 const updateUser = async (req, res) => {
-  const { id } = req.params;  // Récupérer l'ID depuis l'URL
-  const { username, email, numero_telephone, role } = req.body;  // Récupérer les données du corps de la requête
+  const { id } = req.params; // Récupérer l'ID depuis l'URL
+  const { username, email, numero_telephone, role } = req.body; // Récupérer les données du corps de la requête
 
   try {
     // Vérifier si l'utilisateur avec cet ID existe
-    const [existingUser] = await User.findById(id);  // Rechercher l'utilisateur par ID
+    const [existingUser] = await User.findById(id); // Rechercher l'utilisateur par ID
     if (!existingUser || existingUser.length === 0) {
       return res.status(404).json({ message: 'Utilisateur non trouvé.' });
     }
@@ -217,7 +221,7 @@ const updateUser = async (req, res) => {
     if (username !== undefined) updateData.username = username;
     if (email !== undefined) updateData.email = email;
     if (numero_telephone !== undefined) updateData.numero_telephone = numero_telephone;
-    if (role !== undefined) updateData.role = role;  // Mise à jour du rôle
+    if (role !== undefined) updateData.role = role; // Mise à jour du rôle
 
     // Si aucun champ n'est fourni, renvoyer une erreur
     if (Object.keys(updateData).length === 0) {
@@ -229,7 +233,7 @@ const updateUser = async (req, res) => {
 
     res.status(200).json({ message: 'Utilisateur mis à jour avec succès.' });
   } catch (err) {
-    console.error('Erreur lors de la mise à jour de l\'utilisateur:', err);
+    console.error("Erreur lors de la mise à jour de l'utilisateur:", err);
     res.status(500).json({ message: 'Erreur du serveur.' });
   }
 };
@@ -245,7 +249,7 @@ const getUserByEmail = async (req, res) => {
     }
     res.status(200).json(user[0]);
   } catch (err) {
-    console.error('Erreur lors de la recherche de l\'utilisateur:', err);
+    console.error("Erreur lors de la recherche de l'utilisateur:", err);
     res.status(500).json({ message: 'Erreur du serveur.' });
   }
 };
@@ -261,7 +265,7 @@ const getUserByUsername = async (req, res) => {
     }
     res.status(200).json(user[0]);
   } catch (err) {
-    console.error('Erreur lors de la recherche de l\'utilisateur:', err);
+    console.error("Erreur lors de la recherche de l'utilisateur:", err);
     res.status(500).json({ message: 'Erreur du serveur.' });
   }
 };
@@ -297,7 +301,7 @@ const deleteUser = async (req, res) => {
 
     res.status(200).json({ message: 'Utilisateur supprimé avec succès.' });
   } catch (err) {
-    console.error('Erreur lors de la suppression de l\'utilisateur:', err);
+    console.error("Erreur lors de la suppression de l'utilisateur:", err);
     res.status(500).json({ message: 'Erreur du serveur.' });
   }
 };
@@ -337,27 +341,31 @@ const loginUser = async (req, res) => {
     } else if (email) {
       const result = await User.findByEmail(email);
       if (!result || result.length === 0 || result[0].length === 0) {
-        return res.status(401).json({ message: "Email ou mot de passe incorrect." });
+        return res.status(401).json({ message: 'Email ou mot de passe incorrect.' });
       }
       user = result[0][0];
     }
 
     // Vérifier le statut de l'utilisateur (si l'utilisateur est inactif)
     if (user.status === 'inactive') {
-      return res.status(403).json({ message: "Votre compte est désactivé. Contactez l'administration." });
+      return res
+        .status(403)
+        .json({ message: "Votre compte est désactivé. Contactez l'administration." });
     }
 
     // Comparer le mot de passe
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
-      return res.status(401).json({ message: "Nom d'utilisateur, email ou mot de passe incorrect." });
+      return res
+        .status(401)
+        .json({ message: "Nom d'utilisateur, email ou mot de passe incorrect." });
     }
 
     // Créer un token JWT
     const token = jwt.sign(
       { id: user.id, username: user.username, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN }
+      { expiresIn: process.env.JWT_EXPIRES_IN },
     );
 
     // Définir le cookie HTTP-only
@@ -365,16 +373,16 @@ const loginUser = async (req, res) => {
       httpOnly: true,
       secure: false, // Désactiver pour HTTP, activer pour HTTPS en production
       sameSite: 'Strict',
-      maxAge: 3600000 // 1 heure
+      maxAge: 3600000, // 1 heure
     });
 
     res.status(200).json({
-      message: "Connexion réussie.",
-      user: { username: user.username, role: user.role, photo: user.photo }  // Envoi de l'utilisateur avec son rôle
+      message: 'Connexion réussie.',
+      user: { username: user.username, role: user.role, photo: user.photo }, // Envoi de l'utilisateur avec son rôle
     });
   } catch (err) {
-    console.error("Erreur lors de la connexion:", err);
-    res.status(500).json({ message: "Erreur serveur." });
+    console.error('Erreur lors de la connexion:', err);
+    res.status(500).json({ message: 'Erreur serveur.' });
   }
 };
 
@@ -383,7 +391,7 @@ const logoutUser = (req, res) => {
   res.clearCookie('jwt', {
     httpOnly: true,
     secure: false, // Désactivé pour HTTP (en production, passe à true pour HTTPS)
-    sameSite: 'Strict'
+    sameSite: 'Strict',
   });
   return res.status(200).json({ message: 'Déconnexion réussie' });
 };
@@ -397,7 +405,7 @@ const deactivateUser = async (req, res) => {
       return res.status(404).json({ message: 'Utilisateur non trouvé.' });
     }
     await User.updateUser(id, { status: 'inactive' });
-    
+
     // Contenu de l'email de désactivation
     const emailContent = `
       <p>Bonjour ${user[0].username},</p>
@@ -410,21 +418,20 @@ const deactivateUser = async (req, res) => {
       from: `"Carbotrack" <${process.env.EMAIL_USER}>`,
       to: user[0].email,
       subject: 'Votre compte a été désactivé',
-      html: generateEmailTemplate(
-        'Compte désactivé',
-        emailContent
-      ),
-      attachments: [{
-        filename: 'logobg.png',
-        path: path.join(process.cwd(), 'public', 'logobg.png'),
-        cid: 'logo'
-      }]
+      html: generateEmailTemplate('Compte désactivé', emailContent),
+      attachments: [
+        {
+          filename: 'logobg.png',
+          path: path.join(process.cwd(), 'public', 'logobg.png'),
+          cid: 'logo',
+        },
+      ],
     };
 
     transporter.sendMail(mailOptions);
     res.status(200).json({ message: 'Compte désactivé avec succès.' });
   } catch (err) {
-    console.error('Erreur lors de la désactivation de l\'utilisateur:', err);
+    console.error("Erreur lors de la désactivation de l'utilisateur:", err);
     res.status(500).json({ message: 'Erreur du serveur.' });
   }
 };
@@ -437,7 +444,7 @@ const reactivateUser = async (req, res) => {
       return res.status(404).json({ message: 'Utilisateur non trouvé.' });
     }
     await User.updateUser(id, { status: 'active' });
-    
+
     // Contenu de l'email de réactivation
     const emailContent = `
       <p>Bonjour ${user[0].username},</p>
@@ -450,21 +457,20 @@ const reactivateUser = async (req, res) => {
       from: `"Carbotrack" <${process.env.EMAIL_USER}>`,
       to: user[0].email,
       subject: 'Votre compte a été réactivé',
-      html: generateEmailTemplate(
-        'Compte réactivé',
-        emailContent
-      ),
-      attachments: [{
-        filename: 'logobg.png',
-        path: path.join(process.cwd(), 'public', 'logobg.png'),
-        cid: 'logo'
-      }]
+      html: generateEmailTemplate('Compte réactivé', emailContent),
+      attachments: [
+        {
+          filename: 'logobg.png',
+          path: path.join(process.cwd(), 'public', 'logobg.png'),
+          cid: 'logo',
+        },
+      ],
     };
 
     transporter.sendMail(mailOptions);
     res.status(200).json({ message: 'Compte réactivé avec succès.' });
   } catch (err) {
-    console.error('Erreur lors de la réactivation de l\'utilisateur:', err);
+    console.error("Erreur lors de la réactivation de l'utilisateur:", err);
     res.status(500).json({ message: 'Erreur du serveur.' });
   }
 };
@@ -497,7 +503,7 @@ const updateUserProfile = async (req, res) => {
     if (username) {
       const [existingUsername] = await User.findByUsername(username);
       if (existingUsername.length > 0 && existingUsername[0].id !== parseInt(id)) {
-        return res.status(400).json({ message: 'Nom d\'utilisateur déjà pris' });
+        return res.status(400).json({ message: "Nom d'utilisateur déjà pris" });
       }
     }
 
@@ -558,20 +564,22 @@ const requestPasswordReset = async (req, res) => {
         'Réinitialisation de mot de passe',
         emailContent,
         resetLink,
-        'Réinitialiser le mot de passe'
+        'Réinitialiser le mot de passe',
       ),
-      attachments: [{
-        filename: 'logobg.png',
-        path: path.join(process.cwd(), 'public', 'logobg.png'),
-        cid: 'logo'
-      }]
+      attachments: [
+        {
+          filename: 'logobg.png',
+          path: path.join(process.cwd(), 'public', 'logobg.png'),
+          cid: 'logo',
+        },
+      ],
     };
 
     // Envoyer l'email
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
-        console.error('Erreur d\'envoi de l\'email:', error);
-        return res.status(500).json({ message: 'Erreur lors de l\'envoi de l\'email.' });
+        console.error("Erreur d'envoi de l'email:", error);
+        return res.status(500).json({ message: "Erreur lors de l'envoi de l'email." });
       }
       res.status(200).json({ message: 'Lien de réinitialisation envoyé avec succès.' });
     });
@@ -604,8 +612,19 @@ const updatePassword = async (req, res) => {
       return res.status(404).json({ message: 'Utilisateur non trouvé.' });
     }
 
-    if (!newPassword || newPassword.length < 8 || !/[A-Z]/.test(newPassword) || !/\d/.test(newPassword) || !/[\W_]/.test(newPassword)) {
-      return res.status(400).json({ message: 'Mot de passe non valide. Il doit contenir au moins 8 caractères, une majuscule, un chiffre et un caractère spécial.' });
+    if (
+      !newPassword ||
+      newPassword.length < 8 ||
+      !/[A-Z]/.test(newPassword) ||
+      !/\d/.test(newPassword) ||
+      !/[\W_]/.test(newPassword)
+    ) {
+      return res
+        .status(400)
+        .json({
+          message:
+            'Mot de passe non valide. Il doit contenir au moins 8 caractères, une majuscule, un chiffre et un caractère spécial.',
+        });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -626,15 +645,14 @@ const updatePassword = async (req, res) => {
       from: `"Carbotrack" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: 'Confirmation de changement de mot de passe',
-      html: generateEmailTemplate(
-        'Mot de passe mis à jour',
-        emailContent
-      ),
-      attachments: [{
-        filename: 'logobg.png',
-        path: path.join(process.cwd(), 'public', 'logobg.png'),
-        cid: 'logo'
-      }]
+      html: generateEmailTemplate('Mot de passe mis à jour', emailContent),
+      attachments: [
+        {
+          filename: 'logobg.png',
+          path: path.join(process.cwd(), 'public', 'logobg.png'),
+          cid: 'logo',
+        },
+      ],
     };
 
     transporter.sendMail(mailOptions);
@@ -670,8 +688,19 @@ const updatePasswordConnected = async (req, res) => {
     }
 
     // Vérification de la force du mot de passe
-    if (!newPassword || newPassword.length < 8 || !/[A-Z]/.test(newPassword) || !/\d/.test(newPassword) || !/[\W_]/.test(newPassword)) {
-      return res.status(400).json({ message: 'Mot de passe non valide. Il doit contenir au moins 8 caractères, une majuscule, un chiffre et un caractère spécial.' });
+    if (
+      !newPassword ||
+      newPassword.length < 8 ||
+      !/[A-Z]/.test(newPassword) ||
+      !/\d/.test(newPassword) ||
+      !/[\W_]/.test(newPassword)
+    ) {
+      return res
+        .status(400)
+        .json({
+          message:
+            'Mot de passe non valide. Il doit contenir au moins 8 caractères, une majuscule, un chiffre et un caractère spécial.',
+        });
     }
 
     // Hacher le nouveau mot de passe
@@ -691,15 +720,14 @@ const updatePasswordConnected = async (req, res) => {
       from: `"Carbotrack" <${process.env.EMAIL_USER}>`,
       to: user[0].email,
       subject: 'Confirmation de changement de mot de passe',
-      html: generateEmailTemplate(
-        'Mot de passe mis à jour',
-        emailContent
-      ),
-      attachments: [{
-        filename: 'logobg.png',
-        path: path.join(process.cwd(), 'public', 'logobg.png'),
-        cid: 'logo'
-      }]
+      html: generateEmailTemplate('Mot de passe mis à jour', emailContent),
+      attachments: [
+        {
+          filename: 'logobg.png',
+          path: path.join(process.cwd(), 'public', 'logobg.png'),
+          cid: 'logo',
+        },
+      ],
     };
 
     transporter.sendMail(mailOptions);
@@ -729,7 +757,6 @@ export default {
   getUserByRole,
   deleteUser,
   getAllUsers,
-  
 };
 /*
 // Fonction pour mettre à jour le mot de passe d'un utilisateur en vérifiant l'email
@@ -834,4 +861,3 @@ export default {
       res.status(400).json({ message: 'Lien expiré ou invalide.' });
     }
   };*/
-  

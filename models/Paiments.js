@@ -5,7 +5,10 @@ const Paiments = {
     let connection;
     try {
       connection = await db.getConnection();
-      await connection.query({ sql: 'SET SESSION sql_mode = "NO_ENGINE_SUBSTITUTION"', rowsAsArray: true });
+      await connection.query({
+        sql: 'SET SESSION sql_mode = "NO_ENGINE_SUBSTITUTION"',
+        rowsAsArray: true,
+      });
       await connection.query('START TRANSACTION');
 
       if (montant_paye <= 0) {
@@ -14,11 +17,10 @@ const Paiments = {
 
       // Vérification du rôle si id_caissier est fourni
       if (id_caissier) {
-        const [userCheck] = await connection.query(
-          `SELECT role FROM utilisateurs WHERE id = ?`,
-          [id_caissier]
-        );
-        
+        const [userCheck] = await connection.query(`SELECT role FROM utilisateurs WHERE id = ?`, [
+          id_caissier,
+        ]);
+
         if (!userCheck.length || userCheck[0].role !== 'caissier') {
           id_caissier = null; // Si le rôle n'est pas caissier, on met à null
         }
@@ -28,12 +30,12 @@ const Paiments = {
       const [creditRows] = await connection.query(
         `SELECT dc.solde_credit, dc.montant_restant, dc.etat, dc.id_utilisateur
          FROM details_credits dc 
-         WHERE dc.id = ?`, 
-        [id_credit]
+         WHERE dc.id = ?`,
+        [id_credit],
       );
-      
+
       if (!creditRows.length) throw new Error('Crédit non trouvé');
-      
+
       const credit = creditRows[0];
       const montantRestantActuel = parseFloat(credit.montant_restant);
       const nouveauMontantRestant = montantRestantActuel - parseFloat(montant_paye);
@@ -53,24 +55,24 @@ const Paiments = {
           reference_paiement, description, id_caissier)
          VALUES (?, ?, ?, NOW(), ?, ?, ?, ?)`,
         [
-          id_credit, 
-          montant_paye, 
-          nouveauMontantRestant, 
-          mode_paiement, 
-          reference, 
+          id_credit,
+          montant_paye,
+          nouveauMontantRestant,
+          mode_paiement,
+          reference,
           description,
-          id_caissier // Dernier paramètre optionnel
-        ]
+          id_caissier, // Dernier paramètre optionnel
+        ],
       );
 
       // Mise à jour crédit
       const nouvelEtat = nouveauMontantRestant <= 0 ? 'remboursé' : credit.etat;
-      
+
       await connection.query(
         `UPDATE details_credits 
          SET montant_restant = ?, etat = ?, date_dernier_paiement = NOW()
          WHERE id = ?`,
-        [nouveauMontantRestant, nouvelEtat, id_credit]
+        [nouveauMontantRestant, nouvelEtat, id_credit],
       );
 
       await connection.query('COMMIT');
@@ -80,9 +82,8 @@ const Paiments = {
         montant_restant: nouveauMontantRestant,
         etat: nouvelEtat,
         id_utilisateur: credit.id_utilisateur,
-        id_caissier // Retourné pour information
+        id_caissier, // Retourné pour information
       };
-
     } catch (err) {
       if (connection) await connection.query('ROLLBACK');
       console.error('Erreur création paiement:', err);
@@ -113,10 +114,10 @@ const Paiments = {
          JOIN details_credits c ON p.id_credit = c.id
          JOIN utilisateurs u ON c.id_utilisateur = u.id
          LEFT JOIN utilisateurs uc ON p.id_caissier = uc.id 
-         ORDER BY p.date_paiement DESC`
+         ORDER BY p.date_paiement DESC`,
       );
-  
-      return rows.map(row => ({
+
+      return rows.map((row) => ({
         id: row.id,
         id_credit: row.id_credit,
         id_utilisateur: row.id_utilisateur,
@@ -128,9 +129,9 @@ const Paiments = {
         reference_paiement: row.reference_paiement,
         description: row.description || null,
         username: row.username,
-        caissier_username: row.caissier_username,  
+        caissier_username: row.caissier_username,
         type_credit: row.type_credit,
-        solde_initial: parseFloat(row.solde_initial)
+        solde_initial: parseFloat(row.solde_initial),
       }));
     } catch (err) {
       console.error('Erreur dans Paiments.getAll:', err);
@@ -149,7 +150,7 @@ const Paiments = {
        JOIN utilisateurs u ON c.id_utilisateur = u.id
        WHERE p.id_credit = ?
        ORDER BY p.date_paiement DESC`,
-      [id_credit]
+      [id_credit],
     );
     return rows;
   },
@@ -164,7 +165,7 @@ const Paiments = {
        JOIN details_credits c ON p.id_credit = c.id
        WHERE c.id_utilisateur = ?
        ORDER BY p.date_paiement DESC`,
-      [id_utilisateur]
+      [id_utilisateur],
     );
     return rows;
   },
@@ -180,7 +181,7 @@ const Paiments = {
        JOIN details_credits c ON p.id_credit = c.id
        JOIN utilisateurs u ON c.id_utilisateur = u.id
        WHERE p.reference_paiement = ?`,
-      [reference]
+      [reference],
     );
     return rows[0];
   },
@@ -194,13 +195,13 @@ const Paiments = {
         FROM paiements_credits p
         JOIN details_credits c ON p.id_credit = c.id
       `;
-  
+
       const params = [];
-  
+
       if (typeof filterOrUserId === 'object') {
         const filter = filterOrUserId;
         query += ' WHERE 1=1';
-  
+
         if (filter.type === 'day') {
           query += ' AND DATE(p.date_paiement) = CURDATE()';
         } else if (filter.type === 'month' && filter.month && filter.year) {
@@ -217,27 +218,26 @@ const Paiments = {
         query += ' WHERE c.id_utilisateur = ?';
         params.push(filterOrUserId);
       }
-  
+
       query += ' GROUP BY p.mode_paiement';
-  
+
       const [rows] = await db.query(query, params);
-      
+
       // Calculer les totaux même si rows est vide
       const total_paye = rows.reduce((sum, item) => sum + parseFloat(item.total_paye || 0), 0);
       const nombre_paiements = rows.reduce((sum, item) => sum + (item.nombre_paiements || 0), 0);
-  
+
       return {
         rows,
         total_paye,
-        nombre_paiements
+        nombre_paiements,
       };
-  
     } catch (err) {
       console.error('Error in getPaymentStats:', err);
       return {
         rows: [],
         total_paye: 0,
-        nombre_paiements: 0
+        nombre_paiements: 0,
       };
     }
   },
@@ -283,7 +283,7 @@ const Paiments = {
     `;
     return db.execute(query, [id_utilisateur, limit]);
   },
-  
+
   getByCaissier: async (id_caissier, filters = {}) => {
     try {
       let query = `
@@ -309,9 +309,9 @@ const Paiments = {
         JOIN utilisateurs u ON c.id_utilisateur = u.id
         WHERE p.id_caissier = ?
       `;
-  
+
       const params = [id_caissier];
-  
+
       // Filtres optionnels
       if (filters.date_debut && filters.date_fin) {
         query += ' AND DATE(p.date_paiement) BETWEEN ? AND ?';
@@ -323,39 +323,39 @@ const Paiments = {
         query += ' AND DATE(p.date_paiement) <= ?';
         params.push(filters.date_fin);
       }
-  
+
       if (filters.mode_paiement) {
         query += ' AND p.mode_paiement = ?';
         params.push(filters.mode_paiement);
       }
-  
+
       if (filters.id_credit) {
         query += ' AND p.id_credit = ?';
         params.push(filters.id_credit);
       }
-  
+
       if (filters.id_utilisateur) {
         query += ' AND c.id_utilisateur = ?';
         params.push(filters.id_utilisateur);
       }
-  
+
       // Tri et limite
       query += ' ORDER BY p.date_paiement DESC';
-  
+
       if (filters.limit) {
         query += ' LIMIT ?';
         params.push(filters.limit);
       }
-  
+
       const [rows] = await db.execute(query, params);
-  
-      return rows.map(row => ({
+
+      return rows.map((row) => ({
         ...row,
         montant_paye: parseFloat(row.montant_paye),
         montant_restant: parseFloat(row.montant_restant),
         solde_initial: parseFloat(row.solde_initial),
         date_paiement: new Date(row.date_paiement).toISOString(),
-        date_fin: row.date_fin_calculee ? new Date(row.date_fin_calculee).toISOString() : null
+        date_fin: row.date_fin_calculee ? new Date(row.date_fin_calculee).toISOString() : null,
       }));
     } catch (err) {
       console.error('Erreur dans Paiments.getByCaissier:', err);
@@ -374,9 +374,9 @@ const Paiments = {
         FROM paiements_credits p
         WHERE p.id_caissier = ?
       `;
-  
+
       const params = [id_caissier];
-  
+
       // Filtres optionnels
       if (filters.date_debut && filters.date_fin) {
         query += ' AND DATE(p.date_paiement) BETWEEN ? AND ?';
@@ -384,15 +384,16 @@ const Paiments = {
       } else if (filters.period === 'day') {
         query += ' AND DATE(p.date_paiement) = CURDATE()';
       } else if (filters.period === 'month') {
-        query += ' AND MONTH(p.date_paiement) = MONTH(CURRENT_DATE()) AND YEAR(p.date_paiement) = YEAR(CURRENT_DATE())';
+        query +=
+          ' AND MONTH(p.date_paiement) = MONTH(CURRENT_DATE()) AND YEAR(p.date_paiement) = YEAR(CURRENT_DATE())';
       } else if (filters.period === 'year') {
         query += ' AND YEAR(p.date_paiement) = YEAR(CURRENT_DATE())';
       }
-  
+
       query += ' GROUP BY p.mode_paiement, DATE(p.date_paiement)';
-  
+
       const [rows] = await db.execute(query, params);
-  
+
       return {
         total: rows.reduce((sum, item) => sum + parseFloat(item.total_paye), 0),
         by_mode: rows.reduce((acc, item) => {
@@ -402,12 +403,13 @@ const Paiments = {
           acc[item.mode_paiement] += parseFloat(item.total_paye);
           return acc;
         }, {}),
-        count: rows.reduce((sum, item) => sum + item.nombre_paiements, 0)
+        count: rows.reduce((sum, item) => sum + item.nombre_paiements, 0),
       };
     } catch (err) {
       console.error('Erreur dans Paiments.getCaissierStats:', err);
       throw err;
     }
-  }}
+  },
+};
 
 export default Paiments;

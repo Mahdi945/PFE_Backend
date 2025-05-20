@@ -15,5 +15,4 @@ router.get('/unread-count/:id_utilisateur', requireAuth, NotificationController.
 router.delete('/hide', requireAuth, NotificationController.hideNotification);
 router.delete('/hide-all', requireAuth, NotificationController.hideAllNotifications);
 
-
 export default router;

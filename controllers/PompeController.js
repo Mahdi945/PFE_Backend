@@ -58,11 +58,12 @@ const updatePompe = async (req, res) => {
     await Pompe.updatePompe(parseInt(id), pompeData);
     res.status(200).send({ message: 'Pompe mise à jour avec succès.' });
   } catch (error) {
-    console.error("Erreur updatePompe:", error); // 👈 log utile
-    res.status(500).send({ message: 'Erreur lors de la mise à jour de la pompe.', error: error.message });
+    console.error('Erreur updatePompe:', error); // 👈 log utile
+    res
+      .status(500)
+      .send({ message: 'Erreur lors de la mise à jour de la pompe.', error: error.message });
   }
 };
-
 
 // Supprimer une pompe
 const deletePompe = async (req, res) => {

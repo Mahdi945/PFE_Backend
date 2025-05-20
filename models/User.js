@@ -2,25 +2,29 @@ import db from '../config/db.js';
 
 const User = {
   // Recherche un utilisateur par ID
-    findById: (id) => {
-    const query = 'SELECT id,username,email,numero_telephone,role,photo FROM utilisateurs WHERE id = ?';
+  findById: (id) => {
+    const query =
+      'SELECT id,username,email,numero_telephone,role,photo FROM utilisateurs WHERE id = ?';
     return db.execute(query, [id]);
   },
   // Recherche un utilisateur par email
   findByEmail: (email) => {
-    const query = 'SELECT id,username,email,numero_telephone,password,role FROM utilisateurs WHERE email = ?';
+    const query =
+      'SELECT id,username,email,numero_telephone,password,role FROM utilisateurs WHERE email = ?';
     return db.execute(query, [email || null]);
   },
 
   // Recherche un utilisateur par nom d'utilisateur
   findByUsername: (username) => {
-    const query = 'SELECT id,username,email,numero_telephone,password,role,status FROM utilisateurs WHERE username = ?';
+    const query =
+      'SELECT id,username,email,numero_telephone,password,role,status FROM utilisateurs WHERE username = ?';
     return db.execute(query, [username]);
   },
 
   // Recherche un utilisateur par numéro de téléphone
   findByPhoneNumber: (numeroTelephone) => {
-    const query = 'SELECT id,username,email,numero_telephone,role FROM utilisateurs WHERE numero_telephone = ?';
+    const query =
+      'SELECT id,username,email,numero_telephone,role FROM utilisateurs WHERE numero_telephone = ?';
     return db.execute(query, [numeroTelephone || null]);
   },
 
@@ -37,14 +41,16 @@ const User = {
   },
   // Méthode pour récupérer tous les utilisateurs sauf ceux avec le rôle 'gerant'
   findAll: () => {
-    const query = "SELECT id, username, email, numero_telephone, role,temps_de_creation,status,photo FROM utilisateurs WHERE role != 'gerant'";
+    const query =
+      "SELECT id, username, email, numero_telephone, role,temps_de_creation,status,photo FROM utilisateurs WHERE role != 'gerant'";
     return db.execute(query);
   },
-  
+
   findOne: (criteria) => {
-    let query = 'SELECT id, username, email, numero_telephone, role, photo FROM utilisateurs WHERE ';
+    let query =
+      'SELECT id, username, email, numero_telephone, role, photo FROM utilisateurs WHERE ';
     const values = [];
-  
+
     // Ajouter la condition pour la recherche par email, username ou numéro de téléphone
     if (criteria.email) {
       query += 'email = ?';
@@ -58,10 +64,9 @@ const User = {
     } else {
       return Promise.reject(new Error('Aucun critère valide fourni pour la recherche.'));
     }
-  
+
     return db.execute(query, values);
-  }
-,  
+  },
   // Ajoute un nouvel utilisateur dans la base de données
   addUser: (username, email, numeroTelephone, password, role) => {
     const query = ` 
@@ -72,13 +77,13 @@ const User = {
     return db.execute(query, [username, email || null, numeroTelephone || null, password, role]);
   },
 
-// Méthode pour mettre à jour un utilisateur par ID
-updateUser: (id, updateData) => {
-    const { username, email, numero_telephone, role,status } = updateData;
-  
+  // Méthode pour mettre à jour un utilisateur par ID
+  updateUser: (id, updateData) => {
+    const { username, email, numero_telephone, role, status } = updateData;
+
     let query = 'UPDATE utilisateurs SET ';
     const values = [];
-  
+
     // Construire la requête dynamique en fonction des champs fournis
     if (username !== undefined) {
       query += 'username = ?, ';
@@ -100,19 +105,17 @@ updateUser: (id, updateData) => {
       query += 'status = ?, ';
       values.push(status);
     }
-  
+
     // Retirer la dernière virgule et espace
     query = query.slice(0, -2);
-  
+
     // Ajouter la condition pour spécifier quel utilisateur mettre à jour
     query += ' WHERE id = ?';
     values.push(id);
-  
+
     // Exécuter la requête
     return db.execute(query, values);
-  }
-,  
-  
+  },
   // Supprime un utilisateur par son ID
   deleteUser: (id) => {
     const query = 'DELETE FROM utilisateurs WHERE id = ?';
@@ -127,13 +130,13 @@ updateUser: (id, updateData) => {
     return db.execute(query, [newPassword, id]);
   },
   // Met à jour la photo d'un utilisateur par ID
-updateUserPhoto: (userId, photoPath) => {
-  const query = 'UPDATE utilisateurs SET photo = ? WHERE id = ?';
-  return db.execute(query, [photoPath, userId]);
-},
+  updateUserPhoto: (userId, photoPath) => {
+    const query = 'UPDATE utilisateurs SET photo = ? WHERE id = ?';
+    return db.execute(query, [photoPath, userId]);
+  },
 
-getUserStats: async (filter = {}) => {
-  let query = `
+  getUserStats: async (filter = {}) => {
+    let query = `
     SELECT 
       COUNT(*) AS total_users,
       COUNT(CASE WHEN status = 'active' THEN 1 END) AS active_users,
@@ -147,67 +150,68 @@ getUserStats: async (filter = {}) => {
     WHERE 1=1
   `;
 
-  const params = [];
+    const params = [];
 
-  // Filtre par type de période
-  if (filter.type === 'day') {
-    query += ' AND DATE(temps_de_creation) = CURRENT_DATE()';
-  } else if (filter.type === 'month') {
-    if (filter.month && filter.year) {
-      query += ' AND MONTH(temps_de_creation) = ? AND YEAR(temps_de_creation) = ?';
-      params.push(filter.month, filter.year);
-    } else {
-      // Par défaut, le mois et l'année courants
-      const now = new Date();
-      query += ' AND MONTH(temps_de_creation) = ? AND YEAR(temps_de_creation) = ?';
-      params.push(now.getMonth() + 1, now.getFullYear());
+    // Filtre par type de période
+    if (filter.type === 'day') {
+      query += ' AND DATE(temps_de_creation) = CURRENT_DATE()';
+    } else if (filter.type === 'month') {
+      if (filter.month && filter.year) {
+        query += ' AND MONTH(temps_de_creation) = ? AND YEAR(temps_de_creation) = ?';
+        params.push(filter.month, filter.year);
+      } else {
+        // Par défaut, le mois et l'année courants
+        const now = new Date();
+        query += ' AND MONTH(temps_de_creation) = ? AND YEAR(temps_de_creation) = ?';
+        params.push(now.getMonth() + 1, now.getFullYear());
+      }
+    } else if (filter.type === 'year') {
+      if (filter.year) {
+        query += ' AND YEAR(temps_de_creation) = ?';
+        params.push(filter.year);
+      } else {
+        // Par défaut, l'année courante
+        query += ' AND YEAR(temps_de_creation) = ?';
+        params.push(new Date().getFullYear());
+      }
+    } else if (filter.startDate && filter.endDate) {
+      // Filtre par plage de dates
+      query += ' AND DATE(temps_de_creation) BETWEEN ? AND ?';
+      params.push(filter.startDate, filter.endDate);
     }
-  } else if (filter.type === 'year') {
-    if (filter.year) {
-      query += ' AND YEAR(temps_de_creation) = ?';
-      params.push(filter.year);
-    } else {
-      // Par défaut, l'année courante
-      query += ' AND YEAR(temps_de_creation) = ?';
-      params.push(new Date().getFullYear());
+
+    try {
+      const [result] = await db.execute(query, params);
+      return [result];
+    } catch (error) {
+      console.error('Erreur SQL:', error);
+      throw error;
     }
-  } else if (filter.startDate && filter.endDate) {
-    // Filtre par plage de dates
-    query += ' AND DATE(temps_de_creation) BETWEEN ? AND ?';
-    params.push(filter.startDate, filter.endDate);
-  }
+  },
 
-  try {
-    const [result] = await db.execute(query, params);
-    return [result];
-  } catch (error) {
-    console.error('Erreur SQL:', error);
-    throw error;
-  }
-},
+  // Validation du format de date (YYYY-MM-DD)
+  isValidDate(dateString) {
+    return /^\d{4}-\d{2}-\d{2}$/.test(dateString);
+  },
+  // Nouveaux utilisateurs par période
+  getNewUsersByPeriod: async (period = 'day') => {
+    let dateCondition = '';
+    switch (period) {
+      case 'day':
+        dateCondition = 'DATE(temps_de_creation) = CURDATE()';
+        break;
+      case 'month':
+        dateCondition =
+          'MONTH(temps_de_creation) = MONTH(CURDATE()) AND YEAR(temps_de_creation) = YEAR(CURDATE())';
+        break;
+      case 'year':
+        dateCondition = 'YEAR(temps_de_creation) = YEAR(CURDATE())';
+        break;
+      default:
+        dateCondition = 'DATE(temps_de_creation) = CURDATE()';
+    }
 
-// Validation du format de date (YYYY-MM-DD)
-isValidDate(dateString) {
-  return /^\d{4}-\d{2}-\d{2}$/.test(dateString);
-},
-// Nouveaux utilisateurs par période
-getNewUsersByPeriod: async (period = 'day') => {
-  let dateCondition = '';
-  switch(period) {
-    case 'day':
-      dateCondition = 'DATE(temps_de_creation) = CURDATE()';
-      break;
-    case 'month':
-      dateCondition = 'MONTH(temps_de_creation) = MONTH(CURDATE()) AND YEAR(temps_de_creation) = YEAR(CURDATE())';
-      break;
-    case 'year':
-      dateCondition = 'YEAR(temps_de_creation) = YEAR(CURDATE())';
-      break;
-    default:
-      dateCondition = 'DATE(temps_de_creation) = CURDATE()';
-  }
-
-  const query = `
+    const query = `
     SELECT 
       COUNT(*) AS count,
       role
@@ -215,11 +219,11 @@ getNewUsersByPeriod: async (period = 'day') => {
     WHERE ${dateCondition}
     GROUP BY role
   `;
-  return db.execute(query);
-},
-// Dans models/User.js
-getNewUsers: async () => {
-  const query = `
+    return db.execute(query);
+  },
+  // Dans models/User.js
+  getNewUsers: async () => {
+    const query = `
     SELECT 
       COUNT(*) AS count,
       role
@@ -227,16 +231,14 @@ getNewUsers: async () => {
     WHERE DATE(temps_de_creation) = CURDATE()
     GROUP BY role
   `;
-  return db.execute(query);
-}
-
-  
+    return db.execute(query);
+  },
 
   // Affecte un rôle à un utilisateur existant
   /*assignRoleToUser: (id, role) => {
     const query = 'UPDATE utilisateurs SET role = ? WHERE id = ?';
     return db.execute(query, [role, id]);
   },*/
-   };
+};
 
 export default User;

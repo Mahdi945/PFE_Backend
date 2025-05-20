@@ -32,10 +32,10 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     const fileExt = path.extname(file.originalname);
     cb(null, `transaction_${Date.now()}${fileExt}`);
-  }
+  },
 });
 
-const upload = multer({ 
+const upload = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
@@ -44,7 +44,7 @@ const upload = multer({
     } else {
       cb(new Error('Seules les images sont autorisées'), false);
     }
-  }
+  },
 });
 
 // ==================== ROUTES CRÉDITS ====================
@@ -59,34 +59,79 @@ router.post('/credits/renew', requireAuth, CreditController.renewCredit);
 router.post('/paiments/create', requireAuth, PaimentController.createPayment);
 router.get('/paiments/all', requireAuth, PaimentController.getAllPayments);
 router.get('/paiments/credit/:id_credit', requireAuth, PaimentController.getPaymentsByCredit);
-router.get('/paiments/utilisateur/:id_utilisateur', requireAuth, PaimentController.getPaymentsByUser);
+router.get(
+  '/paiments/utilisateur/:id_utilisateur',
+  requireAuth,
+  PaimentController.getPaymentsByUser,
+);
 router.get('/paiments/reference/:reference', requireAuth, PaimentController.getPaymentByReference);
 
 // ==================== ROUTES VÉHICULES ====================
 router.post('/vehicules/add', requireAuth, VehiculeController.create);
 router.get('/vehicules/:id', requireAuth, VehiculeController.getVehicule);
 router.get('/vehicules', requireAuth, VehiculeController.getAllVehicules);
-router.get('/vehicules/immatriculation/:immatriculation', requireAuth, VehiculeController.getVehiculeByImmatriculation);
+router.get(
+  '/vehicules/immatriculation/:immatriculation',
+  requireAuth,
+  VehiculeController.getVehiculeByImmatriculation,
+);
 router.put('/vehicules/update', requireAuth, VehiculeController.updateVehicule);
 router.delete('/vehicules/:id', requireAuth, VehiculeController.deleteVehicule);
 router.get('/vehicules/client/:username', requireAuth, VehiculeController.getVehiculesByClient);
 router.get('/vehicules/credit/:id_credit', requireAuth, VehiculeController.getVehiculesByCredit);
 
 // ==================== ROUTES TRANSACTIONS ====================
-router.post('/transactions/create', requireAuth, upload.single('preuve'), TransactionController.createTransaction);
+router.post(
+  '/transactions/create',
+  requireAuth,
+  upload.single('preuve'),
+  TransactionController.createTransaction,
+);
 router.get('/transactions/all', requireAuth, TransactionController.getAllTransactions);
-router.get('/transactions/utilisateur/:id_utilisateur', requireAuth, TransactionController.getTransactionsByUser);
+router.get(
+  '/transactions/utilisateur/:id_utilisateur',
+  requireAuth,
+  TransactionController.getTransactionsByUser,
+);
 
 // ==================== ROUTES DASHBOARD ====================
 router.get('/dashboard/credits/:id_utilisateur', requireAuth, CreditController.getCreditsByUser);
 router.get('/dashboard/credit-stats/:id_utilisateur', requireAuth, CreditController.getCreditStats);
-router.get('/dashboard/payment-stats/:id_utilisateur', requireAuth, PaimentController.getPaymentStats);
-router.get('/dashboard/recent-payments/:id_utilisateur', requireAuth, PaimentController.getRecentPayments);
-router.get('/dashboard/transaction-stats/:id_utilisateur', requireAuth, TransactionController.getTransactionStats);
-router.get('/dashboard/recent-transactions/:id_utilisateur', requireAuth, TransactionController.getRecentTransactions);
-router.get('/dashboard/client/:id_utilisateur', requireAuth, DashboardController.getClientDashboard);
+router.get(
+  '/dashboard/payment-stats/:id_utilisateur',
+  requireAuth,
+  PaimentController.getPaymentStats,
+);
+router.get(
+  '/dashboard/recent-payments/:id_utilisateur',
+  requireAuth,
+  PaimentController.getRecentPayments,
+);
+router.get(
+  '/dashboard/transaction-stats/:id_utilisateur',
+  requireAuth,
+  TransactionController.getTransactionStats,
+);
+router.get(
+  '/dashboard/recent-transactions/:id_utilisateur',
+  requireAuth,
+  TransactionController.getRecentTransactions,
+);
+router.get(
+  '/dashboard/client/:id_utilisateur',
+  requireAuth,
+  DashboardController.getClientDashboard,
+);
 router.get('/dashboard/gerant', requireAuth, DashboardController.getGerantDashboard);
-router.get('/dashboard/caissier/:id_caissier', requireAuth, DashboardController.getCaissierDashboard);
+router.get(
+  '/dashboard/caissier/:id_caissier',
+  requireAuth,
+  DashboardController.getCaissierDashboard,
+);
 // Ajoutez cette route
-router.get('/dashboard/monthly-payments/:id_utilisateur', requireAuth, DashboardController.getMonthlyPayments);
+router.get(
+  '/dashboard/monthly-payments/:id_utilisateur',
+  requireAuth,
+  DashboardController.getMonthlyPayments,
+);
 export default router;

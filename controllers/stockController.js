@@ -7,12 +7,19 @@ const stockController = {
   createProduit: async (req, res) => {
     try {
       // Validation des données
-      if (!req.body.code_barre || !req.body.nom || !req.body.categorie_id || 
-          req.body.prix_achat === undefined || req.body.prix_vente === undefined) {
+      if (
+        !req.body.code_barre ||
+        !req.body.nom ||
+        !req.body.categorie_id ||
+        req.body.prix_achat === undefined ||
+        req.body.prix_vente === undefined
+      ) {
         return res.status(400).json({ error: 'Champs obligatoires manquants' });
       }
 
-      const imagePath = req.file ? `${process.env.BASE_URL}/images_produits/${req.file.filename}` : null;
+      const imagePath = req.file
+        ? `${process.env.BASE_URL}/images_produits/${req.file.filename}`
+        : null;
       const produit = await Stock.createProduit(req.body, imagePath);
       res.status(201).json(produit);
     } catch (err) {
@@ -23,12 +30,19 @@ const stockController = {
   updateProduit: async (req, res) => {
     try {
       // Validation des données
-      if (!req.body.code_barre || !req.body.nom || !req.body.categorie_id || 
-          req.body.prix_achat === undefined || req.body.prix_vente === undefined) {
+      if (
+        !req.body.code_barre ||
+        !req.body.nom ||
+        !req.body.categorie_id ||
+        req.body.prix_achat === undefined ||
+        req.body.prix_vente === undefined
+      ) {
         return res.status(400).json({ error: 'Champs obligatoires manquants' });
       }
 
-      const imagePath = req.file ? `${process.env.BASE_URL}/images_produits/${req.file.filename}` : null;
+      const imagePath = req.file
+        ? `${process.env.BASE_URL}/images_produits/${req.file.filename}`
+        : null;
       const produit = await Stock.updateProduit(req.params.id, req.body, imagePath);
       res.json(produit);
     } catch (err) {
@@ -144,9 +158,9 @@ const stockController = {
         type: req.body.type,
         quantite: req.body.quantite,
         agent_id: req.body.agent_id || null,
-        raison: req.body.raison || null
+        raison: req.body.raison || null,
       });
-      
+
       res.status(201).json(mouvement);
     } catch (err) {
       res.status(500).json({ error: err.message });
@@ -176,11 +190,16 @@ const stockController = {
     }
   },
 
-// ==================== VENTES ====================
-createVente: async (req, res) => {
+  // ==================== VENTES ====================
+  createVente: async (req, res) => {
     try {
-      if (!req.body.montant_total || !req.body.montant_paye || !req.body.mode_paiement || 
-          !req.body.produits_vendus || !Array.isArray(req.body.produits_vendus)) {
+      if (
+        !req.body.montant_total ||
+        !req.body.montant_paye ||
+        !req.body.mode_paiement ||
+        !req.body.produits_vendus ||
+        !Array.isArray(req.body.produits_vendus)
+      ) {
         return res.status(400).json({ error: 'Données de vente incomplètes' });
       }
 
@@ -193,16 +212,16 @@ createVente: async (req, res) => {
 
       const vente = await Stock.createVente({
         ...req.body,
-        id_caissier: req.body.id_caissier // On utilise directement l'ID envoyé || null
+        id_caissier: req.body.id_caissier, // On utilise directement l'ID envoyé || null
       });
-      
+
       res.status(201).json(vente);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
-},
+  },
 
-getVente: async (req, res) => {
+  getVente: async (req, res) => {
     try {
       const vente = await Stock.getVenteById(req.params.id);
       if (!vente) {
@@ -212,9 +231,9 @@ getVente: async (req, res) => {
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
-},
+  },
 
-getVentesByDate: async (req, res) => {
+  getVentesByDate: async (req, res) => {
     try {
       const { startDate, endDate } = req.query;
       if (!startDate || !endDate) {
@@ -226,9 +245,9 @@ getVentesByDate: async (req, res) => {
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
-},
+  },
 
-getVentesByCaissier: async (req, res) => {
+  getVentesByCaissier: async (req, res) => {
     try {
       const { startDate, endDate } = req.query;
       if (!startDate || !endDate) {
@@ -240,16 +259,16 @@ getVentesByCaissier: async (req, res) => {
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
-},
+  },
 
-cancelVente: async (req, res) => {
+  cancelVente: async (req, res) => {
     try {
       const result = await Stock.cancelVente(req.params.id);
       res.json(result);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
-},
+  },
 
   // ==================== STATISTIQUES ====================
   getStockStats: async (req, res) => {
@@ -273,7 +292,7 @@ cancelVente: async (req, res) => {
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
-  }
+  },
 };
 
 export default stockController;

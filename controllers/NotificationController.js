@@ -55,7 +55,8 @@ const hideAllNotifications = async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
-  }}
+  }
+};
 
 export default {
   getNotifications,
@@ -63,5 +64,5 @@ export default {
   getUnreadCount,
   markAllAsRead,
   hideAllNotifications,
-  hideNotification
+  hideNotification,
 };

@@ -12,12 +12,12 @@ const pool = mysql.createPool({
   // Hôte de la base de données (URL ou IP), récupéré depuis les variables d'environnement
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD, 
+  password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   connectionLimit: 10,
   multipleStatements: true,
   waitForConnections: true,
-  queueLimit: 0
+  queueLimit: 0,
 });
 
 // Exporte la pool de connexions avec des promesses pour pouvoir l'utiliser avec async/await

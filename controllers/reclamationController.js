@@ -32,7 +32,9 @@ const generateEmailTemplate = (title, content, actionLink = null, actionText = n
           ${content}
         </div>
         
-        ${actionLink && actionText ? `
+        ${
+          actionLink && actionText
+            ? `
           <div style="text-align: center; margin: 50px 0 40px;">
             <a href="${actionLink}" style="
               display: inline-block;
@@ -48,7 +50,9 @@ const generateEmailTemplate = (title, content, actionLink = null, actionText = n
               ${actionText}
             </a>
           </div>
-        ` : ''}
+        `
+            : ''
+        }
       </div>
       
       <div style="padding: 24px; text-align: center; font-size: 14px; color: #95a5a6; background: #f9f9f9;">
@@ -69,16 +73,18 @@ const sendEmail = async (to, subject, title, content, includeAction = false) => 
     to,
     subject,
     html: generateEmailTemplate(
-      title, 
+      title,
       content,
       includeAction ? `${process.env.FRONTEND_URL}/traitement-reclamations` : null,
-      includeAction ? 'Accéder aux réclamations' : null
+      includeAction ? 'Accéder aux réclamations' : null,
     ),
-    attachments: [{
-      filename: 'logobg.png',
-      path: path.join(__dirname, '../public/logobg.png'),
-      cid: 'logo'
-    }]
+    attachments: [
+      {
+        filename: 'logobg.png',
+        path: path.join(__dirname, '../public/logobg.png'),
+        cid: 'logo',
+      },
+    ],
   };
 
   try {
@@ -91,13 +97,7 @@ const sendEmail = async (to, subject, title, content, includeAction = false) => 
 
 const createNotification = async (userId, reclamationId, type, message) => {
   try {
-    await Notification.create(
-      userId,
-      'reclamation',
-      reclamationId,
-      type,
-      message
-    );
+    await Notification.create(userId, 'reclamation', reclamationId, type, message);
     console.log('Notification créée avec succès');
   } catch (error) {
     console.error('Erreur création notification:', error);
@@ -107,10 +107,10 @@ const createNotification = async (userId, reclamationId, type, message) => {
 export const createReclamation = async (req, res) => {
   try {
     const { id_client, objet, raison, description } = req.body;
-    
+
     const reclamationId = await Reclamation.create({ id_client, objet, raison, description });
     const reclamation = await Reclamation.findById(reclamationId);
-    
+
     if (!reclamation) {
       throw new Error('Réclamation non trouvée après création');
     }
@@ -120,7 +120,7 @@ export const createReclamation = async (req, res) => {
       id_client,
       reclamationId,
       'reclamation_created',
-      `Votre réclamation #${reclamation.reference} a été créée avec succès`
+      `Votre réclamation #${reclamation.reference} a été créée avec succès`,
     );
 
     // Email au support
@@ -147,7 +147,7 @@ export const createReclamation = async (req, res) => {
       `Nouvelle réclamation - ${reclamation.reference}`,
       'Nouvelle réclamation',
       supportContent,
-      true
+      true,
     );
 
     // Email de confirmation au client
@@ -175,24 +175,24 @@ export const createReclamation = async (req, res) => {
       reclamation.email,
       `Confirmation de réception - ${reclamation.reference}`,
       'Votre réclamation a été reçue',
-      clientContent
+      clientContent,
     );
 
-    res.status(201).json({ 
+    res.status(201).json({
       success: true,
       message: 'Réclamation enregistrée avec succès',
       reclamation: {
         id: reclamationId,
         reference: reclamation.reference,
-        date_creation: reclamation.date_creation
-      }
+        date_creation: reclamation.date_creation,
+      },
     });
   } catch (err) {
     console.error('Erreur création réclamation:', err);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
       message: 'Erreur lors de la création de la réclamation',
-      error: err.message
+      error: err.message,
     });
   }
 };
@@ -205,23 +205,23 @@ export const updateReclamationStatus = async (req, res) => {
     // Vérifier l'état actuel de la réclamation
     const currentReclamation = await Reclamation.findById(id);
     if (!currentReclamation) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Réclamation non trouvée' 
+      return res.status(404).json({
+        success: false,
+        message: 'Réclamation non trouvée',
       });
     }
 
     // Empêcher la modification si le statut est déjà résolu ou fermé
     if (['fermer'].includes(currentReclamation.statut)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Impossible de modifier une réclamation déjà résolue ou fermée' 
+      return res.status(400).json({
+        success: false,
+        message: 'Impossible de modifier une réclamation déjà résolue ou fermée',
       });
     }
 
     // Mettre à jour le statut
     const reclamation = await Reclamation.updateStatut(id, statut);
-    
+
     // Créer une notification pour le client
     let notificationType = '';
     let notificationMessage = '';
@@ -275,34 +275,24 @@ export const updateReclamationStatus = async (req, res) => {
     }
 
     // Créer la notification
-    await createNotification(
-      reclamation.id_client,
-      id,
-      notificationType,
-      notificationMessage
-    );
+    await createNotification(reclamation.id_client, id, notificationType, notificationMessage);
 
     // Envoyer l'email si le statut est résolu ou fermé
     if (['resolu', 'fermer'].includes(statut)) {
-      await sendEmail(
-        reclamation.email,
-        emailSubject,
-        emailTitle,
-        emailContent
-      );
+      await sendEmail(reclamation.email, emailSubject, emailTitle, emailContent);
     }
-    
-    res.status(200).json({ 
-      success: true, 
+
+    res.status(200).json({
+      success: true,
       message: 'Statut mis à jour avec succès',
-      reclamation 
+      reclamation,
     });
   } catch (err) {
     console.error('Erreur mise à jour statut:', err);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Erreur lors de la mise à jour du statut',
-      error: err.message
+      error: err.message,
     });
   }
 };
@@ -322,11 +312,11 @@ export const getReclamationDetails = async (req, res) => {
   try {
     const { id } = req.params;
     const reclamation = await Reclamation.findById(id);
-    
+
     if (!reclamation) {
       return res.status(404).json({ success: false, message: 'Réclamation non trouvée' });
     }
-    
+
     res.status(200).json({ success: true, reclamation });
   } catch (err) {
     console.error('Erreur récupération réclamation:', err);
@@ -348,11 +338,11 @@ export const getReclamationByReference = async (req, res) => {
   try {
     const { reference } = req.params;
     const reclamation = await Reclamation.getByReference(reference);
-    
+
     if (!reclamation) {
       return res.status(404).json({ success: false, message: 'Réclamation non trouvée' });
     }
-    
+
     res.status(200).json({ success: true, reclamation });
   } catch (err) {
     console.error('Erreur récupération réclamation:', err);

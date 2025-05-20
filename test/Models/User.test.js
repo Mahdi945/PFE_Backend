@@ -3,7 +3,7 @@ const User = require('../../models/User.js');
 
 // Mock complet de la base de données
 jest.mock('../../config/db.js', () => ({
-  execute: jest.fn()
+  execute: jest.fn(),
 }));
 
 describe('User Model Tests', () => {
@@ -14,7 +14,12 @@ describe('User Model Tests', () => {
 
   describe('findById', () => {
     it('devrait retourner un utilisateur par son ID', async () => {
-      const mockUser = { id: 14, username: 'Ahmed Zamma', email: 'mahdibeyy@gmail.com', role: 'gerant' };
+      const mockUser = {
+        id: 14,
+        username: 'Ahmed Zamma',
+        email: 'mahdibeyy@gmail.com',
+        role: 'gerant',
+      };
       db.execute.mockResolvedValue([[mockUser]]);
 
       const result = await User.findById(14);
@@ -25,7 +30,12 @@ describe('User Model Tests', () => {
 
   describe('findByEmail', () => {
     it('devrait retourner un utilisateur par son email', async () => {
-      const mockUser = { id: 14, username: 'Ahmed Zamma', email: 'mahdibeyy@gmail.com', role: 'gerant' };
+      const mockUser = {
+        id: 14,
+        username: 'Ahmed Zamma',
+        email: 'mahdibeyy@gmail.com',
+        role: 'gerant',
+      };
       db.execute.mockResolvedValue([[mockUser]]);
 
       const result = await User.findByEmail('mahdibeyy@gmail.com');
@@ -36,7 +46,12 @@ describe('User Model Tests', () => {
 
   describe('findByUsername', () => {
     it("devrait retourner un utilisateur par son nom d'utilisateur", async () => {
-      const mockUser = { id: 14, username: 'Ahmed Zamma', email: 'mahdibeyy@gmail.com', role: 'gerant' };
+      const mockUser = {
+        id: 14,
+        username: 'Ahmed Zamma',
+        email: 'mahdibeyy@gmail.com',
+        role: 'gerant',
+      };
       db.execute.mockResolvedValue([[mockUser]]);
 
       const result = await User.findByUsername('Ahmed Zamma');
@@ -47,7 +62,12 @@ describe('User Model Tests', () => {
 
   describe('findByPhoneNumber', () => {
     it('devrait retourner un utilisateur par son numéro de téléphone', async () => {
-      const mockUser = { id: 14, username: 'Ahmed Zamma', email: 'mahdibeyy@gmail.com', role: 'gerant' };
+      const mockUser = {
+        id: 14,
+        username: 'Ahmed Zamma',
+        email: 'mahdibeyy@gmail.com',
+        role: 'gerant',
+      };
       db.execute.mockResolvedValue([[mockUser]]);
 
       const result = await User.findByPhoneNumber('56327237');
@@ -60,7 +80,7 @@ describe('User Model Tests', () => {
     it('devrait retourner des utilisateurs par leur rôle', async () => {
       const mockUsers = [
         { id: 15, username: 'Ahmed Bey', email: 'mahdibey2002@gmail.com', role: 'pompiste' },
-        { id: 16, username: 'Mahdi', email: 'newuser@example.com', role: 'pompiste' }
+        { id: 16, username: 'Mahdi', email: 'newuser@example.com', role: 'pompiste' },
       ];
       db.execute.mockResolvedValue([mockUsers]);
 
@@ -74,7 +94,7 @@ describe('User Model Tests', () => {
     it('devrait retourner tous les utilisateurs sauf les gérants', async () => {
       const mockUsers = [
         { id: 15, username: 'Ahmed Bey', email: 'mahdibey2002@gmail.com', role: 'pompiste' },
-        { id: 16, username: 'Mahdi', email: 'newuser@example.com', role: 'pompiste' }
+        { id: 16, username: 'Mahdi', email: 'newuser@example.com', role: 'pompiste' },
       ];
       db.execute.mockResolvedValue([mockUsers]);
 
@@ -91,7 +111,7 @@ describe('User Model Tests', () => {
         email: 'newuser@example.com',
         phone: '1234567890',
         password: 'hashedPassword',
-        role: 'client'
+        role: 'client',
       };
       db.execute.mockResolvedValue([{ insertId: 30 }]);
 
@@ -100,26 +120,26 @@ describe('User Model Tests', () => {
         mockUserData.email,
         mockUserData.phone,
         mockUserData.password,
-        mockUserData.role
+        mockUserData.role,
       );
-      
+
       expect(db.execute).toHaveBeenCalledWith(expect.any(String), [
         mockUserData.username,
         mockUserData.email,
         mockUserData.phone,
         mockUserData.password,
-        mockUserData.role
+        mockUserData.role,
       ]);
       expect(result.insertId).toBe(30);
     });
   });
 
   describe('updateUser', () => {
-    it('devrait mettre à jour les informations d\'un utilisateur', async () => {
+    it("devrait mettre à jour les informations d'un utilisateur", async () => {
       const updateData = {
         username: 'UpdatedUser',
         email: 'updated@example.com',
-        role: 'caissier'
+        role: 'caissier',
       };
       db.execute.mockResolvedValue([{ affectedRows: 1 }]);
 
@@ -128,7 +148,7 @@ describe('User Model Tests', () => {
         updateData.username,
         updateData.email,
         updateData.role,
-        15
+        15,
       ]);
       expect(result.affectedRows).toBe(1);
     });
@@ -151,7 +171,7 @@ describe('User Model Tests', () => {
       const result = await User.updatePasswordByEmail('user@example.com', 'newHashedPassword');
       expect(db.execute).toHaveBeenCalledWith(expect.any(String), [
         'newHashedPassword',
-        'user@example.com'
+        'user@example.com',
       ]);
       expect(result.affectedRows).toBe(1);
     });
@@ -166,7 +186,7 @@ describe('User Model Tests', () => {
         clients: 5,
         pompistes: 4,
         gerants: 1,
-        cogerants: 0
+        cogerants: 0,
       };
       db.execute.mockResolvedValue([[mockStats]]);
 

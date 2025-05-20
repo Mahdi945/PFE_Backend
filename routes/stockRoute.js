@@ -21,10 +21,10 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     const fileExt = path.extname(file.originalname);
     cb(null, `produit_${Date.now()}${fileExt}`);
-  }
+  },
 });
 
-const uploadProduitImage = multer({ 
+const uploadProduitImage = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
   fileFilter: (req, file, cb) => {
@@ -33,66 +33,50 @@ const uploadProduitImage = multer({
     } else {
       cb(new Error('Seules les images sont autorisées'), false);
     }
-  }
+  },
 });
 const router = express.Router();
 const requireAuth = passport.authenticate('jwt', { session: false });
 
 // ==================== ROUTES PRODUITS ====================
-router.post('/produits', 
-  requireAuth, 
+router.post(
+  '/produits',
+  requireAuth,
   uploadProduitImage.single('image'),
-  StockController.createProduit
+  StockController.createProduit,
 );
 
-router.put('/produits/:id', 
-  requireAuth, 
+router.put(
+  '/produits/:id',
+  requireAuth,
   uploadProduitImage.single('image'),
-  StockController.updateProduit
+  StockController.updateProduit,
 );
 
-router.delete('/produits/:id', 
-  requireAuth, 
-  StockController.deleteProduit
-);
+router.delete('/produits/:id', requireAuth, StockController.deleteProduit);
 
 router.get('/produits', requireAuth, StockController.getAllProduits);
 router.get('/produits/low-stock', requireAuth, StockController.getLowStockProduits);
 router.get('/produits/:id', requireAuth, StockController.getProduit);
 
 // ==================== ROUTES CATEGORIES ====================
-router.post('/categories', 
-  requireAuth, 
-  StockController.createCategorie
-);
+router.post('/categories', requireAuth, StockController.createCategorie);
 
-router.put('/categories/:id', 
-  requireAuth, 
-  StockController.updateCategorie
-);
+router.put('/categories/:id', requireAuth, StockController.updateCategorie);
 
-router.delete('/categories/:id', 
-  requireAuth, 
-  StockController.deleteCategorie
-);
+router.delete('/categories/:id', requireAuth, StockController.deleteCategorie);
 
 router.get('/categories', requireAuth, StockController.getAllCategories);
 router.get('/categories/:id', requireAuth, StockController.getCategorie);
 
 // ==================== ROUTES MOUVEMENTS STOCK ====================
-router.post('/mouvements', 
-  requireAuth, 
-  StockController.createMouvement
-);
+router.post('/mouvements', requireAuth, StockController.createMouvement);
 
 router.get('/mouvements/produit/:produitId', requireAuth, StockController.getMouvementsByProduit);
 router.get('/mouvements', requireAuth, StockController.getMouvementsByDate);
 
 // ==================== ROUTES VENTES ====================
-router.post('/ventes', 
-  requireAuth, 
-  StockController.createVente
-);
+router.post('/ventes', requireAuth, StockController.createVente);
 
 router.get('/ventes/:id', requireAuth, StockController.getVente);
 router.get('/ventes', requireAuth, StockController.getVentesByDate);
@@ -107,7 +91,7 @@ router.get('/ventes/:id/lignes', requireAuth, async (req, res) => {
        FROM ligne_vente lv
        JOIN produits p ON lv.produit_id = p.id
        WHERE lv.vente_id = ?`,
-      [req.params.id]
+      [req.params.id],
     );
     res.json(lignes);
   } catch (err) {

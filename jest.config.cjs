@@ -1,11 +1,8 @@
 module.exports = {
   transform: {
-    '^.+\\.js$': 'babel-jest'
+    '^.+\\.js$': 'babel-jest',
   },
   testEnvironment: 'node',
-  testPathIgnorePatterns: [
-    '/node_modules/',
-    '/odoo/'
-  ],
-  moduleFileExtensions: ['js', 'json']
+  testPathIgnorePatterns: ['/node_modules/', '/odoo/'],
+  moduleFileExtensions: ['js', 'json'],
 };

@@ -18,7 +18,13 @@ const createCredit = async (req, res) => {
 
     const id_utilisateur = user[0].id;
 
-    const [result] = await Credit.addCredit(id_utilisateur, type_credit, solde_credit, date_debut, duree_credit);
+    const [result] = await Credit.addCredit(
+      id_utilisateur,
+      type_credit,
+      solde_credit,
+      date_debut,
+      duree_credit,
+    );
     res.status(201).json({ message: 'Crédit créé avec succès', creditId: result.insertId });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -98,19 +104,13 @@ const renewCredit = async (req, res) => {
     if (credit.length === 0) {
       return res.status(404).json({ error: 'Crédit introuvable' });
     }
-  
 
     // Créer un nouveau crédit
-    const [result] = await Credit.renewCredit(
-      id_credit,
-      solde_credit,
-      duree_credit,
-      date_debut
-    );
+    const [result] = await Credit.renewCredit(id_credit, solde_credit, duree_credit, date_debut);
 
-    res.status(201).json({ 
-      message: 'Crédit renouvelé avec succès', 
-      newCreditId: result.insertId 
+    res.status(201).json({
+      message: 'Crédit renouvelé avec succès',
+      newCreditId: result.insertId,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -144,4 +144,14 @@ const getCreditStats = async (req, res) => {
   }
 };
 
-export default { createCredit,renewCredit, getAllCredits, getCreditById, updateCredit, updateCreditState, updateExpiredCredits,getCreditStats,getCreditsByUser };
+export default {
+  createCredit,
+  renewCredit,
+  getAllCredits,
+  getCreditById,
+  updateCredit,
+  updateCreditState,
+  updateExpiredCredits,
+  getCreditStats,
+  getCreditsByUser,
+};

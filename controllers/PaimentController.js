@@ -31,7 +31,9 @@ const generateEmailTemplate = (title, content, actionLink = null, actionText = n
         <div style="font-size: 16px; color: #555555;">
           ${content}
         </div>
-        ${actionLink && actionText ? `
+        ${
+          actionLink && actionText
+            ? `
           <div style="text-align: center; margin: 50px 0 40px;">
             <a href="${actionLink}" style="
               display: inline-block;
@@ -46,7 +48,9 @@ const generateEmailTemplate = (title, content, actionLink = null, actionText = n
               box-shadow: 0 4px 15px rgba(255, 126, 51, 0.3);">
               ${actionText}
             </a>
-          </div>` : ''}
+          </div>`
+            : ''
+        }
       </div>
       <div style="padding: 24px; text-align: center; font-size: 14px; color: #95a5a6; background: #f9f9f9;">
         <p style="margin: 0;">© ${new Date().getFullYear()} Carbotrack. Tous droits réservés.</p>
@@ -64,9 +68,9 @@ const createPayment = async (req, res) => {
 
     // 1. Validation de base
     if (!id_credit || !montant_paye || !mode_paiement) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        error: 'Données incomplètes (id_credit, montant_paye et mode_paiement requis)' 
+        error: 'Données incomplètes (id_credit, montant_paye et mode_paiement requis)',
       });
     }
 
@@ -78,7 +82,7 @@ const createPayment = async (req, res) => {
       montant,
       mode_paiement,
       description,
-      id_caissier
+      id_caissier,
     );
 
     // 3. Récupération des infos utilisateur pour la notification
@@ -87,13 +91,13 @@ const createPayment = async (req, res) => {
        FROM details_credits dc
        JOIN utilisateurs u ON dc.id_utilisateur = u.id
        WHERE dc.id = ?`,
-      [id_credit]
+      [id_credit],
     );
 
     if (!creditInfo.length) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        error: 'Informations crédit/utilisateur non trouvées' 
+        error: 'Informations crédit/utilisateur non trouvées',
       });
     }
 
@@ -111,7 +115,7 @@ const createPayment = async (req, res) => {
       'credit',
       id_credit,
       notificationType,
-      notificationMessage
+      notificationMessage,
     );
 
     // 5. Envoi email
@@ -133,14 +137,16 @@ const createPayment = async (req, res) => {
         to: email,
         subject: isFullPayment ? 'Crédit remboursé' : 'Confirmation de paiement',
         html: generateEmailTemplate(
-          isFullPayment ? 'Remboursement complet' : 'Paiement enregistré', 
-          emailContent
+          isFullPayment ? 'Remboursement complet' : 'Paiement enregistré',
+          emailContent,
         ),
-        attachments: [{
-          filename: 'logobg.png',
-          path: path.join(process.cwd(), 'public', 'logobg.png'),
-          cid: 'logo'
-        }]
+        attachments: [
+          {
+            filename: 'logobg.png',
+            path: path.join(process.cwd(), 'public', 'logobg.png'),
+            cid: 'logo',
+          },
+        ],
       });
     }
 
@@ -155,40 +161,41 @@ const createPayment = async (req, res) => {
         montant_restant: payment.montant_restant,
         etat_credit: payment.etat,
         id_utilisateur, // Ajouté pour référence
-        notification_sent: !!email
-      }
+        notification_sent: !!email,
+      },
     });
-
   } catch (err) {
     console.error('Erreur création paiement:', err);
-    
-    const status = err.message.includes('non trouvé') ? 404 
-                 : err.message.includes('dépasse') ? 400 
-                 : 500;
+
+    const status = err.message.includes('non trouvé')
+      ? 404
+      : err.message.includes('dépasse')
+        ? 400
+        : 500;
 
     res.status(status).json({
       success: false,
-      error: err.message.includes('dépasse') 
-        ? 'Le paiement dépasse le montant restant' 
+      error: err.message.includes('dépasse')
+        ? 'Le paiement dépasse le montant restant'
         : err.message,
-      details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+      details: process.env.NODE_ENV === 'development' ? err.stack : undefined,
     });
   }
 };
 const getAllPayments = async (req, res) => {
-    try {
-        const payments = await Paiments.getAll();
-        
-        res.json({
-            success: true,
-            data: payments // Envoyer directement le tableau
-        });
-    } catch (err) {
-        res.status(500).json({
-            success: false,
-            error: err.message
-        });
-    }
+  try {
+    const payments = await Paiments.getAll();
+
+    res.json({
+      success: true,
+      data: payments, // Envoyer directement le tableau
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
 };
 
 const getPaymentsByCredit = async (req, res) => {
@@ -196,9 +203,9 @@ const getPaymentsByCredit = async (req, res) => {
     const payments = await Paiments.getByCredit(req.params.id_credit);
     res.json({ success: true, data: payments });
   } catch (err) {
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: err.message 
+      error: err.message,
     });
   }
 };
@@ -208,9 +215,9 @@ const getPaymentsByUser = async (req, res) => {
     const payments = await Paiments.getByUser(req.params.id_utilisateur);
     res.json({ success: true, data: payments });
   } catch (err) {
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: err.message 
+      error: err.message,
     });
   }
 };
@@ -219,16 +226,16 @@ const getPaymentByReference = async (req, res) => {
   try {
     const payment = await Paiments.getByReference(req.params.reference);
     if (!payment) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        error: 'Paiement non trouvé' 
+        error: 'Paiement non trouvé',
       });
     }
     res.json({ success: true, data: payment });
   } catch (err) {
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: err.message 
+      error: err.message,
     });
   }
 };
@@ -258,5 +265,5 @@ export default {
   getPaymentsByUser,
   getPaymentByReference,
   getPaymentStats,
-  getRecentPayments
+  getRecentPayments,
 };

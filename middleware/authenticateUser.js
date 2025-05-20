@@ -1,10 +1,10 @@
-import jwt from "jsonwebtoken";
+import jwt from 'jsonwebtoken';
 
 const authenticateUser = (req, res, next) => {
   const token = req.cookies.jwt;
 
   if (!token) {
-    return res.status(401).json({ message: "Accès refusé. Token manquant." });
+    return res.status(401).json({ message: 'Accès refusé. Token manquant.' });
   }
 
   try {
@@ -12,7 +12,7 @@ const authenticateUser = (req, res, next) => {
     req.user = decoded; // Stocke les informations de l'utilisateur
     next();
   } catch (err) {
-    return res.status(403).json({ message: "Token invalide." });
+    return res.status(403).json({ message: 'Token invalide.' });
   }
 };
 

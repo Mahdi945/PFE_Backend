@@ -18,11 +18,11 @@ const Notification = {
       WHERE id_utilisateur = ?
       ORDER BY created_at DESC
     `;
-    
+
     if (limit) {
       query += ` LIMIT ${limit}`;
     }
-    
+
     return db.execute(query, [id_utilisateur]);
   },
 
@@ -71,7 +71,7 @@ const Notification = {
       WHERE id_utilisateur = ?
     `;
     return db.execute(query, [id_utilisateur]);
-  }
+  },
 };
 
 export default Notification;

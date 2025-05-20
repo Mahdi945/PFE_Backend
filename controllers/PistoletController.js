@@ -8,10 +8,11 @@ const PistoletController = {
   addPistolet: async (req, res) => {
     try {
       const { numero_pompe, numero_pistolet, nom_produit, prix_unitaire } = req.body;
-      
+
       if (!numero_pistolet || !numero_pompe || !nom_produit || !prix_unitaire) {
-        return res.status(400).send({ 
-          message: 'Tous les champs sont obligatoires (numéro pompe, numéro pistolet, nom produit, prix unitaire)' 
+        return res.status(400).send({
+          message:
+            'Tous les champs sont obligatoires (numéro pompe, numéro pistolet, nom produit, prix unitaire)',
         });
       }
 
@@ -24,56 +25,58 @@ const PistoletController = {
         pompe.id,
         numero_pistolet,
         nom_produit,
-        prix_unitaire
+        prix_unitaire,
       );
-      
-      res.status(201).send({ 
-        message: 'Pistolet ajouté avec succès', 
-        pistoletId 
+
+      res.status(201).send({
+        message: 'Pistolet ajouté avec succès',
+        pistoletId,
       });
     } catch (error) {
       if (error.code === 'ER_DUP_ENTRY') {
-        return res.status(400).send({ message: 'Ce numéro de pistolet existe déjà pour cette pompe' });
+        return res
+          .status(400)
+          .send({ message: 'Ce numéro de pistolet existe déjà pour cette pompe' });
       }
-      res.status(500).send({ 
-        message: 'Erreur lors de l\'ajout du pistolet',
-        error: process.env.NODE_ENV === 'development' ? error : undefined
+      res.status(500).send({
+        message: "Erreur lors de l'ajout du pistolet",
+        error: process.env.NODE_ENV === 'development' ? error : undefined,
       });
     }
   },
-   // Enregistrer un relevé
-   enregistrerReleve: async (req, res) => {
+  // Enregistrer un relevé
+  enregistrerReleve: async (req, res) => {
     try {
       const { affectation_id, pistolet_id, index_ouverture, index_fermeture } = req.body;
-      
+
       if (!affectation_id || !pistolet_id || isNaN(index_ouverture) || isNaN(index_fermeture)) {
-        return res.status(400).send({ 
-          message: 'Tous les champs sont obligatoires' 
+        return res.status(400).send({
+          message: 'Tous les champs sont obligatoires',
         });
       }
-  
+
       if (parseFloat(index_fermeture) < parseFloat(index_ouverture)) {
-        return res.status(400).send({ 
-          message: 'Index de fermeture invalide' 
+        return res.status(400).send({
+          message: 'Index de fermeture invalide',
         });
       }
-  
+
       const releveId = await Pistolet.createRelevePoste(
         affectation_id,
         pistolet_id,
         index_ouverture,
-        index_fermeture
+        index_fermeture,
       );
-  
-      res.status(201).send({ 
+
+      res.status(201).send({
         message: 'Relevé enregistré avec succès',
-        releveId
+        releveId,
       });
     } catch (error) {
       const statusCode = error.code ? 400 : 500;
-      res.status(statusCode).send({ 
+      res.status(statusCode).send({
         message: error.message,
-        code: error.code
+        code: error.code,
       });
     }
   },
@@ -81,17 +84,24 @@ const PistoletController = {
   // Ajouter un relevé manuel
   ajouterReleveManuel: async (req, res) => {
     try {
-      const { affectation_id, pistolet_id, index_ouverture, index_fermeture, date_heure } = req.body;
-      
-      if (!affectation_id || !pistolet_id || isNaN(index_ouverture) || isNaN(index_fermeture) || !date_heure) {
-        return res.status(400).send({ 
-          message: 'Tous les champs sont obligatoires' 
+      const { affectation_id, pistolet_id, index_ouverture, index_fermeture, date_heure } =
+        req.body;
+
+      if (
+        !affectation_id ||
+        !pistolet_id ||
+        isNaN(index_ouverture) ||
+        isNaN(index_fermeture) ||
+        !date_heure
+      ) {
+        return res.status(400).send({
+          message: 'Tous les champs sont obligatoires',
         });
       }
 
       if (parseFloat(index_fermeture) < parseFloat(index_ouverture)) {
-        return res.status(400).send({ 
-          message: 'Index de fermeture invalide' 
+        return res.status(400).send({
+          message: 'Index de fermeture invalide',
         });
       }
 
@@ -100,18 +110,18 @@ const PistoletController = {
         pistolet_id,
         index_ouverture,
         index_fermeture,
-        date_heure
+        date_heure,
       );
 
-      res.status(201).send({ 
+      res.status(201).send({
         message: 'Relevé manuel enregistré avec succès',
-        releveId
+        releveId,
       });
     } catch (error) {
       console.error('Erreur ajout manuel:', error);
-      res.status(500).send({ 
-        message: error.message || 'Erreur lors de l\'ajout manuel',
-        error: process.env.NODE_ENV === 'development' ? error : undefined
+      res.status(500).send({
+        message: error.message || "Erreur lors de l'ajout manuel",
+        error: process.env.NODE_ENV === 'development' ? error : undefined,
       });
     }
   },
@@ -120,77 +130,77 @@ const PistoletController = {
   genererRapportJournalier: async (req, res) => {
     try {
       const { date } = req.body;
-      
+
       if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          message: 'Format de date invalide. Utilisez YYYY-MM-DD'
+          message: 'Format de date invalide. Utilisez YYYY-MM-DD',
         });
       }
 
       const rowsInserted = await Pistolet.generateRapportJournalier(date);
 
-      res.json({ 
+      res.json({
         success: true,
         message: `Rapport généré pour ${date} (${rowsInserted} pistolets)`,
-        date_rapport: date
+        date_rapport: date,
       });
     } catch (error) {
       console.error('Erreur génération rapport:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
-        message: error.message || 'Erreur serveur lors de la génération'
+        message: error.message || 'Erreur serveur lors de la génération',
       });
     }
   },
   ajouterRapportManuel: async (req, res) => {
     try {
       const { date_rapport, pistolet_id, total_quantite, total_montant } = req.body;
-      
+
       // Validation des données
       if (!date_rapport || !pistolet_id || isNaN(total_quantite) || isNaN(total_montant)) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          message: 'Tous les champs sont obligatoires et doivent être valides' 
+          message: 'Tous les champs sont obligatoires et doivent être valides',
         });
       }
-  
+
       // Vérifier le format de la date
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date_rapport)) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          message: 'Format de date invalide. Utilisez YYYY-MM-DD' 
+          message: 'Format de date invalide. Utilisez YYYY-MM-DD',
         });
       }
-  
+
       // Vérifier que le pistolet existe
       const [pistolet] = await db.query('SELECT id FROM pistolets WHERE id = ?', [pistolet_id]);
       if (pistolet.length === 0) {
-        return res.status(404).json({ 
+        return res.status(404).json({
           success: false,
-          message: 'Pistolet non trouvé' 
+          message: 'Pistolet non trouvé',
         });
       }
-  
+
       // Ajouter le rapport manuel
       const rapportId = await Pistolet.addRapportJournalierManuel(
         date_rapport,
         pistolet_id,
         total_quantite,
-        total_montant
+        total_montant,
       );
-  
-      res.status(201).json({ 
+
+      res.status(201).json({
         success: true,
         message: 'Rapport journalier ajouté manuellement avec succès',
-        rapportId
+        rapportId,
       });
     } catch (error) {
-      console.error('Erreur lors de l\'ajout manuel du rapport:', error);
+      console.error("Erreur lors de l'ajout manuel du rapport:", error);
       const statusCode = error.message.includes('existe déjà') ? 400 : 500;
-      res.status(statusCode).json({ 
+      res.status(statusCode).json({
         success: false,
-        message: error.message || 'Erreur lors de l\'ajout du rapport'
+        message: error.message || "Erreur lors de l'ajout du rapport",
       });
     }
   },
@@ -198,73 +208,79 @@ const PistoletController = {
   getRevenusJournaliers: async (req, res) => {
     try {
       const { date_debut, date_fin, pistolet_id } = req.query;
-      
-      if (!date_debut || !date_fin || 
-          !/^\d{4}-\d{2}-\d{2}$/.test(date_debut) || 
-          !/^\d{4}-\d{2}-\d{2}$/.test(date_fin)) {
-        return res.status(400).json({ 
+
+      if (
+        !date_debut ||
+        !date_fin ||
+        !/^\d{4}-\d{2}-\d{2}$/.test(date_debut) ||
+        !/^\d{4}-\d{2}-\d{2}$/.test(date_fin)
+      ) {
+        return res.status(400).json({
           success: false,
-          message: 'Dates invalides. Utilisez YYYY-MM-DD' 
+          message: 'Dates invalides. Utilisez YYYY-MM-DD',
         });
       }
 
-      const revenus = await Pistolet.getRevenusJournaliers(date_debut, date_fin, pistolet_id || null);
-      
+      const revenus = await Pistolet.getRevenusJournaliers(
+        date_debut,
+        date_fin,
+        pistolet_id || null,
+      );
+
       res.status(200).json({
         success: true,
         data: revenus,
-        period: `${date_debut} à ${date_fin}`
+        period: `${date_debut} à ${date_fin}`,
       });
     } catch (error) {
       console.error('Erreur récupération revenus:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
-        message: 'Erreur lors de la récupération des revenus'
+        message: 'Erreur lors de la récupération des revenus',
       });
     }
   },
- updateStatut : async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { statut } = req.body;
+  updateStatut: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { statut } = req.body;
 
-    // Validation
-    if (!id || !statut) {
-      return res.status(400).json({
+      // Validation
+      if (!id || !statut) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID du relevé et nouveau statut sont requis',
+        });
+      }
+
+      const result = await Pistolet.updateStatutReleve(id, statut);
+
+      res.json({
+        success: true,
+        message: result.message,
+      });
+    } catch (error) {
+      console.error('Erreur contrôleur updateStatut:', error);
+      res.status(500).json({
         success: false,
-        message: 'ID du relevé et nouveau statut sont requis'
+        message: error.message || 'Erreur lors de la mise à jour du statut',
       });
     }
-
-    const result = await Pistolet.updateStatutReleve(id, statut);
-    
-    res.json({
-      success: true,
-      message: result.message
-    });
-
-  } catch (error) {
-    console.error('Erreur contrôleur updateStatut:', error);
-    res.status(500).json({
-      success: false,
-      message: error.message || 'Erreur lors de la mise à jour du statut'
-    });
-  }
-},
+  },
   // [EXISTANT] Mettre à jour l'index d'ouverture (déprécié - à conserver pour compatibilité)
   updateIndexOuverture: async (req, res) => {
     try {
       const { id, index_ouverture } = req.body;
       const result = await Pistolet.updateIndexOuverture(id, index_ouverture);
       if (result) {
-        res.status(200).send({ message: 'Index d\'ouverture mis à jour avec succès.' });
+        res.status(200).send({ message: "Index d'ouverture mis à jour avec succès." });
       } else {
         res.status(404).send({ message: 'Pistolet non trouvé.' });
       }
     } catch (error) {
-      res.status(500).send({ 
-        message: 'Erreur lors de la mise à jour de l\'index d\'ouverture',
-        error: process.env.NODE_ENV === 'development' ? error : undefined
+      res.status(500).send({
+        message: "Erreur lors de la mise à jour de l'index d'ouverture",
+        error: process.env.NODE_ENV === 'development' ? error : undefined,
       });
     }
   },
@@ -280,9 +296,9 @@ const PistoletController = {
         res.status(404).send({ message: 'Pistolet non trouvé.' });
       }
     } catch (error) {
-      res.status(500).send({ 
-        message: 'Erreur lors de la mise à jour de l\'index de fermeture',
-        error: process.env.NODE_ENV === 'development' ? error : undefined
+      res.status(500).send({
+        message: "Erreur lors de la mise à jour de l'index de fermeture",
+        error: process.env.NODE_ENV === 'development' ? error : undefined,
       });
     }
   },
@@ -294,9 +310,9 @@ const PistoletController = {
       const pistolets = await Pistolet.getPistoletsByPompeId(pompe_id);
       res.status(200).send(pistolets);
     } catch (error) {
-      res.status(500).send({ 
+      res.status(500).send({
         message: 'Erreur lors de la récupération des pistolets',
-        error: process.env.NODE_ENV === 'development' ? error : undefined
+        error: process.env.NODE_ENV === 'development' ? error : undefined,
       });
     }
   },
@@ -315,9 +331,9 @@ const PistoletController = {
         res.status(404).send({ message: 'Pistolet non trouvé.' });
       }
     } catch (error) {
-      res.status(500).send({ 
+      res.status(500).send({
         message: 'Erreur lors de la mise à jour du statut',
-        error: process.env.NODE_ENV === 'development' ? error : undefined
+        error: process.env.NODE_ENV === 'development' ? error : undefined,
       });
     }
   },
@@ -328,9 +344,9 @@ const PistoletController = {
       const pistolets = await Pistolet.getAllPistolets();
       res.status(200).send(pistolets);
     } catch (error) {
-      res.status(500).send({ 
+      res.status(500).send({
         message: 'Erreur lors de la récupération des pistolets',
-        error: process.env.NODE_ENV === 'development' ? error : undefined
+        error: process.env.NODE_ENV === 'development' ? error : undefined,
       });
     }
   },
@@ -339,30 +355,30 @@ const PistoletController = {
     try {
       const { pistolet_id } = req.params;
       const { date_debut, date_fin } = req.query;
-  
+
       // Validation 1: Les dates sont toujours obligatoires
       if (!date_debut || !date_fin) {
-        return res.status(400).send({ 
-          message: 'Les paramètres date_debut et date_fin sont obligatoires' 
+        return res.status(400).send({
+          message: 'Les paramètres date_debut et date_fin sont obligatoires',
         });
       }
-  
+
       // Si pistolet_id est fourni, on filtre par pistolet + dates
       // Sinon, on filtre seulement par dates
       const historique = await Pistolet.getHistoriqueReleves(
         pistolet_id, // peut être undefined
         date_debut,
-        date_fin
+        date_fin,
       );
-  
+
       res.status(200).send(historique);
     } catch (error) {
-      res.status(500).send({ 
-        message: 'Erreur lors de la récupération de l\'historique',
-        error: process.env.NODE_ENV === 'development' ? error : undefined
+      res.status(500).send({
+        message: "Erreur lors de la récupération de l'historique",
+        error: process.env.NODE_ENV === 'development' ? error : undefined,
       });
     }
-  }
+  },
 };
 
 export default PistoletController;

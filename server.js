@@ -40,12 +40,14 @@ const transporter = nodemailer.createTransport({
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors({
-  origin: ['http://localhost:4200', 'https://www.getpostman.com'], // Autorise à la fois Angular 
-  methods: 'GET,POST,PUT,DELETE',
-  allowedHeaders: 'Content-Type, Authorization',
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: ['http://localhost:4200', 'https://www.getpostman.com'], // Autorise à la fois Angular
+    methods: 'GET,POST,PUT,DELETE',
+    allowedHeaders: 'Content-Type, Authorization',
+    credentials: true,
+  }),
+);
 app.use(cookieParser());
 app.use(passport.initialize());
 
@@ -61,16 +63,17 @@ app.use('/api/Reclamation', reclamationRouter);
 app.use('/api/notifications', notificationRouter);
 
 // Ajoutez cette ligne APRÈS les autres app.use() et AVANT les routes
-app.use('/api-docs', 
-  swaggerUi.serve, 
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
   swaggerUi.setup(swaggerSpec, {
     swaggerOptions: {
       withCredentials: true, // Essentiel pour les cookies
-      persistAuthorization: true // Garde l'authentification entre les rafraîchissements
+      persistAuthorization: true, // Garde l'authentification entre les rafraîchissements
     },
-    customSiteTitle: "API Carbotrack Documentation",
-    customCss: '.swagger-ui .topbar { display: none }'
-  })
+    customSiteTitle: 'API Carbotrack Documentation',
+    customCss: '.swagger-ui .topbar { display: none }',
+  }),
 );
 //app.use('/api/odoo', odooRouter);
 // Ensure uploads directory exists
@@ -85,7 +88,6 @@ app.use('/qrcodes', express.static(path.join(__dirname, 'public/qrcodes')));
 app.use('/transactions', express.static(path.join(__dirname, 'public/transactions')));
 app.use('/images_produits', express.static(path.join(__dirname, 'public/images_produits')));
 
-
 // Database connection check
 (async () => {
   try {
@@ -99,33 +101,32 @@ app.use('/images_produits', express.static(path.join(__dirname, 'public/images_p
 
 // Vérification de la connexion Odoo
 //(async () => {
-  //try {
-    //const result = await OdooService.testConnection();
-    
-    //if (result.success) {
-      //console.log('✅ Odoo connection successful', {
-        //uid: result.uid,
-        //version: result.version.server_version,
-        //database: result.db
-      //});
-    //} else {
-      //console.error('❌ Odoo connection failed:', result.error);
-      // Optionnel: arrêter le serveur si Odoo est essentiel
-      // process.exit(1);
-    //}
-  //} catch (err) {
-    //console.error('❌ Odoo connection error:', err);
-  //}
+//try {
+//const result = await OdooService.testConnection();
+
+//if (result.success) {
+//console.log('✅ Odoo connection successful', {
+//uid: result.uid,
+//version: result.version.server_version,
+//database: result.db
+//});
+//} else {
+//console.error('❌ Odoo connection failed:', result.error);
+// Optionnel: arrêter le serveur si Odoo est essentiel
+// process.exit(1);
+//}
+//} catch (err) {
+//console.error('❌ Odoo connection error:', err);
+//}
 //})();
 
 // Fonction pour envoyer des emails de notification
 const sendNotificationEmail = async (userId, subject, message) => {
   try {
-    const [user] = await pool.query(
-      'SELECT email, username FROM utilisateurs WHERE id = ?', 
-      [userId]
-    );
-    
+    const [user] = await pool.query('SELECT email, username FROM utilisateurs WHERE id = ?', [
+      userId,
+    ]);
+
     if (user && user[0] && user[0].email) {
       const emailContent = `
         <p>Bonjour ${user[0].username},</p>
@@ -136,7 +137,7 @@ const sendNotificationEmail = async (userId, subject, message) => {
         from: `"Carbotrack" <${process.env.EMAIL_USER}>`,
         to: user[0].email,
         subject: subject,
-        html: emailContent
+        html: emailContent,
       });
     }
   } catch (err) {
@@ -144,10 +145,11 @@ const sendNotificationEmail = async (userId, subject, message) => {
   }
 };
 // Nouveau CRON Job pour désactiver les comptes avec plus de 2 crédits expirés
-cron.schedule('0 3 * * *', async () => { // Tous les jours à 3h du matin
+cron.schedule('0 3 * * *', async () => {
+  // Tous les jours à 3h du matin
   try {
     console.log('🔄 Vérification des comptes avec crédits expirés...');
-    
+
     // 1. Trouver les utilisateurs avec plus de 2 crédits expirés
     const [usersWithExpiredCredits] = await pool.query(`
       SELECT 
@@ -176,11 +178,8 @@ cron.schedule('0 3 * * *', async () => { // Tous les jours à 3h du matin
 
     for (const user of usersWithExpiredCredits) {
       // 2. Désactiver le compte
-      await pool.query(
-        `UPDATE utilisateurs SET status = 'inactive' WHERE id = ?`,
-        [user.id]
-      );
-      
+      await pool.query(`UPDATE utilisateurs SET status = 'inactive' WHERE id = ?`, [user.id]);
+
       // 3. Créer une notification pour le gérant
       if (gerantId) {
         await Notification.create(
@@ -188,7 +187,7 @@ cron.schedule('0 3 * * *', async () => { // Tous les jours à 3h du matin
           'systeme',
           user.id, // ID du client comme entité concernée
           'compte_desactive',
-          `Le compte client ${user.username} (ID: ${user.id}) a été désactivé automatiquement pour ${user.expired_credits_count} crédits expirés`
+          `Le compte client ${user.username} (ID: ${user.id}) a été désactivé automatiquement pour ${user.expired_credits_count} crédits expirés`,
         );
       }
 
@@ -197,10 +196,12 @@ cron.schedule('0 3 * * *', async () => { // Tous les jours à 3h du matin
         user.id,
         'Compte désactivé',
         `<p>Votre compte a été désactivé automatiquement car vous avez ${user.expired_credits_count} crédits expirés.</p>
-         <p>Veuillez contacter le support pour plus d'informations.</p>`
+         <p>Veuillez contacter le support pour plus d'informations.</p>`,
       );
 
-      console.log(`Compte désactivé: ${user.username} (${user.expired_credits_count} crédits expirés)`);
+      console.log(
+        `Compte désactivé: ${user.username} (${user.expired_credits_count} crédits expirés)`,
+      );
     }
 
     console.log('✅ Vérification des comptes avec crédits expirés terminée');
@@ -209,10 +210,11 @@ cron.schedule('0 3 * * *', async () => { // Tous les jours à 3h du matin
   }
 });
 // CRON Jobs for automated notifications
-cron.schedule('0 0 * * *', async () => { // Daily at midnight
+cron.schedule('0 0 * * *', async () => {
+  // Daily at midnight
   try {
     console.log('🔄 Running daily credit checks...');
-    
+
     // 1. Process expired credits
     const [expiredCredits] = await pool.query(`
       SELECT dc.id, dc.id_utilisateur, dc.date_debut, dc.duree_credit, u.username 
@@ -224,18 +226,15 @@ cron.schedule('0 0 * * *', async () => { // Daily at midnight
 
     for (const credit of expiredCredits) {
       // Mark as expired
-      await pool.query(
-        `UPDATE details_credits SET etat = 'expiré' WHERE id = ?`,
-        [credit.id]
-      );
-      
+      await pool.query(`UPDATE details_credits SET etat = 'expiré' WHERE id = ?`, [credit.id]);
+
       // Send expiration notification
       await Notification.create(
         credit.id_utilisateur,
         'credit',
         credit.id,
         'expiration',
-        `Votre crédit #${credit.id} a expiré`
+        `Votre crédit #${credit.id} a expiré`,
       );
 
       // Send email
@@ -243,9 +242,8 @@ cron.schedule('0 0 * * *', async () => { // Daily at midnight
         credit.id_utilisateur,
         'Votre crédit a expiré',
         `<p>Votre crédit #${credit.id} a expiré le ${new Date(
-          new Date(credit.date_debut).getTime() + 
-          credit.duree_credit * 24 * 60 * 60 * 1000
-        ).toLocaleDateString('fr-FR')}</p>`
+          new Date(credit.date_debut).getTime() + credit.duree_credit * 24 * 60 * 60 * 1000,
+        ).toLocaleDateString('fr-FR')}</p>`,
       );
     }
 
@@ -258,20 +256,20 @@ cron.schedule('0 0 * * *', async () => { // Daily at midnight
       WHERE dc.etat = 'actif'
       AND DATEDIFF(DATE_ADD(dc.date_debut, INTERVAL dc.duree_credit DAY), CURDATE()) BETWEEN 3 AND 7
     `);
-    
+
     for (const credit of expiringSoon) {
       await Notification.create(
         credit.id_utilisateur,
         'credit',
         credit.id,
         'expiration_proche',
-        `Votre crédit #${credit.id} expire dans ${credit.days_remaining} jours`
+        `Votre crédit #${credit.id} expire dans ${credit.days_remaining} jours`,
       );
 
       await sendNotificationEmail(
         credit.id_utilisateur,
         'Crédit bientôt expiré',
-        `<p>Votre crédit #${credit.id} expire dans ${credit.days_remaining} jours</p>`
+        `<p>Votre crédit #${credit.id} expire dans ${credit.days_remaining} jours</p>`,
       );
     }
 
@@ -285,7 +283,7 @@ cron.schedule('0 0 * * *', async () => { // Daily at midnight
 cron.schedule('0 * * * *', async () => {
   try {
     console.log('🔄 Running hourly notifications check...');
-    
+
     // 1. Recently repaid credits (last hour)
     const [recentlyPaid] = await pool.query(`
       SELECT dc.id, dc.id_utilisateur, u.username 
@@ -294,20 +292,20 @@ cron.schedule('0 * * * *', async () => {
       WHERE dc.etat = 'remboursé'
       AND dc.date_dernier_paiement >= NOW() - INTERVAL 1 HOUR
     `);
-    
+
     for (const credit of recentlyPaid) {
       await Notification.create(
         credit.id_utilisateur,
         'credit',
         credit.id,
         'remboursement',
-        `Votre crédit #${credit.id} a été complètement remboursé`
+        `Votre crédit #${credit.id} a été complètement remboursé`,
       );
 
       await sendNotificationEmail(
         credit.id_utilisateur,
         'Crédit remboursé',
-        `<p>Votre crédit #${credit.id} a été complètement remboursé</p>`
+        `<p>Votre crédit #${credit.id} a été complètement remboursé</p>`,
       );
     }
 
@@ -318,9 +316,9 @@ cron.schedule('0 * * * *', async () => {
 });
 // CRON Job pour les alertes de stock (toutes les 5 minutes)
 cron.schedule('0 * * * *', async () => {
-   try {
+  try {
     console.log('🔄 Vérification des produits sous le seuil...');
-    
+
     // 1. Récupérer les produits sous le seuil d'alerte
     const [lowStockProducts] = await pool.query(`
       SELECT 
@@ -351,11 +349,13 @@ cron.schedule('0 * * * *', async () => {
 
     // 3. Créer des notifications pour chaque produit sous le seuil
     for (const product of lowStockProducts) {
-      const message = `Produit "${product.nom}" (${product.categorie_nom}) sous le seuil: ` +
-                     `${product.quantite_stock} restants (seuil: ${product.seuil_alerte})`;
+      const message =
+        `Produit "${product.nom}" (${product.categorie_nom}) sous le seuil: ` +
+        `${product.quantite_stock} restants (seuil: ${product.seuil_alerte})`;
 
       // Vérifier si une notification existe déjà pour ce produit
-      const [existingNotification] = await pool.query(`
+      const [existingNotification] = await pool.query(
+        `
         SELECT id FROM notifications
         WHERE entity_type = 'stock' 
         AND entity_id = ?
@@ -363,17 +363,13 @@ cron.schedule('0 * * * *', async () => {
         AND vue = 0
         AND created_at >= DATE_SUB(NOW(), INTERVAL 1 HOUR)
         LIMIT 1
-      `, [product.id]);
+      `,
+        [product.id],
+      );
 
       // Si aucune notification récente n'existe, en créer une nouvelle
       if (!existingNotification || existingNotification.length === 0) {
-        await Notification.create(
-          gerantId,
-          'stock',
-          product.id,
-          'alerte_stock',
-          message
-        );
+        await Notification.create(gerantId, 'stock', product.id, 'alerte_stock', message);
 
         console.log(`Notification créée pour: ${product.nom}`);
 
@@ -383,7 +379,7 @@ cron.schedule('0 * * * *', async () => {
           `Alerte stock: ${product.nom}`,
           `<p>Le produit <strong>${product.nom}</strong> (${product.categorie_nom}) est sous le seuil d'alerte.</p>
            <p>Stock actuel: ${product.quantite_stock}</p>
-           <p>Seuil d'alerte: ${product.seuil_alerte}</p>`
+           <p>Seuil d'alerte: ${product.seuil_alerte}</p>`,
         );
       }
     }
@@ -397,7 +393,7 @@ cron.schedule('0 * * * *', async () => {
 cron.schedule('0 9 * * 1', async () => {
   try {
     console.log('🔄 Running weekly summary...');
-    
+
     // Get all active users
     const [users] = await pool.query(`
       SELECT id, username, email FROM utilisateurs WHERE status = 'active'
@@ -405,27 +401,33 @@ cron.schedule('0 9 * * 1', async () => {
 
     for (const user of users) {
       // Get weekly stats - Version corrigée
-      const [[{ transactions }]] = await pool.query(`
+      const [[{ transactions }]] = await pool.query(
+        `
         SELECT COUNT(*) AS transactions 
         FROM transactions t
         JOIN details_credits dc ON t.id_credit = dc.id
         WHERE dc.id_utilisateur = ? 
         AND t.date_transaction >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-      `, [user.id]);
-      
-      const [[{ payments }]] = await pool.query(`
+      `,
+        [user.id],
+      );
+
+      const [[{ payments }]] = await pool.query(
+        `
         SELECT SUM(montant_paye) AS payments 
         FROM paiements_credits 
         WHERE id_utilisateur = ? 
         AND date_paiement >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-      `, [user.id]);
-      
+      `,
+        [user.id],
+      );
+
       await Notification.create(
         user.id,
         'systeme',
         null,
         'resume_hebdo',
-        `Résumé hebdomadaire: ${transactions} transactions, ${payments || 0} DT payés`
+        `Résumé hebdomadaire: ${transactions} transactions, ${payments || 0} DT payés`,
       );
 
       if (user.email) {
@@ -440,11 +442,11 @@ cron.schedule('0 9 * * 1', async () => {
               <li>Transactions: ${transactions}</li>
               <li>Montant payé: ${payments || 0} DT</li>
             </ul>
-          `
+          `,
         });
       }
     }
-    
+
     console.log('✅ Weekly summary completed');
   } catch (err) {
     console.error('❌ Error in weekly summary:', err);

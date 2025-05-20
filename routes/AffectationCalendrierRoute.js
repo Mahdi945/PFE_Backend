@@ -13,10 +13,18 @@ const requireAuth = passport.authenticate('jwt', { session: false });
 router.post('/add-manual', requireAuth, AffectationCalendrierController.addAffectationManuelle);
 
 // Ajouter une affectation automatique équitable
-router.post('/add-automatic', requireAuth, AffectationCalendrierController.addAffectationAutomatiqueEquitable);
+router.post(
+  '/add-automatic',
+  requireAuth,
+  AffectationCalendrierController.addAffectationAutomatiqueEquitable,
+);
 
 // Récupérer les affectations d'un mois et année
-router.get('/month/:mois/year/:annee', requireAuth, AffectationCalendrierController.getAffectationsByMonthYear);
+router.get(
+  '/month/:mois/year/:annee',
+  requireAuth,
+  AffectationCalendrierController.getAffectationsByMonthYear,
+);
 
 // Mettre à jour une affectation
 router.put('/update/:id', requireAuth, AffectationCalendrierController.updateAffectation);
@@ -28,9 +36,17 @@ router.post('/regenerate', requireAuth, AffectationCalendrierController.regenera
 router.get('/date/:date', requireAuth, AffectationCalendrierController.getAffectationsByDate);
 
 // Obtenir l'affectation actuelle d'un pompiste
-router.get('/current/:pompiste_id', requireAuth, AffectationCalendrierController.getCurrentAffectation);
+router.get(
+  '/current/:pompiste_id',
+  requireAuth,
+  AffectationCalendrierController.getCurrentAffectation,
+);
 
 // Obtenir les pistolets disponibles pour une affectation
-router.get('/pistolets/:affectation_id', requireAuth, AffectationCalendrierController.getAvailablePistolets);
+router.get(
+  '/pistolets/:affectation_id',
+  requireAuth,
+  AffectationCalendrierController.getAvailablePistolets,
+);
 
 export default router;

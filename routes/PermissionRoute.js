@@ -12,8 +12,16 @@ const requireAuth = passport.authenticate('jwt', { session: false });
 router.get('/permissions', requireAuth, PermissionController.getPermissions);
 router.post('/permissions/update', requireAuth, PermissionController.updatePermission);
 router.get('/permissions/role/:role', requireAuth, PermissionController.getPermissionsParRole);
-router.get('/permissions/dashboard/:role', requireAuth, PermissionController.getDashboardPermission);
+router.get(
+  '/permissions/dashboard/:role',
+  requireAuth,
+  PermissionController.getDashboardPermission,
+);
 router.get('/permissions/roles', requireAuth, PermissionController.getAllRoles);
-router.post('/permissions/update-multiple', requireAuth, PermissionController.updateMultiplePermissions);
+router.post(
+  '/permissions/update-multiple',
+  requireAuth,
+  PermissionController.updateMultiplePermissions,
+);
 
 export default router;

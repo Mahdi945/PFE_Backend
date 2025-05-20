@@ -8,207 +8,204 @@ const options = {
       version: '1.0.0',
       description: 'API pour la gestion des réclamations Carbotrack',
       contact: {
-        name: "Support API",
-        email: "mahdibeyy@gmail.com"
-      }
+        name: 'Support API',
+        email: 'mahdibeyy@gmail.com',
+      },
     },
-    servers: [
-      { url: 'http://localhost:3000/api', description: 'Serveur local' },
-    
-    ],
+    servers: [{ url: 'http://localhost:3000/api', description: 'Serveur local' }],
     components: {
       securitySchemes: {
         cookieAuth: {
           type: 'apiKey',
           in: 'cookie',
           name: 'jwt',
-          description: 'Authentification via cookie HTTP-only'
-        }
+          description: 'Authentification via cookie HTTP-only',
+        },
       },
       schemas: {
-          User: {
+        User: {
           type: 'object',
           properties: {
             id: { type: 'integer', example: 14 },
             username: { type: 'string', example: 'Ahmed Zamma' },
             email: { type: 'string', example: 'mahdibeyy@gmail.com' },
             numero_telephone: { type: 'string', example: '56327237' },
-            role: { 
-              type: 'string', 
+            role: {
+              type: 'string',
               enum: ['gerant', 'cogerant', 'client', 'caissier', 'pompiste'],
-              example: 'gerant'
+              example: 'gerant',
             },
-            status: { 
-              type: 'string', 
+            status: {
+              type: 'string',
               enum: ['active', 'inactive'],
-              example: 'active'
+              example: 'active',
             },
-            photo: { 
-              type: 'string', 
+            photo: {
+              type: 'string',
               example: '/images/nbg.png',
-              nullable: true
-            }
-          }
+              nullable: true,
+            },
+          },
         },
         LoginInput: {
           type: 'object',
           required: ['email', 'password'],
           properties: {
-            email: { 
-              type: 'string', 
-              example: 'mahdibeyy@gmail.com' 
+            email: {
+              type: 'string',
+              example: 'mahdibeyy@gmail.com',
             },
-            password: { 
-              type: 'string', 
-              example: 'motdepasse123' 
-            }
-          }
+            password: {
+              type: 'string',
+              example: 'motdepasse123',
+            },
+          },
         },
         RegisterInput: {
           type: 'object',
           required: ['email', 'password', 'username', 'numero_telephone'],
           properties: {
-            email: { 
-              type: 'string', 
-              example: 'nouveau@example.com' 
+            email: {
+              type: 'string',
+              example: 'nouveau@example.com',
             },
-            password: { 
-              type: 'string', 
-              example: 'Motdepasse123!' 
+            password: {
+              type: 'string',
+              example: 'Motdepasse123!',
             },
-            username: { 
-              type: 'string', 
-              example: 'Nouveau Utilisateur' 
+            username: {
+              type: 'string',
+              example: 'Nouveau Utilisateur',
             },
-            numero_telephone: { 
-              type: 'string', 
-              example: '98765432' 
+            numero_telephone: {
+              type: 'string',
+              example: '98765432',
             },
             role: {
               type: 'string',
               enum: ['gerant', 'cogerant', 'client', 'caissier', 'pompiste'],
-              example: 'client'
-            }
-          }
+              example: 'client',
+            },
+          },
         },
         PasswordResetInput: {
           type: 'object',
           required: ['email'],
           properties: {
-            email: { 
-              type: 'string', 
-              example: 'mahdibeyy@gmail.com' 
-            }
-          }
+            email: {
+              type: 'string',
+              example: 'mahdibeyy@gmail.com',
+            },
+          },
         },
         NewPasswordInput: {
           type: 'object',
           required: ['token', 'newPassword'],
           properties: {
-            token: { 
-              type: 'string', 
-              example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' 
+            token: {
+              type: 'string',
+              example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
             },
-            newPassword: { 
-              type: 'string', 
-              example: 'NouveauMotdepasse123!' 
-            }
-          }
+            newPassword: {
+              type: 'string',
+              example: 'NouveauMotdepasse123!',
+            },
+          },
         },
-         Pompe: {
+        Pompe: {
           type: 'object',
           properties: {
             id: { type: 'integer', example: 34 },
             numero_pompe: { type: 'string', example: 'P020' },
-            type_pompe: { 
-              type: 'string', 
+            type_pompe: {
+              type: 'string',
               enum: ['gasoil', 'multi-produits', 'sans plomb'],
-              example: 'gasoil'
+              example: 'gasoil',
             },
-            statut: { 
-              type: 'string', 
+            statut: {
+              type: 'string',
               enum: ['active', 'reserve', 'maintenance', 'hors_service'],
-              example: 'reserve'
+              example: 'reserve',
             },
-            created_at: { 
-              type: 'string', 
-              format: 'date-time', 
-              example: '2025-04-21T19:28:39Z' 
-            }
-          }
+            created_at: {
+              type: 'string',
+              format: 'date-time',
+              example: '2025-04-21T19:28:39Z',
+            },
+          },
         },
         PompeInput: {
           type: 'object',
           required: ['numero_pompe', 'type_pompe'],
           properties: {
-            numero_pompe: { 
-              type: 'string', 
+            numero_pompe: {
+              type: 'string',
               pattern: '^P[0-9]{3}$',
               example: 'P020',
-              description: 'Doit commencer par P suivi de 3 chiffres'
+              description: 'Doit commencer par P suivi de 3 chiffres',
             },
-            type_pompe: { 
-              type: 'string', 
+            type_pompe: {
+              type: 'string',
               enum: ['gasoil', 'multi-produits', 'sans plomb'],
-              example: 'gasoil'
+              example: 'gasoil',
             },
-            statut: { 
-              type: 'string', 
+            statut: {
+              type: 'string',
               enum: ['active', 'reserve', 'maintenance', 'hors_service'],
               example: 'reserve',
-              default: 'reserve'
-            }
-          }
+              default: 'reserve',
+            },
+          },
         },
         PompeUpdate: {
           type: 'object',
           properties: {
-            numero_pompe: { 
-              type: 'string', 
+            numero_pompe: {
+              type: 'string',
               pattern: '^P[0-9]{3}$',
               example: 'P020',
-              description: 'Doit commencer par P suivi de 3 chiffres'
+              description: 'Doit commencer par P suivi de 3 chiffres',
             },
-            type_pompe: { 
-              type: 'string', 
+            type_pompe: {
+              type: 'string',
               enum: ['gasoil', 'multi-produits', 'sans plomb'],
-              example: 'gasoil'
+              example: 'gasoil',
             },
-            statut: { 
-              type: 'string', 
+            statut: {
+              type: 'string',
               enum: ['active', 'reserve', 'maintenance', 'hors_service'],
-              example: 'active'
-            }
-          }
+              example: 'active',
+            },
+          },
         },
         PompeFilters: {
           type: 'object',
           properties: {
-            type_pompe: { 
-              type: 'string', 
+            type_pompe: {
+              type: 'string',
               enum: ['gasoil', 'multi-produits', 'sans plomb'],
               example: 'gasoil',
-              nullable: true
+              nullable: true,
             },
-            statut: { 
-              type: 'string', 
+            statut: {
+              type: 'string',
               enum: ['active', 'reserve', 'maintenance', 'hors_service'],
               example: 'active',
-              nullable: true
+              nullable: true,
             },
-            date_debut: { 
-              type: 'string', 
-              format: 'date', 
+            date_debut: {
+              type: 'string',
+              format: 'date',
               example: '2025-04-01',
-              nullable: true
+              nullable: true,
             },
-            date_fin: { 
-              type: 'string', 
-              format: 'date', 
+            date_fin: {
+              type: 'string',
+              format: 'date',
               example: '2025-04-30',
-              nullable: true
-            }
-          }
+              nullable: true,
+            },
+          },
         },
         Pistolet: {
           type: 'object',
@@ -216,37 +213,37 @@ const options = {
             id: { type: 'integer', example: 4 },
             pompe_id: { type: 'integer', example: 34 },
             numero_pistolet: { type: 'string', example: 'PIII1' },
-            statut: { 
-              type: 'string', 
+            statut: {
+              type: 'string',
               enum: ['disponible', 'indisponible', 'maintenance'],
-              example: 'disponible'
+              example: 'disponible',
             },
-            created_at: { 
-              type: 'string', 
-              format: 'date-time', 
-              example: '2025-04-21T20:28:39Z' 
+            created_at: {
+              type: 'string',
+              format: 'date-time',
+              example: '2025-04-21T20:28:39Z',
             },
-            updated_at: { 
-              type: 'string', 
-              format: 'date-time', 
-              example: '2025-05-08T20:37:27Z'
+            updated_at: {
+              type: 'string',
+              format: 'date-time',
+              example: '2025-05-08T20:37:27Z',
             },
             nom_produit: { type: 'string', example: 'SP95' },
-            prix_unitaire: { type: 'number', format: 'float', example: 2.50 },
+            prix_unitaire: { type: 'number', format: 'float', example: 2.5 },
             unite_mesure: { type: 'string', example: 'Litre', nullable: true },
-            date_dernier_index: { 
-              type: 'string', 
-              format: 'date', 
+            date_dernier_index: {
+              type: 'string',
+              format: 'date',
               example: '2025-05-08',
-              nullable: true 
+              nullable: true,
             },
-            dernier_index: { 
-              type: 'number', 
-              format: 'float', 
-              example: 400.00,
-              nullable: true 
-            }
-          }
+            dernier_index: {
+              type: 'number',
+              format: 'float',
+              example: 400.0,
+              nullable: true,
+            },
+          },
         },
         PistoletInput: {
           type: 'object',
@@ -255,71 +252,71 @@ const options = {
             pompe_id: { type: 'integer', example: 34 },
             numero_pistolet: { type: 'string', example: 'PIII1' },
             nom_produit: { type: 'string', example: 'SP95' },
-            prix_unitaire: { 
-              type: 'number', 
-              format: 'float', 
+            prix_unitaire: {
+              type: 'number',
+              format: 'float',
               minimum: 0,
-              example: 2.50 
+              example: 2.5,
             },
-            unite_mesure: { 
-              type: 'string', 
+            unite_mesure: {
+              type: 'string',
               example: 'Litre',
-              nullable: true
+              nullable: true,
             },
-            statut: { 
-              type: 'string', 
+            statut: {
+              type: 'string',
               enum: ['disponible', 'indisponible', 'maintenance'],
               example: 'disponible',
-              default: 'disponible'
-            }
-          }
+              default: 'disponible',
+            },
+          },
         },
         PistoletUpdate: {
           type: 'object',
           properties: {
             numero_pistolet: { type: 'string', example: 'PIII1' },
             nom_produit: { type: 'string', example: 'SP95' },
-            prix_unitaire: { 
-              type: 'number', 
-              format: 'float', 
+            prix_unitaire: {
+              type: 'number',
+              format: 'float',
               minimum: 0,
-              example: 2.50 
+              example: 2.5,
             },
             unite_mesure: { type: 'string', example: 'Litre' },
-            date_dernier_index: { 
-              type: 'string', 
-              format: 'date', 
-              example: '2025-05-08'
+            date_dernier_index: {
+              type: 'string',
+              format: 'date',
+              example: '2025-05-08',
             },
-            dernier_index: { 
-              type: 'number', 
-              format: 'float', 
+            dernier_index: {
+              type: 'number',
+              format: 'float',
               minimum: 0,
-              example: 400.00
-            }
-          }
+              example: 400.0,
+            },
+          },
         },
         StatutUpdate: {
           type: 'object',
           required: ['statut'],
           properties: {
-            statut: { 
-              type: 'string', 
+            statut: {
+              type: 'string',
               enum: ['disponible', 'indisponible', 'maintenance'],
-              example: 'maintenance'
-            }
-          }
+              example: 'maintenance',
+            },
+          },
         },
-        
-         Affectation: {
+
+        Affectation: {
           type: 'object',
           properties: {
             id: { type: 'integer', example: 4074 },
             pompiste_id: { type: 'integer', example: 20 },
             poste_id: { type: 'integer', example: 3 },
             pompe_id: { type: 'integer', example: 35 },
-            date: { type: 'string', format: 'date', example: '2025-05-01' }
-          }
+            date: { type: 'string', format: 'date', example: '2025-05-01' },
+          },
         },
         AffectationInput: {
           type: 'object',
@@ -328,85 +325,85 @@ const options = {
             pompiste_id: { type: 'integer', example: 20 },
             poste_id: { type: 'integer', example: 3 },
             pompe_id: { type: 'integer', example: 35 },
-            date: { type: 'string', format: 'date', example: '2025-05-01' }
-          }
+            date: { type: 'string', format: 'date', example: '2025-05-01' },
+          },
         },
         AffectationUpdate: {
           type: 'object',
           properties: {
             pompiste_id: { type: 'integer', example: 20 },
             poste_id: { type: 'integer', example: 3 },
-            pompe_id: { type: 'integer', example: 35 }
-          }
+            pompe_id: { type: 'integer', example: 35 },
+          },
         },
         MonthYearInput: {
           type: 'object',
           required: ['mois', 'annee'],
           properties: {
             mois: { type: 'integer', minimum: 1, maximum: 12, example: 5 },
-            annee: { type: 'integer', example: 2025 }
-          }
+            annee: { type: 'integer', example: 2025 },
+          },
         },
         ReleveInput: {
           type: 'object',
           required: ['pistolet_id', 'index_fermeture'],
           properties: {
             pistolet_id: { type: 'integer', example: 4 },
-            index_fermeture: { 
-              type: 'number', 
-              format: 'float', 
+            index_fermeture: {
+              type: 'number',
+              format: 'float',
               minimum: 0,
-              example: 200.00 
+              example: 200.0,
             },
-            commentaire: { 
-              type: 'string', 
-              example: "Relevé automatique système",
-              nullable: true
-            }
-          }
+            commentaire: {
+              type: 'string',
+              example: 'Relevé automatique système',
+              nullable: true,
+            },
+          },
         },
         ReleveManuelInput: {
           type: 'object',
           required: ['pistolet_id', 'index_ouverture', 'index_fermeture'],
           properties: {
             pistolet_id: { type: 'integer', example: 4 },
-            index_ouverture: { 
-              type: 'number', 
-              format: 'float', 
+            index_ouverture: {
+              type: 'number',
+              format: 'float',
               minimum: 0,
-              example: 0.00 
+              example: 0.0,
             },
-            index_fermeture: { 
-              type: 'number', 
-              format: 'float', 
+            index_fermeture: {
+              type: 'number',
+              format: 'float',
               minimum: 0,
-              example: 200.00 
+              example: 200.0,
             },
-            date_heure_saisie: { 
-              type: 'string', 
-              format: 'date-time', 
+            date_heure_saisie: {
+              type: 'string',
+              format: 'date-time',
               example: '2025-05-15T08:00:00Z',
-              nullable: true
+              nullable: true,
             },
-            commentaire: { 
-              type: 'string', 
-              example: "Correction index oublié",
-              nullable: true
-            }
-          }
+            commentaire: {
+              type: 'string',
+              example: 'Correction index oublié',
+              nullable: true,
+            },
+          },
         },
         RapportJournalier: {
           type: 'object',
           properties: {
-            date: { 
-              type: 'string', 
-              format: 'date', 
-              example: '2025-05-15' 
+            date: {
+              type: 'string',
+              format: 'date',
+              example: '2025-05-15',
             },
-            total_ventes: { 
-              type: 'number', 
-              format: 'float', 
-              example: 1250.50 
+            total_ventes: {
+              type: 'number',
+              format: 'float',
+              example: 1250.5,
             },
             details_pistolets: {
               type: 'array',
@@ -415,138 +412,138 @@ const options = {
                 properties: {
                   pistolet_id: { type: 'integer', example: 4 },
                   numero_pistolet: { type: 'string', example: 'PIII1' },
-                  volume: { type: 'number', format: 'float', example: 200.00 },
-                  montant: { type: 'number', format: 'float', example: 500.00 }
-                }
-              }
-            }
-          }
+                  volume: { type: 'number', format: 'float', example: 200.0 },
+                  montant: { type: 'number', format: 'float', example: 500.0 },
+                },
+              },
+            },
+          },
         },
         RapportManuelInput: {
           type: 'object',
           required: ['date', 'pistolet_id', 'volume', 'montant'],
           properties: {
-            date: { 
-              type: 'string', 
-              format: 'date', 
-              example: '2025-05-15' 
+            date: {
+              type: 'string',
+              format: 'date',
+              example: '2025-05-15',
             },
             pistolet_id: { type: 'integer', example: 4 },
-            volume: { 
-              type: 'number', 
-              format: 'float', 
+            volume: {
+              type: 'number',
+              format: 'float',
               minimum: 0,
-              example: 150.00 
+              example: 150.0,
             },
-            montant: { 
-              type: 'number', 
-              format: 'float', 
+            montant: {
+              type: 'number',
+              format: 'float',
               minimum: 0,
-              example: 375.00 
+              example: 375.0,
             },
-            commentaire: { 
-              type: 'string', 
-              example: "Vente exceptionnelle",
-              nullable: true
-            }
-          }
+            commentaire: {
+              type: 'string',
+              example: 'Vente exceptionnelle',
+              nullable: true,
+            },
+          },
         },
         RevenuJournalier: {
           type: 'object',
           properties: {
-            date: { 
-              type: 'string', 
-              format: 'date', 
-              example: '2025-05-15' 
+            date: {
+              type: 'string',
+              format: 'date',
+              example: '2025-05-15',
             },
-            total: { 
-              type: 'number', 
-              format: 'float', 
-              example: 3250.75 
+            total: {
+              type: 'number',
+              format: 'float',
+              example: 3250.75,
             },
-            nombre_transactions: { type: 'integer', example: 42 }
-          }
+            nombre_transactions: { type: 'integer', example: 42 },
+          },
         },
-    
-         Credit: {
+
+        Credit: {
           type: 'object',
           properties: {
             id: { type: 'integer', example: 2 },
             id_utilisateur: { type: 'integer', example: 13 },
-            type_credit: { 
-              type: 'string', 
+            type_credit: {
+              type: 'string',
               enum: ['organisationnelle', 'individuelle'],
-              example: 'organisationnelle'
+              example: 'organisationnelle',
             },
-            solde_credit: { type: 'number', format: 'float', example: 500.00 },
+            solde_credit: { type: 'number', format: 'float', example: 500.0 },
             date_debut: { type: 'string', format: 'date', example: '2025-04-10' },
             duree_credit: { type: 'integer', example: 30 },
-            credit_utilise: { 
-              type: 'number', 
-              format: 'float', 
-              example: 500.00,
-              nullable: true 
+            credit_utilise: {
+              type: 'number',
+              format: 'float',
+              example: 500.0,
+              nullable: true,
             },
-            etat: { 
-              type: 'string', 
+            etat: {
+              type: 'string',
               enum: ['actif', 'expiré', 'remboursé', 'suspendu'],
-              example: 'remboursé'
+              example: 'remboursé',
             },
-            montant_restant: { 
-              type: 'number', 
-              format: 'float', 
-              example: 0.00,
-              nullable: true 
+            montant_restant: {
+              type: 'number',
+              format: 'float',
+              example: 0.0,
+              nullable: true,
             },
-            date_dernier_paiement: { 
-              type: 'string', 
-              format: 'date-time', 
+            date_dernier_paiement: {
+              type: 'string',
+              format: 'date-time',
               example: '2025-04-16T19:06:03Z',
-              nullable: true 
-            }
-          }
+              nullable: true,
+            },
+          },
         },
         CreditInput: {
           type: 'object',
           required: ['id_utilisateur', 'type_credit', 'solde_credit', 'duree_credit'],
           properties: {
             id_utilisateur: { type: 'integer', example: 13 },
-            type_credit: { 
-              type: 'string', 
+            type_credit: {
+              type: 'string',
               enum: ['organisationnelle', 'individuelle'],
-              example: 'organisationnelle'
+              example: 'organisationnelle',
             },
-            solde_credit: { 
-              type: 'number', 
-              format: 'float', 
+            solde_credit: {
+              type: 'number',
+              format: 'float',
               minimum: 0,
-              example: 500.00 
+              example: 500.0,
             },
-            duree_credit: { 
-              type: 'integer', 
+            duree_credit: {
+              type: 'integer',
               minimum: 1,
-              example: 30 
-            }
-          }
+              example: 30,
+            },
+          },
         },
         CreditRenouvellement: {
           type: 'object',
           required: ['id_credit', 'montant_ajout'],
           properties: {
             id_credit: { type: 'integer', example: 2 },
-            montant_ajout: { 
-              type: 'number', 
-              format: 'float', 
+            montant_ajout: {
+              type: 'number',
+              format: 'float',
               minimum: 0,
-              example: 200.00 
+              example: 200.0,
             },
-            prolongation_jours: { 
-              type: 'integer', 
+            prolongation_jours: {
+              type: 'integer',
               minimum: 0,
               example: 30,
-              nullable: true 
-            }
-          }
+              nullable: true,
+            },
+          },
         },
 
         // ==================== SCHÉMAS VÉHICULES ====================
@@ -556,22 +553,22 @@ const options = {
             id: { type: 'integer', example: 8 },
             immatriculation: { type: 'string', example: '22TU2002' },
             marque: { type: 'string', example: 'Mercedes' },
-            type_vehicule: { 
-              type: 'string', 
+            type_vehicule: {
+              type: 'string',
               enum: ['voiture', 'camion', 'moto', 'bus'],
-              example: 'camion'
+              example: 'camion',
             },
-            qr_code: { 
-              type: 'string', 
+            qr_code: {
+              type: 'string',
               example: 'http://localhost:3000/qrcodes/22TU2002.png',
-              nullable: true 
+              nullable: true,
             },
-            id_credit: { 
-              type: 'integer', 
+            id_credit: {
+              type: 'integer',
               example: 2,
-              nullable: true 
-            }
-          }
+              nullable: true,
+            },
+          },
         },
         VehiculeInput: {
           type: 'object',
@@ -579,17 +576,17 @@ const options = {
           properties: {
             immatriculation: { type: 'string', example: '22TU2002' },
             marque: { type: 'string', example: 'Mercedes' },
-            type_vehicule: { 
-              type: 'string', 
+            type_vehicule: {
+              type: 'string',
               enum: ['voiture', 'camion', 'moto', 'bus'],
-              example: 'camion'
+              example: 'camion',
             },
-            id_credit: { 
-              type: 'integer', 
+            id_credit: {
+              type: 'integer',
               example: 2,
-              nullable: true 
-            }
-          }
+              nullable: true,
+            },
+          },
         },
 
         // ==================== SCHÉMAS TRANSACTIONS ====================
@@ -598,59 +595,59 @@ const options = {
           properties: {
             id: { type: 'integer', example: 75 },
             id_vehicule: { type: 'integer', example: 28 },
-            quantite: { type: 'number', format: 'float', example: 0.10 },
-            montant: { type: 'number', format: 'float', example: 1.00 },
-            date_transaction: { 
-              type: 'string', 
-              format: 'date-time', 
-              example: '2025-05-13T19:36:22Z' 
+            quantite: { type: 'number', format: 'float', example: 0.1 },
+            montant: { type: 'number', format: 'float', example: 1.0 },
+            date_transaction: {
+              type: 'string',
+              format: 'date-time',
+              example: '2025-05-13T19:36:22Z',
             },
-            id_credit: { 
-              type: 'integer', 
+            id_credit: {
+              type: 'integer',
               example: 17,
-              nullable: true 
+              nullable: true,
             },
-            preuve: { 
-              type: 'string', 
+            preuve: {
+              type: 'string',
               example: 'http://localhost:3000/transactions/transaction_174...',
-              nullable: true 
+              nullable: true,
             },
-            id_pompiste: { 
-              type: 'integer', 
+            id_pompiste: {
+              type: 'integer',
               example: 25,
-              nullable: true 
-            }
-          }
+              nullable: true,
+            },
+          },
         },
         TransactionInput: {
           type: 'object',
           required: ['id_vehicule', 'quantite', 'montant'],
           properties: {
             id_vehicule: { type: 'integer', example: 28 },
-            quantite: { 
-              type: 'number', 
-              format: 'float', 
+            quantite: {
+              type: 'number',
+              format: 'float',
               minimum: 0,
-              example: 0.10 
+              example: 0.1,
             },
-            montant: { 
-              type: 'number', 
-              format: 'float', 
+            montant: {
+              type: 'number',
+              format: 'float',
               minimum: 0,
-              example: 1.00 
+              example: 1.0,
             },
-            id_credit: { 
-              type: 'integer', 
+            id_credit: {
+              type: 'integer',
               example: 17,
-              nullable: true 
+              nullable: true,
             },
-            preuve: { 
-              type: 'string', 
+            preuve: {
+              type: 'string',
               format: 'binary',
               description: 'Image de preuve (JPG/PNG)',
-              nullable: true 
-            }
-          }
+              nullable: true,
+            },
+          },
         },
 
         // ==================== SCHÉMAS PAIEMENTS ====================
@@ -660,99 +657,99 @@ const options = {
             id: { type: 'integer', example: 20 },
             reference_paiement: { type: 'string', example: 'PAY-888513-183' },
             id_credit: { type: 'integer', example: 18 },
-            montant_paye: { type: 'number', format: 'float', example: 100.00 },
-            montant_restant: { type: 'number', format: 'float', example: 100.00 },
-            date_paiement: { 
-              type: 'string', 
-              format: 'date-time', 
-              example: '2025-05-16T02:28:08Z' 
+            montant_paye: { type: 'number', format: 'float', example: 100.0 },
+            montant_restant: { type: 'number', format: 'float', example: 100.0 },
+            date_paiement: {
+              type: 'string',
+              format: 'date-time',
+              example: '2025-05-16T02:28:08Z',
             },
-            mode_paiement: { 
-              type: 'string', 
+            mode_paiement: {
+              type: 'string',
               enum: ['especes', 'carte', 'virement', 'mobile'],
-              example: 'especes'
+              example: 'especes',
             },
-            description: { 
-              type: 'string', 
-              example: "Paiement partiel",
-              nullable: true 
+            description: {
+              type: 'string',
+              example: 'Paiement partiel',
+              nullable: true,
             },
-            id_caissier: { 
-              type: 'integer', 
+            id_caissier: {
+              type: 'integer',
               example: 27,
-              nullable: true 
-            }
-          }
+              nullable: true,
+            },
+          },
         },
         PaiementInput: {
           type: 'object',
           required: ['id_credit', 'montant_paye', 'mode_paiement'],
           properties: {
             id_credit: { type: 'integer', example: 18 },
-            montant_paye: { 
-              type: 'number', 
-              format: 'float', 
+            montant_paye: {
+              type: 'number',
+              format: 'float',
               minimum: 0,
-              example: 100.00 
+              example: 100.0,
             },
-            mode_paiement: { 
-              type: 'string', 
+            mode_paiement: {
+              type: 'string',
               enum: ['especes', 'carte', 'virement', 'mobile'],
-              example: 'especes'
+              example: 'especes',
             },
-            description: { 
-              type: 'string', 
-              example: "Paiement partiel",
-              nullable: true 
-            }
-          }
+            description: {
+              type: 'string',
+              example: 'Paiement partiel',
+              nullable: true,
+            },
+          },
         },
         Reclamation: {
           type: 'object',
           properties: {
             id: { type: 'integer', example: 1 },
             id_client: { type: 'integer', example: 5 },
-            objet: { type: 'string', example: "Problème de livraison" },
-            raison: { 
+            objet: { type: 'string', example: 'Problème de livraison' },
+            raison: {
               type: 'string',
               enum: ['produit', 'service', 'livraison', 'facturation', 'autre'],
-              example: 'livraison'
+              example: 'livraison',
             },
-            description: { 
-              type: 'string', 
-              example: "La livraison n'est pas arrivée à la date promise" 
+            description: {
+              type: 'string',
+              example: "La livraison n'est pas arrivée à la date promise",
             },
             statut: {
               type: 'string',
               enum: ['nouveau', 'en_cours', 'resolu', 'fermer'],
-              example: 'nouveau'
+              example: 'nouveau',
             },
-            date_creation: { type: 'string', format: 'date-time' }
-          }
+            date_creation: { type: 'string', format: 'date-time' },
+          },
         },
         ReclamationInput: {
           type: 'object',
           required: ['id_client', 'objet', 'raison', 'description'],
           properties: {
             id_client: { type: 'integer', example: 5 },
-            objet: { 
+            objet: {
               type: 'string',
               minLength: 1,
               maxLength: 100,
-              example: "Problème de livraison"
+              example: 'Problème de livraison',
             },
-            raison: { 
+            raison: {
               type: 'string',
               enum: ['produit', 'service', 'livraison', 'facturation', 'autre'],
-              example: 'livraison'
+              example: 'livraison',
             },
-            description: { 
+            description: {
               type: 'string',
               minLength: 1,
               maxLength: 1000,
-              example: "La livraison n'est pas arrivée à la date promise"
-            }
-          }
+              example: "La livraison n'est pas arrivée à la date promise",
+            },
+          },
         },
         StatutUpdate: {
           type: 'object',
@@ -761,321 +758,321 @@ const options = {
             statut: {
               type: 'string',
               enum: ['nouveau', 'en_cours', 'resolu', 'fermer'],
-              example: 'en_cours'
-            }
-          }
-        }
+              example: 'en_cours',
+            },
+          },
+        },
       },
       Produit: {
-          type: 'object',
-          properties: {
-            id: { type: 'integer', example: 2 },
-            code_barre: { type: 'string', example: '1234567890123' },
-            nom: { type: 'string', example: 'Produit Exemple' },
-            description: { 
-              type: 'string', 
-              example: 'Ceci est un produit exemple pour illustrer une insertion',
-              nullable: true 
-            },
-            categorie_id: { type: 'integer', example: 1 },
-            prix_achat: { type: 'number', format: 'float', example: 10.50 },
-            prix_vente: { type: 'number', format: 'float', example: 15.00 },
-            quantite_stock: { type: 'integer', example: 98 },
-            seuil_alerte: { type: 'integer', example: 10 },
-            image_url: { 
-              type: 'string', 
-              example: 'http://localhost:3000/images/produit_exemple.jpg',
-              nullable: true 
-            },
-            date_creation: { 
-              type: 'string', 
-              format: 'date-time', 
-              example: '2025-05-15T20:47:40Z' 
-            },
-            date_modification: { 
-              type: 'string', 
-              format: 'date-time', 
-              example: '2025-05-15T21:51:41Z',
-              nullable: true 
-            }
-          }
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 2 },
+          code_barre: { type: 'string', example: '1234567890123' },
+          nom: { type: 'string', example: 'Produit Exemple' },
+          description: {
+            type: 'string',
+            example: 'Ceci est un produit exemple pour illustrer une insertion',
+            nullable: true,
+          },
+          categorie_id: { type: 'integer', example: 1 },
+          prix_achat: { type: 'number', format: 'float', example: 10.5 },
+          prix_vente: { type: 'number', format: 'float', example: 15.0 },
+          quantite_stock: { type: 'integer', example: 98 },
+          seuil_alerte: { type: 'integer', example: 10 },
+          image_url: {
+            type: 'string',
+            example: 'http://localhost:3000/images/produit_exemple.jpg',
+            nullable: true,
+          },
+          date_creation: {
+            type: 'string',
+            format: 'date-time',
+            example: '2025-05-15T20:47:40Z',
+          },
+          date_modification: {
+            type: 'string',
+            format: 'date-time',
+            example: '2025-05-15T21:51:41Z',
+            nullable: true,
+          },
         },
-        ProduitInput: {
-          type: 'object',
-          required: ['code_barre', 'nom', 'prix_achat', 'prix_vente', 'quantite_stock'],
-          properties: {
-            code_barre: { type: 'string', example: '1234567890123' },
-            nom: { type: 'string', example: 'Produit Exemple' },
-            description: { 
-              type: 'string', 
-              example: 'Description du produit',
-              nullable: true 
-            },
-            categorie_id: { type: 'integer', example: 1 },
-            prix_achat: { 
-              type: 'number', 
-              format: 'float', 
-              minimum: 0,
-              example: 10.50 
-            },
-            prix_vente: { 
-              type: 'number', 
-              format: 'float', 
-              minimum: 0,
-              example: 15.00 
-            },
-            quantite_stock: { 
-              type: 'integer', 
-              minimum: 0,
-              example: 100 
-            },
-            seuil_alerte: { 
-              type: 'integer', 
-              minimum: 0,
-              example: 10,
-              nullable: true 
-            },
-            image: { 
-              type: 'string', 
-              format: 'binary',
-              description: 'Image du produit (JPG/PNG)',
-              nullable: true 
-            }
-          }
+      },
+      ProduitInput: {
+        type: 'object',
+        required: ['code_barre', 'nom', 'prix_achat', 'prix_vente', 'quantite_stock'],
+        properties: {
+          code_barre: { type: 'string', example: '1234567890123' },
+          nom: { type: 'string', example: 'Produit Exemple' },
+          description: {
+            type: 'string',
+            example: 'Description du produit',
+            nullable: true,
+          },
+          categorie_id: { type: 'integer', example: 1 },
+          prix_achat: {
+            type: 'number',
+            format: 'float',
+            minimum: 0,
+            example: 10.5,
+          },
+          prix_vente: {
+            type: 'number',
+            format: 'float',
+            minimum: 0,
+            example: 15.0,
+          },
+          quantite_stock: {
+            type: 'integer',
+            minimum: 0,
+            example: 100,
+          },
+          seuil_alerte: {
+            type: 'integer',
+            minimum: 0,
+            example: 10,
+            nullable: true,
+          },
+          image: {
+            type: 'string',
+            format: 'binary',
+            description: 'Image du produit (JPG/PNG)',
+            nullable: true,
+          },
         },
+      },
 
-        // ==================== SCHÉMAS CATÉGORIES ====================
-        Categorie: {
-          type: 'object',
-          properties: {
-            id: { type: 'integer', example: 1 },
-            nom: { type: 'string', example: 'Boissons' },
-            description: { 
-              type: 'string', 
-              example: 'Toutes les boissons',
-              nullable: true 
-            }
-          }
+      // ==================== SCHÉMAS CATÉGORIES ====================
+      Categorie: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 1 },
+          nom: { type: 'string', example: 'Boissons' },
+          description: {
+            type: 'string',
+            example: 'Toutes les boissons',
+            nullable: true,
+          },
         },
-        CategorieInput: {
-          type: 'object',
-          required: ['nom'],
-          properties: {
-            nom: { type: 'string', example: 'Boissons' },
-            description: { 
-              type: 'string', 
-              example: 'Toutes les boissons',
-              nullable: true 
-            }
-          }
+      },
+      CategorieInput: {
+        type: 'object',
+        required: ['nom'],
+        properties: {
+          nom: { type: 'string', example: 'Boissons' },
+          description: {
+            type: 'string',
+            example: 'Toutes les boissons',
+            nullable: true,
+          },
         },
+      },
 
-        // ==================== SCHÉMAS MOUVEMENTS STOCK ====================
-        MouvementStock: {
-          type: 'object',
-          properties: {
-            id: { type: 'integer', example: 1 },
-            produit_id: { type: 'integer', example: 2 },
-            type_mouvement: { 
-              type: 'string', 
-              enum: ['entree', 'sortie', 'ajustement'],
-              example: 'entree' 
-            },
-            quantite: { type: 'integer', example: 10 },
-            date_mouvement: { 
-              type: 'string', 
-              format: 'date-time', 
-              example: '2025-05-15T20:47:40Z' 
-            },
-            raison: { 
-              type: 'string', 
-              example: 'Réapprovisionnement',
-              nullable: true 
-            },
-            utilisateur_id: { type: 'integer', example: 27 }
-          }
+      // ==================== SCHÉMAS MOUVEMENTS STOCK ====================
+      MouvementStock: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 1 },
+          produit_id: { type: 'integer', example: 2 },
+          type_mouvement: {
+            type: 'string',
+            enum: ['entree', 'sortie', 'ajustement'],
+            example: 'entree',
+          },
+          quantite: { type: 'integer', example: 10 },
+          date_mouvement: {
+            type: 'string',
+            format: 'date-time',
+            example: '2025-05-15T20:47:40Z',
+          },
+          raison: {
+            type: 'string',
+            example: 'Réapprovisionnement',
+            nullable: true,
+          },
+          utilisateur_id: { type: 'integer', example: 27 },
         },
-        MouvementStockInput: {
-          type: 'object',
-          required: ['produit_id', 'type_mouvement', 'quantite'],
-          properties: {
-            produit_id: { type: 'integer', example: 2 },
-            type_mouvement: { 
-              type: 'string', 
-              enum: ['entree', 'sortie', 'ajustement'],
-              example: 'entree' 
-            },
-            quantite: { 
-              type: 'integer', 
-              minimum: 1,
-              example: 10 
-            },
-            raison: { 
-              type: 'string', 
-              example: 'Réapprovisionnement',
-              nullable: true 
-            }
-          }
+      },
+      MouvementStockInput: {
+        type: 'object',
+        required: ['produit_id', 'type_mouvement', 'quantite'],
+        properties: {
+          produit_id: { type: 'integer', example: 2 },
+          type_mouvement: {
+            type: 'string',
+            enum: ['entree', 'sortie', 'ajustement'],
+            example: 'entree',
+          },
+          quantite: {
+            type: 'integer',
+            minimum: 1,
+            example: 10,
+          },
+          raison: {
+            type: 'string',
+            example: 'Réapprovisionnement',
+            nullable: true,
+          },
         },
+      },
 
-        // ==================== SCHÉMAS VENTES ====================
-        Vente: {
-          type: 'object',
-          properties: {
-            id: { type: 'integer', example: 1 },
-            date_vente: { 
-              type: 'string', 
-              format: 'date-time', 
-              example: '2025-05-15T21:51:41Z' 
-            },
-            montant_total: { type: 'number', format: 'float', example: 20.00 },
-            montant_paye: { type: 'number', format: 'float', example: 50.00 },
-            monnaie_rendue: { type: 'number', format: 'float', example: 30.00 },
-            mode_paiement: { 
-              type: 'string', 
-              enum: ['ESPECES', 'CARTE', 'VIREMENT', 'CHEQUE'],
-              example: 'ESPECES' 
-            },
-            id_caissier: { 
-              type: 'integer', 
-              example: 27,
-              nullable: true 
-            }
-          }
+      // ==================== SCHÉMAS VENTES ====================
+      Vente: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 1 },
+          date_vente: {
+            type: 'string',
+            format: 'date-time',
+            example: '2025-05-15T21:51:41Z',
+          },
+          montant_total: { type: 'number', format: 'float', example: 20.0 },
+          montant_paye: { type: 'number', format: 'float', example: 50.0 },
+          monnaie_rendue: { type: 'number', format: 'float', example: 30.0 },
+          mode_paiement: {
+            type: 'string',
+            enum: ['ESPECES', 'CARTE', 'VIREMENT', 'CHEQUE'],
+            example: 'ESPECES',
+          },
+          id_caissier: {
+            type: 'integer',
+            example: 27,
+            nullable: true,
+          },
         },
-        VenteInput: {
-          type: 'object',
-          required: ['montant_total', 'montant_paye', 'mode_paiement', 'lignes'],
-          properties: {
-            montant_total: { 
-              type: 'number', 
-              format: 'float', 
-              minimum: 0,
-              example: 20.00 
+      },
+      VenteInput: {
+        type: 'object',
+        required: ['montant_total', 'montant_paye', 'mode_paiement', 'lignes'],
+        properties: {
+          montant_total: {
+            type: 'number',
+            format: 'float',
+            minimum: 0,
+            example: 20.0,
+          },
+          montant_paye: {
+            type: 'number',
+            format: 'float',
+            minimum: 0,
+            example: 50.0,
+          },
+          mode_paiement: {
+            type: 'string',
+            enum: ['ESPECES', 'CARTE', 'VIREMENT', 'CHEQUE'],
+            example: 'ESPECES',
+          },
+          lignes: {
+            type: 'array',
+            items: {
+              type: 'object',
+              required: ['produit_id', 'quantite'],
+              properties: {
+                produit_id: { type: 'integer', example: 2 },
+                quantite: {
+                  type: 'integer',
+                  minimum: 1,
+                  example: 2,
+                },
+              },
             },
-            montant_paye: { 
-              type: 'number', 
-              format: 'float', 
-              minimum: 0,
-              example: 50.00 
-            },
-            mode_paiement: { 
-              type: 'string', 
-              enum: ['ESPECES', 'CARTE', 'VIREMENT', 'CHEQUE'],
-              example: 'ESPECES' 
-            },
-            lignes: {
-              type: 'array',
-              items: {
-                type: 'object',
-                required: ['produit_id', 'quantite'],
-                properties: {
-                  produit_id: { type: 'integer', example: 2 },
-                  quantite: { 
-                    type: 'integer', 
-                    minimum: 1,
-                    example: 2 
-                  }
-                }
-              }
-            }
-          }
+          },
         },
-        LigneVente: {
-          type: 'object',
-          properties: {
-            id: { type: 'integer', example: 1 },
-            vente_id: { type: 'integer', example: 2 },
-            produit_id: { type: 'integer', example: 4 },
-            quantite: { type: 'integer', example: 3 },
-            prix_unitaire: { type: 'number', format: 'float', example: 2.00 },
-            produit_nom: { type: 'string', example: 'Gaufrettes' },
-            code_barre: { type: 'string', example: '5449000000995' }
-          }
+      },
+      LigneVente: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 1 },
+          vente_id: { type: 'integer', example: 2 },
+          produit_id: { type: 'integer', example: 4 },
+          quantite: { type: 'integer', example: 3 },
+          prix_unitaire: { type: 'number', format: 'float', example: 2.0 },
+          produit_nom: { type: 'string', example: 'Gaufrettes' },
+          code_barre: { type: 'string', example: '5449000000995' },
         },
+      },
 
-        // ==================== SCHÉMAS STATISTIQUES ====================
-        StatsStock: {
-          type: 'object',
-          properties: {
-            total_produits: { type: 'integer', example: 25 },
-            total_categories: { type: 'integer', example: 5 },
-            produits_en_rupture: { type: 'integer', example: 3 },
-            produits_bientot_rupture: { type: 'integer', example: 5 },
-            valeur_stock: { type: 'number', format: 'float', example: 1250.75 }
-          }
+      // ==================== SCHÉMAS STATISTIQUES ====================
+      StatsStock: {
+        type: 'object',
+        properties: {
+          total_produits: { type: 'integer', example: 25 },
+          total_categories: { type: 'integer', example: 5 },
+          produits_en_rupture: { type: 'integer', example: 3 },
+          produits_bientot_rupture: { type: 'integer', example: 5 },
+          valeur_stock: { type: 'number', format: 'float', example: 1250.75 },
         },
-        StatsVentes: {
-          type: 'object',
-          properties: {
-            total_ventes: { type: 'integer', example: 42 },
-            chiffre_affaires: { type: 'number', format: 'float', example: 1250.75 },
-            moyenne_par_vente: { type: 'number', format: 'float', example: 29.78 },
-            produits_plus_vendus: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  produit_id: { type: 'integer', example: 4 },
-                  nom: { type: 'string', example: 'Gaufrettes' },
-                  quantite_vendue: { type: 'integer', example: 25 }
-                }
-              }
-            }
-          }
-        }
-      
+      },
+      StatsVentes: {
+        type: 'object',
+        properties: {
+          total_ventes: { type: 'integer', example: 42 },
+          chiffre_affaires: { type: 'number', format: 'float', example: 1250.75 },
+          moyenne_par_vente: { type: 'number', format: 'float', example: 29.78 },
+          produits_plus_vendus: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                produit_id: { type: 'integer', example: 4 },
+                nom: { type: 'string', example: 'Gaufrettes' },
+                quantite_vendue: { type: 'integer', example: 25 },
+              },
+            },
+          },
+        },
+      },
     },
     paths: {
       '/login': {
-  post: {
-    tags: ['Authentification'],
-    summary: 'Connexion utilisateur',
-    description: 'Endpoint pour obtenir un token JWT',
-    requestBody: {
-      required: true,
-      content: {
-        'application/json': {
-          schema: {
-            type: 'object',
-            required: ['email', 'password'],
-            properties: {
-              email: { type: 'string', example: 'user@example.com' },
-              password: { type: 'string', example: 'motdepasse' }
-            }
-          }
-        }
-      }
-    },
-    responses: {
-      200: {
-        description: 'Authentification réussie',
-        headers: {
-          'Set-Cookie': {
-            schema: { type: 'string' },
-            description: 'Cookie JWT HTTP-only'
-          }
-        }
+        post: {
+          tags: ['Authentification'],
+          summary: 'Connexion utilisateur',
+          description: 'Endpoint pour obtenir un token JWT',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['email', 'password'],
+                  properties: {
+                    email: { type: 'string', example: 'user@example.com' },
+                    password: { type: 'string', example: 'motdepasse' },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'Authentification réussie',
+              headers: {
+                'Set-Cookie': {
+                  schema: { type: 'string' },
+                  description: 'Cookie JWT HTTP-only',
+                },
+              },
+            },
+            401: { description: 'Identifiants invalides' },
+          },
+        },
       },
-      401: { description: 'Identifiants invalides' }
-    }
-  }
-},
-  '/register': {
+      '/register': {
         post: {
           tags: ['Authentification'],
           summary: 'Inscription utilisateur',
-          description: 'Endpoint pour créer un nouveau compte utilisateur (réservé aux administrateurs)',
+          description:
+            'Endpoint pour créer un nouveau compte utilisateur (réservé aux administrateurs)',
           security: [{ cookieAuth: [] }],
           requestBody: {
             required: true,
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/RegisterInput'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/RegisterInput',
+                },
+              },
+            },
           },
           responses: {
             201: {
@@ -1083,41 +1080,41 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/User'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/User',
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Données invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     errors: [
                       {
-                        "msg": "Email invalide",
-                        "param": "email",
-                        "location": "body"
-                      }
-                    ]
-                  }
-                }
-              }
+                        msg: 'Email invalide',
+                        param: 'email',
+                        location: 'body',
+                      },
+                    ],
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            409: { 
+            409: {
               description: 'Email déjà utilisé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Cet email est déjà utilisé"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Cet email est déjà utilisé',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/request-password-reset': {
@@ -1130,36 +1127,36 @@ const options = {
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/PasswordResetInput'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/PasswordResetInput',
+                },
+              },
+            },
           },
           responses: {
             200: {
               description: 'Email envoyé avec succès',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: true,
-                    message: "Email de réinitialisation envoyé"
-                  }
-                }
-              }
+                    message: 'Email de réinitialisation envoyé',
+                  },
+                },
+              },
             },
-            404: { 
+            404: {
               description: 'Email non trouvé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Aucun utilisateur avec cet email"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Aucun utilisateur avec cet email',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/reset-password': {
@@ -1172,43 +1169,43 @@ const options = {
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/NewPasswordInput'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/NewPasswordInput',
+                },
+              },
+            },
           },
           responses: {
             200: {
               description: 'Mot de passe mis à jour',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: true,
-                    message: "Mot de passe mis à jour avec succès"
-                  }
-                }
-              }
+                    message: 'Mot de passe mis à jour avec succès',
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Token invalide ou expiré',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Lien de réinitialisation invalide ou expiré"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Lien de réinitialisation invalide ou expiré',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/profile': {
         get: {
           tags: ['Utilisateurs'],
           summary: 'Profil utilisateur',
-          description: 'Récupère les informations de l\'utilisateur connecté',
+          description: "Récupère les informations de l'utilisateur connecté",
           security: [{ cookieAuth: [] }],
           responses: {
             200: {
@@ -1216,24 +1213,24 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/User'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/User',
+                  },
+                },
+              },
             },
-            401: { 
+            401: {
               description: 'Non authentifié',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Session expirée. Veuillez vous reconnecter."
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Session expirée. Veuillez vous reconnecter.',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/logout': {
@@ -1247,15 +1244,15 @@ const options = {
               description: 'Déconnexion réussie',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: true,
-                    message: "Déconnexion réussie"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Déconnexion réussie',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/users': {
@@ -1272,18 +1269,18 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/User'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/User',
+                    },
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            403: { description: 'Permissions insuffisantes' }
-          }
-        }
+            403: { description: 'Permissions insuffisantes' },
+          },
+        },
       },
-       '/pompe/pompes': {
+      '/pompe/pompes': {
         post: {
           tags: ['Pompes'],
           summary: 'Ajouter une nouvelle pompe',
@@ -1294,10 +1291,10 @@ const options = {
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/PompeInput'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/PompeInput',
+                },
+              },
+            },
           },
           responses: {
             201: {
@@ -1305,35 +1302,35 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Pompe'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Pompe',
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Données invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Le numéro de pompe doit commencer par P suivi de 3 chiffres"
-                  }
-                }
-              }
+                    message: 'Le numéro de pompe doit commencer par P suivi de 3 chiffres',
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            409: { 
+            409: {
               description: 'Numéro de pompe déjà utilisé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Ce numéro de pompe est déjà utilisé"
-                  }
-                }
-              }
-            }
-          }
+                    message: 'Ce numéro de pompe est déjà utilisé',
+                  },
+                },
+              },
+            },
+          },
         },
         get: {
           tags: ['Pompes'],
@@ -1348,22 +1345,22 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Pompe'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/Pompe',
+                    },
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
-        }
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
 
       '/pompe/pompes/{id}': {
         get: {
           tags: ['Pompes'],
           summary: 'Récupérer une pompe par ID',
-          description: 'Endpoint pour obtenir les détails d\'une pompe spécifique',
+          description: "Endpoint pour obtenir les détails d'une pompe spécifique",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -1371,8 +1368,8 @@ const options = {
               name: 'id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID de la pompe'
-            }
+              description: 'ID de la pompe',
+            },
           ],
           responses: {
             200: {
@@ -1380,29 +1377,30 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Pompe'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Pompe',
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Pompe non trouvée',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Pompe introuvable"
-                  }
-                }
-              }
-            }
-          }
+                    message: 'Pompe introuvable',
+                  },
+                },
+              },
+            },
+          },
         },
         put: {
           tags: ['Pompes'],
           summary: 'Mettre à jour une pompe',
-          description: 'Endpoint pour modifier les informations d\'une pompe (réservé aux administrateurs)',
+          description:
+            "Endpoint pour modifier les informations d'une pompe (réservé aux administrateurs)",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -1410,18 +1408,18 @@ const options = {
               name: 'id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID de la pompe'
-            }
+              description: 'ID de la pompe',
+            },
           ],
           requestBody: {
             required: true,
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/PompeUpdate'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/PompeUpdate',
+                },
+              },
+            },
           },
           responses: {
             200: {
@@ -1429,35 +1427,35 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Pompe'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Pompe',
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Données invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Données de mise à jour invalides"
-                  }
-                }
-              }
+                    message: 'Données de mise à jour invalides',
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Pompe non trouvée',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Pompe introuvable"
-                  }
-                }
-              }
-            }
-          }
+                    message: 'Pompe introuvable',
+                  },
+                },
+              },
+            },
+          },
         },
         delete: {
           tags: ['Pompes'],
@@ -1470,46 +1468,46 @@ const options = {
               name: 'id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID de la pompe'
-            }
+              description: 'ID de la pompe',
+            },
           ],
           responses: {
             200: {
               description: 'Pompe supprimée',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: true,
-                    message: "Pompe supprimée avec succès"
-                  }
-                }
-              }
+                    message: 'Pompe supprimée avec succès',
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            403: { 
+            403: {
               description: 'Pompe utilisée dans des affectations',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Impossible de supprimer - pompe utilisée dans des affectations"
-                  }
-                }
-              }
+                    message: 'Impossible de supprimer - pompe utilisée dans des affectations',
+                  },
+                },
+              },
             },
-            404: { 
+            404: {
               description: 'Pompe non trouvée',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Pompe introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Pompe introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/pompe/pompes/filtrées': {
@@ -1522,39 +1520,39 @@ const options = {
             {
               in: 'query',
               name: 'type_pompe',
-              schema: { 
+              schema: {
                 type: 'string',
-                enum: ['gasoil', 'multi-produits', 'sans plomb']
+                enum: ['gasoil', 'multi-produits', 'sans plomb'],
               },
-              description: 'Filtrer par type de pompe'
+              description: 'Filtrer par type de pompe',
             },
             {
               in: 'query',
               name: 'statut',
-              schema: { 
+              schema: {
                 type: 'string',
-                enum: ['active', 'reserve', 'maintenance', 'hors_service']
+                enum: ['active', 'reserve', 'maintenance', 'hors_service'],
               },
-              description: 'Filtrer par statut'
+              description: 'Filtrer par statut',
             },
             {
               in: 'query',
               name: 'date_debut',
-              schema: { 
+              schema: {
                 type: 'string',
-                format: 'date'
+                format: 'date',
               },
-              description: 'Filtrer par date de création (début)'
+              description: 'Filtrer par date de création (début)',
             },
             {
               in: 'query',
               name: 'date_fin',
-              schema: { 
+              schema: {
                 type: 'string',
-                format: 'date'
+                format: 'date',
               },
-              description: 'Filtrer par date de création (fin)'
-            }
+              description: 'Filtrer par date de création (fin)',
+            },
           ],
           responses: {
             200: {
@@ -1564,26 +1562,26 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Pompe'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/Pompe',
+                    },
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Paramètres de filtre invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "La date de fin doit être après la date de début"
-                  }
-                }
-              }
+                    message: 'La date de fin doit être après la date de début',
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
-        }
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
       '/pistolet/add': {
         post: {
@@ -1596,10 +1594,10 @@ const options = {
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/PistoletInput'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/PistoletInput',
+                },
+              },
+            },
           },
           responses: {
             201: {
@@ -1607,47 +1605,47 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Pistolet'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Pistolet',
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Données invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Le prix unitaire doit être un nombre positif"
-                  }
-                }
-              }
+                    message: 'Le prix unitaire doit être un nombre positif',
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Pompe non trouvée',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "La pompe spécifiée n'existe pas"
-                  }
-                }
-              }
+                    message: "La pompe spécifiée n'existe pas",
+                  },
+                },
+              },
             },
-            409: { 
+            409: {
               description: 'Numéro de pistolet déjà utilisé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Ce numéro de pistolet est déjà utilisé pour cette pompe"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Ce numéro de pistolet est déjà utilisé pour cette pompe',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/pistolet': {
@@ -1664,22 +1662,22 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Pistolet'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/Pistolet',
+                    },
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
-        }
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
 
       '/pistolet/pompe/{pompe_id}': {
         get: {
           tags: ['Pistolets'],
           summary: 'Récupérer les pistolets par pompe',
-          description: 'Endpoint pour obtenir les pistolets d\'une pompe spécifique',
+          description: "Endpoint pour obtenir les pistolets d'une pompe spécifique",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -1687,8 +1685,8 @@ const options = {
               name: 'pompe_id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID de la pompe'
-            }
+              description: 'ID de la pompe',
+            },
           ],
           responses: {
             200: {
@@ -1698,33 +1696,34 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Pistolet'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/Pistolet',
+                    },
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Pompe non trouvée',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Pompe introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Pompe introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/pistolet/update-statut': {
         put: {
           tags: ['Pistolets'],
           summary: 'Mettre à jour le statut de plusieurs pistolets',
-          description: 'Endpoint pour modifier le statut de plusieurs pistolets en une seule requête',
+          description:
+            'Endpoint pour modifier le statut de plusieurs pistolets en une seule requête',
           security: [{ cookieAuth: [] }],
           requestBody: {
             required: true,
@@ -1738,50 +1737,50 @@ const options = {
                       type: 'array',
                       items: { type: 'integer' },
                       example: [4, 5, 6],
-                      minItems: 1
+                      minItems: 1,
                     },
-                    statut: { 
-                      $ref: '#/components/schemas/StatutUpdate/properties/statut'
-                    }
-                  }
-                }
-              }
-            }
+                    statut: {
+                      $ref: '#/components/schemas/StatutUpdate/properties/statut',
+                    },
+                  },
+                },
+              },
+            },
           },
           responses: {
             200: {
               description: 'Statuts mis à jour',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: true,
-                    message: "Statuts mis à jour avec succès",
-                    count: 3
-                  }
-                }
-              }
+                    message: 'Statuts mis à jour avec succès',
+                    count: 3,
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Données invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "La liste des pistolets ne peut pas être vide"
-                  }
-                }
-              }
+                    message: 'La liste des pistolets ne peut pas être vide',
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
-        }
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
 
       '/pistolet/{id}/statut': {
         put: {
           tags: ['Pistolets'],
-          summary: 'Mettre à jour le statut d\'un pistolet',
-          description: 'Endpoint pour modifier le statut d\'un pistolet spécifique',
+          summary: "Mettre à jour le statut d'un pistolet",
+          description: "Endpoint pour modifier le statut d'un pistolet spécifique",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -1789,18 +1788,18 @@ const options = {
               name: 'id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID du pistolet'
-            }
+              description: 'ID du pistolet',
+            },
           ],
           requestBody: {
             required: true,
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/StatutUpdate'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/StatutUpdate',
+                },
+              },
+            },
           },
           responses: {
             200: {
@@ -1808,43 +1807,44 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Pistolet'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Pistolet',
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Données invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Statut invalide"
-                  }
-                }
-              }
+                    message: 'Statut invalide',
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Pistolet non trouvé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Pistolet introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Pistolet introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
-  
-        '/affectations/add-automatic': {
+
+      '/affectations/add-automatic': {
         post: {
           tags: ['Affectations'],
           summary: 'Générer les affectations automatiques',
-          description: 'Endpoint pour générer automatiquement les affectations équitables (réservé aux gérants)',
+          description:
+            'Endpoint pour générer automatiquement les affectations équitables (réservé aux gérants)',
           security: [{ cookieAuth: [] }],
           requestBody: {
             required: true,
@@ -1853,20 +1853,20 @@ const options = {
                 schema: {
                   type: 'object',
                   properties: {
-                    date_debut: { 
-                      type: 'string', 
-                      format: 'date', 
-                      example: '2025-05-01' 
+                    date_debut: {
+                      type: 'string',
+                      format: 'date',
+                      example: '2025-05-01',
                     },
-                    date_fin: { 
-                      type: 'string', 
-                      format: 'date', 
-                      example: '2025-05-31' 
-                    }
-                  }
-                }
-              }
-            }
+                    date_fin: {
+                      type: 'string',
+                      format: 'date',
+                      example: '2025-05-31',
+                    },
+                  },
+                },
+              },
+            },
           },
           responses: {
             201: {
@@ -1876,53 +1876,53 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Affectation'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/Affectation',
+                    },
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Plage de dates invalide',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "La date de fin doit être après la date de début"
-                  }
-                }
-              }
+                    message: 'La date de fin doit être après la date de début',
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
-        }
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
 
       '/affectations/month/{mois}/year/{annee}': {
         get: {
           tags: ['Affectations'],
           summary: 'Récupérer les affectations par mois/année',
-          description: 'Endpoint pour obtenir toutes les affectations d\'un mois donné',
+          description: "Endpoint pour obtenir toutes les affectations d'un mois donné",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
               in: 'path',
               name: 'mois',
               required: true,
-              schema: { 
+              schema: {
                 type: 'integer',
                 minimum: 1,
-                maximum: 12
+                maximum: 12,
               },
-              description: 'Mois (1-12)'
+              description: 'Mois (1-12)',
             },
             {
               in: 'path',
               name: 'annee',
               required: true,
               schema: { type: 'integer' },
-              description: 'Année (ex: 2025)'
-            }
+              description: 'Année (ex: 2025)',
+            },
           ],
           responses: {
             200: {
@@ -1932,26 +1932,26 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Affectation'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/Affectation',
+                    },
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Paramètres invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Le mois doit être entre 1 et 12"
-                  }
-                }
-              }
+                    message: 'Le mois doit être entre 1 et 12',
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
-        }
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
 
       '/affectations/update/{id}': {
@@ -1966,18 +1966,18 @@ const options = {
               name: 'id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID de l\'affectation'
-            }
+              description: "ID de l'affectation",
+            },
           ],
           requestBody: {
             required: true,
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/AffectationUpdate'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/AffectationUpdate',
+                },
+              },
+            },
           },
           responses: {
             200: {
@@ -1985,43 +1985,44 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Affectation'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Affectation',
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Données invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Données de mise à jour invalides"
-                  }
-                }
-              }
+                    message: 'Données de mise à jour invalides',
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Affectation non trouvée',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Affectation introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Affectation introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/affectations/regenerate': {
         post: {
           tags: ['Affectations'],
           summary: 'Régénérer les affectations',
-          description: 'Endpoint pour régénérer les affectations pour une période (réservé aux gérants)',
+          description:
+            'Endpoint pour régénérer les affectations pour une période (réservé aux gérants)',
           security: [{ cookieAuth: [] }],
           requestBody: {
             required: true,
@@ -2030,20 +2031,20 @@ const options = {
                 schema: {
                   type: 'object',
                   properties: {
-                    date_debut: { 
-                      type: 'string', 
-                      format: 'date', 
-                      example: '2025-05-01' 
+                    date_debut: {
+                      type: 'string',
+                      format: 'date',
+                      example: '2025-05-01',
                     },
-                    date_fin: { 
-                      type: 'string', 
-                      format: 'date', 
-                      example: '2025-05-31' 
-                    }
-                  }
-                }
-              }
-            }
+                    date_fin: {
+                      type: 'string',
+                      format: 'date',
+                      example: '2025-05-31',
+                    },
+                  },
+                },
+              },
+            },
           },
           responses: {
             200: {
@@ -2053,45 +2054,45 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Affectation'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/Affectation',
+                    },
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Plage de dates invalide',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "La date de fin doit être après la date de début"
-                  }
-                }
-              }
+                    message: 'La date de fin doit être après la date de début',
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
-        }
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
 
       '/affectations/date/{date}': {
         get: {
           tags: ['Affectations'],
           summary: 'Récupérer les affectations par date',
-          description: 'Endpoint pour obtenir les affectations d\'une date spécifique',
+          description: "Endpoint pour obtenir les affectations d'une date spécifique",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
               in: 'path',
               name: 'date',
               required: true,
-              schema: { 
+              schema: {
                 type: 'string',
-                format: 'date'
+                format: 'date',
               },
-              description: 'Date au format YYYY-MM-DD'
-            }
+              description: 'Date au format YYYY-MM-DD',
+            },
           ],
           responses: {
             200: {
@@ -2101,33 +2102,33 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Affectation'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/Affectation',
+                    },
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Date invalide',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Format de date invalide (utiliser YYYY-MM-DD)"
-                  }
-                }
-              }
+                    message: 'Format de date invalide (utiliser YYYY-MM-DD)',
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
-        }
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
 
       '/affectations/current/{pompiste_id}': {
         get: {
           tags: ['Affectations'],
-          summary: 'Affectation actuelle d\'un pompiste',
-          description: 'Endpoint pour obtenir l\'affectation en cours d\'un pompiste',
+          summary: "Affectation actuelle d'un pompiste",
+          description: "Endpoint pour obtenir l'affectation en cours d'un pompiste",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -2135,8 +2136,8 @@ const options = {
               name: 'pompiste_id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID du pompiste'
-            }
+              description: 'ID du pompiste',
+            },
           ],
           responses: {
             200: {
@@ -2144,25 +2145,25 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Affectation'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Affectation',
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Aucune affectation trouvée',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Aucune affectation trouvée pour ce pompiste aujourd'hui"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: "Aucune affectation trouvée pour ce pompiste aujourd'hui",
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/affectations/pistolets/{affectation_id}': {
@@ -2177,8 +2178,8 @@ const options = {
               name: 'affectation_id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID de l\'affectation'
-            }
+              description: "ID de l'affectation",
+            },
           ],
           responses: {
             200: {
@@ -2191,30 +2192,30 @@ const options = {
                       type: 'object',
                       properties: {
                         id: { type: 'integer', example: 1 },
-                        numero: { type: 'string', example: "Pistolet 1" },
-                        pompe_id: { type: 'integer', example: 35 }
-                      }
-                    }
-                  }
-                }
-              }
+                        numero: { type: 'string', example: 'Pistolet 1' },
+                        pompe_id: { type: 'integer', example: 35 },
+                      },
+                    },
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Affectation non trouvée',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Affectation introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Affectation introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
-       '/pistolet/releves': {
+      '/pistolet/releves': {
         post: {
           tags: ['Revenus des Pistolets'],
           summary: 'Enregistrer un relevé automatique',
@@ -2225,10 +2226,10 @@ const options = {
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/ReleveInput'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/ReleveInput',
+                },
+              },
+            },
           },
           responses: {
             201: {
@@ -2236,36 +2237,36 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/RelevePoste'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/RelevePoste',
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Données invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "L'index de fermeture doit être supérieur au dernier index enregistré"
-                  }
-                }
-              }
+                    message: "L'index de fermeture doit être supérieur au dernier index enregistré",
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Pistolet non trouvé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Pistolet introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Pistolet introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/pistolet/releves/manuel': {
@@ -2279,10 +2280,10 @@ const options = {
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/ReleveManuelInput'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/ReleveManuelInput',
+                },
+              },
+            },
           },
           responses: {
             201: {
@@ -2290,43 +2291,43 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/RelevePoste'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/RelevePoste',
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Données invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "L'index de fermeture doit être supérieur à l'index d'ouverture"
-                  }
-                }
-              }
+                    message: "L'index de fermeture doit être supérieur à l'index d'ouverture",
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            403: { 
+            403: {
               description: 'Action non autorisée',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Vous n'avez pas les droits pour ajouter un relevé manuel"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: "Vous n'avez pas les droits pour ajouter un relevé manuel",
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/pistolet/{pistolet_id}/historique': {
         get: {
           tags: ['Revenus des Pistolets'],
           summary: 'Historique des relevés par pistolet',
-          description: 'Endpoint pour obtenir l\'historique des relevés d\'un pistolet spécifique',
+          description: "Endpoint pour obtenir l'historique des relevés d'un pistolet spécifique",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -2334,26 +2335,26 @@ const options = {
               name: 'pistolet_id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID du pistolet'
+              description: 'ID du pistolet',
             },
             {
               in: 'query',
               name: 'date_debut',
-              schema: { 
-                type: 'string', 
-                format: 'date' 
+              schema: {
+                type: 'string',
+                format: 'date',
               },
-              description: 'Date de début (YYYY-MM-DD)'
+              description: 'Date de début (YYYY-MM-DD)',
             },
             {
               in: 'query',
               name: 'date_fin',
-              schema: { 
-                type: 'string', 
-                format: 'date' 
+              schema: {
+                type: 'string',
+                format: 'date',
               },
-              description: 'Date de fin (YYYY-MM-DD)'
-            }
+              description: 'Date de fin (YYYY-MM-DD)',
+            },
           ],
           responses: {
             200: {
@@ -2363,60 +2364,60 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/RelevePoste'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/RelevePoste',
+                    },
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Pistolet non trouvé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Pistolet introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Pistolet introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/pistolet/historique': {
         get: {
           tags: ['Revenus des Pistolets'],
           summary: 'Historique complet des relevés',
-          description: 'Endpoint pour obtenir l\'historique des relevés de tous les pistolets',
+          description: "Endpoint pour obtenir l'historique des relevés de tous les pistolets",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
               in: 'query',
               name: 'date',
-              schema: { 
-                type: 'string', 
-                format: 'date' 
+              schema: {
+                type: 'string',
+                format: 'date',
               },
-              description: 'Filtrer par date spécifique (YYYY-MM-DD)'
+              description: 'Filtrer par date spécifique (YYYY-MM-DD)',
             },
             {
               in: 'query',
               name: 'mois',
-              schema: { 
+              schema: {
                 type: 'integer',
                 minimum: 1,
-                maximum: 12 
+                maximum: 12,
               },
-              description: 'Filtrer par mois (1-12)'
+              description: 'Filtrer par mois (1-12)',
             },
             {
               in: 'query',
               name: 'annee',
               schema: { type: 'integer' },
-              description: 'Filtrer par année'
-            }
+              description: 'Filtrer par année',
+            },
           ],
           responses: {
             200: {
@@ -2426,15 +2427,15 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/RelevePoste'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/RelevePoste',
+                    },
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
-        }
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
 
       // -------------------- Rapports et revenus --------------------
@@ -2452,20 +2453,20 @@ const options = {
                   type: 'object',
                   required: ['date'],
                   properties: {
-                    date: { 
-                      type: 'string', 
-                      format: 'date', 
-                      example: '2025-05-15' 
+                    date: {
+                      type: 'string',
+                      format: 'date',
+                      example: '2025-05-15',
                     },
-                    include_details: { 
-                      type: 'boolean', 
+                    include_details: {
+                      type: 'boolean',
                       default: false,
-                      example: true 
-                    }
-                  }
-                }
-              }
-            }
+                      example: true,
+                    },
+                  },
+                },
+              },
+            },
           },
           responses: {
             200: {
@@ -2473,25 +2474,25 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/RapportJournalier'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/RapportJournalier',
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Date invalide',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "La date ne peut pas être dans le futur"
-                  }
-                }
-              }
+                    message: 'La date ne peut pas être dans le futur',
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
-        }
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
 
       '/pistolet/rapports/manuel': {
@@ -2505,10 +2506,10 @@ const options = {
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/RapportManuelInput'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/RapportManuelInput',
+                },
+              },
+            },
           },
           responses: {
             201: {
@@ -2516,36 +2517,36 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/RapportJournalier'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/RapportJournalier',
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Données invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Le montant doit être positif"
-                  }
-                }
-              }
+                    message: 'Le montant doit être positif',
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            403: { 
+            403: {
               description: 'Action non autorisée',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Droits insuffisants pour ajouter un rapport manuel"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Droits insuffisants pour ajouter un rapport manuel',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/pistolet/revenus-journaliers': {
@@ -2558,31 +2559,31 @@ const options = {
             {
               in: 'query',
               name: 'date_debut',
-              schema: { 
-                type: 'string', 
-                format: 'date' 
+              schema: {
+                type: 'string',
+                format: 'date',
               },
-              description: 'Date de début (YYYY-MM-DD)'
+              description: 'Date de début (YYYY-MM-DD)',
             },
             {
               in: 'query',
               name: 'date_fin',
-              schema: { 
-                type: 'string', 
-                format: 'date' 
+              schema: {
+                type: 'string',
+                format: 'date',
               },
-              description: 'Date de fin (YYYY-MM-DD)'
+              description: 'Date de fin (YYYY-MM-DD)',
             },
             {
               in: 'query',
               name: 'group_by',
-              schema: { 
+              schema: {
                 type: 'string',
                 enum: ['day', 'week', 'month'],
-                default: 'day'
+                default: 'day',
               },
-              description: 'Regroupement des résultats'
-            }
+              description: 'Regroupement des résultats',
+            },
           ],
           responses: {
             200: {
@@ -2592,28 +2593,28 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/RevenuJournalier'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/RevenuJournalier',
+                    },
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Paramètres invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "La date de fin doit être après la date de début"
-                  }
-                }
-              }
+                    message: 'La date de fin doit être après la date de début',
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
-        }
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
-       '/credit/credits/add': {
+      '/credit/credits/add': {
         post: {
           tags: ['Crédits'],
           summary: 'Créer un nouveau crédit',
@@ -2624,10 +2625,10 @@ const options = {
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/CreditInput'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/CreditInput',
+                },
+              },
+            },
           },
           responses: {
             201: {
@@ -2635,25 +2636,25 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Credit'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Credit',
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Données invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Le solde du crédit doit être positif"
-                  }
-                }
-              }
+                    message: 'Le solde du crédit doit être positif',
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
-        }
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
 
       '/credit/credits/all': {
@@ -2670,22 +2671,22 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Credit'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/Credit',
+                    },
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
-        }
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
 
       '/credit/credits/{id_credit}': {
         get: {
           tags: ['Crédits'],
           summary: 'Obtenir un crédit par ID',
-          description: 'Endpoint pour récupérer les détails d\'un crédit spécifique',
+          description: "Endpoint pour récupérer les détails d'un crédit spécifique",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -2693,8 +2694,8 @@ const options = {
               name: 'id_credit',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID du crédit'
-            }
+              description: 'ID du crédit',
+            },
           ],
           responses: {
             200: {
@@ -2702,32 +2703,32 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Credit'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Credit',
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Crédit non trouvé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Crédit introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Crédit introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/credit/credits/update': {
         put: {
           tags: ['Crédits'],
           summary: 'Mettre à jour un crédit',
-          description: 'Endpoint pour modifier les informations d\'un crédit',
+          description: "Endpoint pour modifier les informations d'un crédit",
           security: [{ cookieAuth: [] }],
           requestBody: {
             required: true,
@@ -2737,26 +2738,26 @@ const options = {
                   type: 'object',
                   properties: {
                     id_credit: { type: 'integer', example: 2 },
-                    type_credit: { 
-                      type: 'string', 
+                    type_credit: {
+                      type: 'string',
                       enum: ['organisationnelle', 'individuelle'],
-                      example: 'organisationnelle'
+                      example: 'organisationnelle',
                     },
-                    solde_credit: { 
-                      type: 'number', 
-                      format: 'float', 
+                    solde_credit: {
+                      type: 'number',
+                      format: 'float',
                       minimum: 0,
-                      example: 500.00 
+                      example: 500.0,
                     },
-                    duree_credit: { 
-                      type: 'integer', 
+                    duree_credit: {
+                      type: 'integer',
                       minimum: 1,
-                      example: 30 
-                    }
-                  }
-                }
-              }
-            }
+                      example: 30,
+                    },
+                  },
+                },
+              },
+            },
           },
           responses: {
             200: {
@@ -2764,43 +2765,43 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Credit'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Credit',
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Données invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "La durée du crédit doit être d'au moins 1 jour"
-                  }
-                }
-              }
+                    message: "La durée du crédit doit être d'au moins 1 jour",
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Crédit non trouvé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Crédit introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Crédit introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/credit/credits/state': {
         put: {
           tags: ['Crédits'],
-          summary: 'Modifier l\'état d\'un crédit',
-          description: 'Endpoint pour changer l\'état d\'un crédit (actif/expiré/etc.)',
+          summary: "Modifier l'état d'un crédit",
+          description: "Endpoint pour changer l'état d'un crédit (actif/expiré/etc.)",
           security: [{ cookieAuth: [] }],
           requestBody: {
             required: true,
@@ -2811,15 +2812,15 @@ const options = {
                   required: ['id_credit', 'etat'],
                   properties: {
                     id_credit: { type: 'integer', example: 2 },
-                    etat: { 
-                      type: 'string', 
+                    etat: {
+                      type: 'string',
                       enum: ['actif', 'expiré', 'remboursé', 'suspendu'],
-                      example: 'remboursé'
-                    }
-                  }
-                }
-              }
-            }
+                      example: 'remboursé',
+                    },
+                  },
+                },
+              },
+            },
           },
           responses: {
             200: {
@@ -2827,25 +2828,25 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Credit'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Credit',
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Action invalide',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Impossible de réactiver un crédit expiré"
-                  }
-                }
-              }
+                    message: 'Impossible de réactiver un crédit expiré',
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
-        }
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
 
       '/credit/credits/renew': {
@@ -2859,10 +2860,10 @@ const options = {
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/CreditRenouvellement'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/CreditRenouvellement',
+                },
+              },
+            },
           },
           responses: {
             200: {
@@ -2870,36 +2871,36 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Credit'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Credit',
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Données invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Le montant à ajouter doit être positif"
-                  }
-                }
-              }
+                    message: 'Le montant à ajouter doit être positif',
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Crédit non trouvé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Crédit introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Crédit introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       // ==================== ROUTES PAIEMENTS ====================
@@ -2914,10 +2915,10 @@ const options = {
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/PaiementInput'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/PaiementInput',
+                },
+              },
+            },
           },
           responses: {
             201: {
@@ -2925,36 +2926,36 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Paiement'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Paiement',
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Données invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Le montant payé doit être positif"
-                  }
-                }
-              }
+                    message: 'Le montant payé doit être positif',
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Crédit non trouvé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Crédit introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Crédit introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/credit/paiments/all': {
@@ -2971,22 +2972,22 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Paiement'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/Paiement',
+                    },
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
-        }
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
 
       '/credit/paiments/credit/{id_credit}': {
         get: {
           tags: ['Paiements'],
           summary: 'Paiements par crédit',
-          description: 'Endpoint pour récupérer les paiements d\'un crédit spécifique',
+          description: "Endpoint pour récupérer les paiements d'un crédit spécifique",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -2994,8 +2995,8 @@ const options = {
               name: 'id_credit',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID du crédit'
-            }
+              description: 'ID du crédit',
+            },
           ],
           responses: {
             200: {
@@ -3005,33 +3006,33 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Paiement'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/Paiement',
+                    },
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Crédit non trouvé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Crédit introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Crédit introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/credit/paiments/utilisateur/{id_utilisateur}': {
         get: {
           tags: ['Paiements'],
           summary: 'Paiements par utilisateur',
-          description: 'Endpoint pour récupérer les paiements d\'un utilisateur',
+          description: "Endpoint pour récupérer les paiements d'un utilisateur",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -3039,37 +3040,37 @@ const options = {
               name: 'id_utilisateur',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID de l\'utilisateur'
-            }
+              description: "ID de l'utilisateur",
+            },
           ],
           responses: {
             200: {
-              description: 'Liste des paiements de l\'utilisateur',
+              description: "Liste des paiements de l'utilisateur",
               content: {
                 'application/json': {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Paiement'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/Paiement',
+                    },
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Utilisateur non trouvé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Utilisateur introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Utilisateur introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/credit/paiments/reference/{reference}': {
@@ -3084,8 +3085,8 @@ const options = {
               name: 'reference',
               required: true,
               schema: { type: 'string' },
-              description: 'Référence du paiement'
-            }
+              description: 'Référence du paiement',
+            },
           ],
           responses: {
             200: {
@@ -3093,25 +3094,25 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Paiement'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Paiement',
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Paiement non trouvé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Paiement introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Paiement introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       // ==================== ROUTES VÉHICULES ====================
@@ -3126,10 +3127,10 @@ const options = {
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/VehiculeInput'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/VehiculeInput',
+                },
+              },
+            },
           },
           responses: {
             201: {
@@ -3137,32 +3138,32 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Vehicule'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Vehicule',
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Données invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "L'immatriculation est déjà utilisée"
-                  }
-                }
-              }
+                    message: "L'immatriculation est déjà utilisée",
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
-        }
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
 
       '/credit/vehicules/{id}': {
         get: {
           tags: ['Véhicules'],
           summary: 'Obtenir un véhicule par ID',
-          description: 'Endpoint pour récupérer les détails d\'un véhicule',
+          description: "Endpoint pour récupérer les détails d'un véhicule",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -3170,8 +3171,8 @@ const options = {
               name: 'id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID du véhicule'
-            }
+              description: 'ID du véhicule',
+            },
           ],
           responses: {
             200: {
@@ -3179,25 +3180,25 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Vehicule'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Vehicule',
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Véhicule non trouvé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Véhicule introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Véhicule introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/credit/vehicules': {
@@ -3214,22 +3215,22 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Vehicule'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/Vehicule',
+                    },
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
-        }
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
 
       '/credit/vehicules/immatriculation/{immatriculation}': {
         get: {
           tags: ['Véhicules'],
           summary: 'Obtenir un véhicule par immatriculation',
-          description: 'Endpoint pour récupérer un véhicule par son numéro d\'immatriculation',
+          description: "Endpoint pour récupérer un véhicule par son numéro d'immatriculation",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -3237,8 +3238,8 @@ const options = {
               name: 'immatriculation',
               required: true,
               schema: { type: 'string' },
-              description: 'Numéro d\'immatriculation'
-            }
+              description: "Numéro d'immatriculation",
+            },
           ],
           responses: {
             200: {
@@ -3246,32 +3247,32 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Vehicule'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Vehicule',
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Véhicule non trouvé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Véhicule introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Véhicule introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/credit/vehicules/update': {
         put: {
           tags: ['Véhicules'],
           summary: 'Mettre à jour un véhicule',
-          description: 'Endpoint pour modifier les informations d\'un véhicule',
+          description: "Endpoint pour modifier les informations d'un véhicule",
           security: [{ cookieAuth: [] }],
           requestBody: {
             required: true,
@@ -3283,20 +3284,20 @@ const options = {
                     id: { type: 'integer', example: 8 },
                     immatriculation: { type: 'string', example: '22TU2002' },
                     marque: { type: 'string', example: 'Mercedes' },
-                    type_vehicule: { 
-                      type: 'string', 
+                    type_vehicule: {
+                      type: 'string',
                       enum: ['voiture', 'camion', 'moto', 'bus'],
-                      example: 'camion'
+                      example: 'camion',
                     },
-                    id_credit: { 
-                      type: 'integer', 
+                    id_credit: {
+                      type: 'integer',
                       example: 2,
-                      nullable: true 
-                    }
-                  }
-                }
-              }
-            }
+                      nullable: true,
+                    },
+                  },
+                },
+              },
+            },
           },
           responses: {
             200: {
@@ -3304,44 +3305,43 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Vehicule'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Vehicule',
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Données invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "L'immatriculation est déjà utilisée"
-                  }
-                }
-              }
+                    message: "L'immatriculation est déjà utilisée",
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Véhicule non trouvé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Véhicule introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Véhicule introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
-
 
       '/credit/vehicules/client/{username}': {
         get: {
           tags: ['Véhicules'],
           summary: 'Véhicules par client',
-          description: 'Endpoint pour récupérer les véhicules d\'un client',
+          description: "Endpoint pour récupérer les véhicules d'un client",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -3349,8 +3349,8 @@ const options = {
               name: 'username',
               required: true,
               schema: { type: 'string' },
-              description: 'Nom d\'utilisateur du client'
-            }
+              description: "Nom d'utilisateur du client",
+            },
           ],
           responses: {
             200: {
@@ -3360,26 +3360,26 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Vehicule'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/Vehicule',
+                    },
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Client non trouvé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Client introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Client introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/credit/vehicules/credit/{id_credit}': {
@@ -3394,8 +3394,8 @@ const options = {
               name: 'id_credit',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID du crédit'
-            }
+              description: 'ID du crédit',
+            },
           ],
           responses: {
             200: {
@@ -3405,26 +3405,26 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Vehicule'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/Vehicule',
+                    },
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Crédit non trouvé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Crédit introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Crédit introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       // ==================== ROUTES TRANSACTIONS ====================
@@ -3439,10 +3439,10 @@ const options = {
             content: {
               'multipart/form-data': {
                 schema: {
-                  $ref: '#/components/schemas/TransactionInput'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/TransactionInput',
+                },
+              },
+            },
           },
           responses: {
             201: {
@@ -3450,36 +3450,36 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Transaction'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Transaction',
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Données invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "La quantité doit être positive"
-                  }
-                }
-              }
+                    message: 'La quantité doit être positive',
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Véhicule non trouvé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Véhicule introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Véhicule introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/credit/transactions/all': {
@@ -3496,22 +3496,22 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Transaction'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/Transaction',
+                    },
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
-        }
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
 
       '/credit/transactions/utilisateur/{id_utilisateur}': {
         get: {
           tags: ['Transactions'],
           summary: 'Transactions par utilisateur',
-          description: 'Endpoint pour récupérer les transactions d\'un utilisateur',
+          description: "Endpoint pour récupérer les transactions d'un utilisateur",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -3519,37 +3519,37 @@ const options = {
               name: 'id_utilisateur',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID de l\'utilisateur'
-            }
+              description: "ID de l'utilisateur",
+            },
           ],
           responses: {
             200: {
-              description: 'Liste des transactions de l\'utilisateur',
+              description: "Liste des transactions de l'utilisateur",
               content: {
                 'application/json': {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Transaction'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/Transaction',
+                    },
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Utilisateur non trouvé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Utilisateur introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Utilisateur introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
       '/Reclamation/add': {
         post: {
@@ -3562,10 +3562,10 @@ const options = {
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/ReclamationInput'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/ReclamationInput',
+                },
+              },
+            },
           },
           responses: {
             201: {
@@ -3573,30 +3573,32 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Reclamation'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Reclamation',
+                  },
+                },
+              },
             },
             400: { description: 'Données invalides' },
             401: { description: 'Non autorisé' },
-            500: { description: 'Erreur serveur' }
-          }
-        }
+            500: { description: 'Erreur serveur' },
+          },
+        },
       },
       '/Reclamation/client/{id_client}': {
         get: {
           tags: ['Réclamations'],
-          summary: 'Obtenir les réclamations d\'un client',
-          description: 'Endpoint pour récupérer toutes les réclamations d\'un client spécifique',
+          summary: "Obtenir les réclamations d'un client",
+          description: "Endpoint pour récupérer toutes les réclamations d'un client spécifique",
           security: [{ cookieAuth: [] }],
-          parameters: [{
-            in: 'path',
-            name: 'id_client',
-            required: true,
-            schema: { type: 'integer' },
-            description: 'ID du client'
-          }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'id_client',
+              required: true,
+              schema: { type: 'integer' },
+              description: 'ID du client',
+            },
+          ],
           responses: {
             200: {
               description: 'Liste des réclamations du client',
@@ -3605,72 +3607,76 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Reclamation'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/Reclamation',
+                    },
+                  },
+                },
+              },
             },
             400: { description: 'ID client invalide' },
             401: { description: 'Non autorisé' },
             404: { description: 'Client non trouvé' },
-            500: { description: 'Erreur serveur' }
-          }
-        }
+            500: { description: 'Erreur serveur' },
+          },
+        },
       },
       '/Reclamation/{id}': {
         get: {
           tags: ['Réclamations'],
-          summary: 'Obtenir les détails d\'une réclamation',
-          description: 'Endpoint pour récupérer les détails d\'une réclamation spécifique',
+          summary: "Obtenir les détails d'une réclamation",
+          description: "Endpoint pour récupérer les détails d'une réclamation spécifique",
           security: [{ cookieAuth: [] }],
-          parameters: [{
-            in: 'path',
-            name: 'id',
-            required: true,
-            schema: { type: 'integer' },
-            description: 'ID de la réclamation'
-          }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'id',
+              required: true,
+              schema: { type: 'integer' },
+              description: 'ID de la réclamation',
+            },
+          ],
           responses: {
             200: {
               description: 'Détails de la réclamation',
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Reclamation'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Reclamation',
+                  },
+                },
+              },
             },
             400: { description: 'ID réclamation invalide' },
             401: { description: 'Non autorisé' },
             404: { description: 'Réclamation non trouvée' },
-            500: { description: 'Erreur serveur' }
-          }
-        }
+            500: { description: 'Erreur serveur' },
+          },
+        },
       },
       '/Reclamation/{id}/statut': {
         put: {
           tags: ['Réclamations'],
-          summary: 'Mettre à jour le statut d\'une réclamation',
-          description: 'Endpoint pour modifier le statut d\'une réclamation',
+          summary: "Mettre à jour le statut d'une réclamation",
+          description: "Endpoint pour modifier le statut d'une réclamation",
           security: [{ cookieAuth: [] }],
-          parameters: [{
-            in: 'path',
-            name: 'id',
-            required: true,
-            schema: { type: 'integer' },
-            description: 'ID de la réclamation'
-          }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'id',
+              required: true,
+              schema: { type: 'integer' },
+              description: 'ID de la réclamation',
+            },
+          ],
           requestBody: {
             required: true,
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/StatutUpdate'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/StatutUpdate',
+                },
+              },
+            },
           },
           responses: {
             200: {
@@ -3678,17 +3684,17 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Reclamation'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Reclamation',
+                  },
+                },
+              },
             },
             400: { description: 'Données invalides' },
             401: { description: 'Non autorisé' },
             404: { description: 'Réclamation non trouvée' },
-            500: { description: 'Erreur serveur' }
-          }
-        }
+            500: { description: 'Erreur serveur' },
+          },
+        },
       },
       '/Reclamation': {
         get: {
@@ -3704,16 +3710,16 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Reclamation'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/Reclamation',
+                    },
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            500: { description: 'Erreur serveur' }
-          }
-        }
+            500: { description: 'Erreur serveur' },
+          },
+        },
       },
       // ==================== ROUTES PRODUITS ====================
       '/stock/produits': {
@@ -3727,10 +3733,10 @@ const options = {
             content: {
               'multipart/form-data': {
                 schema: {
-                  $ref: '#/components/schemas/ProduitInput'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/ProduitInput',
+                },
+              },
+            },
           },
           responses: {
             201: {
@@ -3738,24 +3744,24 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Produit'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Produit',
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Données invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Le code barre est déjà utilisé"
-                  }
-                }
-              }
+                    message: 'Le code barre est déjà utilisé',
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
+            401: { description: 'Non autorisé' },
+          },
         },
         get: {
           tags: ['Produits'],
@@ -3770,22 +3776,22 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Produit'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/Produit',
+                    },
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
-        }
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
 
       '/stock/produits/{id}': {
         put: {
           tags: ['Produits'],
           summary: 'Mettre à jour un produit',
-          description: 'Endpoint pour modifier les informations d\'un produit',
+          description: "Endpoint pour modifier les informations d'un produit",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -3793,18 +3799,18 @@ const options = {
               name: 'id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID du produit'
-            }
+              description: 'ID du produit',
+            },
           ],
           requestBody: {
             required: true,
             content: {
               'multipart/form-data': {
                 schema: {
-                  $ref: '#/components/schemas/ProduitInput'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/ProduitInput',
+                },
+              },
+            },
           },
           responses: {
             200: {
@@ -3812,35 +3818,35 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Produit'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Produit',
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Données invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Le prix de vente doit être supérieur au prix d'achat"
-                  }
-                }
-              }
+                    message: "Le prix de vente doit être supérieur au prix d'achat",
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Produit non trouvé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Produit introuvable"
-                  }
-                }
-              }
-            }
-          }
+                    message: 'Produit introuvable',
+                  },
+                },
+              },
+            },
+          },
         },
         delete: {
           tags: ['Produits'],
@@ -3853,50 +3859,50 @@ const options = {
               name: 'id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID du produit'
-            }
+              description: 'ID du produit',
+            },
           ],
           responses: {
             200: {
               description: 'Produit supprimé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: true,
-                    message: "Produit supprimé avec succès"
-                  }
-                }
-              }
+                    message: 'Produit supprimé avec succès',
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            403: { 
+            403: {
               description: 'Action non autorisée',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Impossible de supprimer un produit avec des ventes associées"
-                  }
-                }
-              }
+                    message: 'Impossible de supprimer un produit avec des ventes associées',
+                  },
+                },
+              },
             },
-            404: { 
+            404: {
               description: 'Produit non trouvé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Produit introuvable"
-                  }
-                }
-              }
-            }
-          }
+                    message: 'Produit introuvable',
+                  },
+                },
+              },
+            },
+          },
         },
         get: {
           tags: ['Produits'],
           summary: 'Obtenir un produit par ID',
-          description: 'Endpoint pour récupérer les détails d\'un produit spécifique',
+          description: "Endpoint pour récupérer les détails d'un produit spécifique",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -3904,8 +3910,8 @@ const options = {
               name: 'id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID du produit'
-            }
+              description: 'ID du produit',
+            },
           ],
           responses: {
             200: {
@@ -3913,32 +3919,33 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Produit'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Produit',
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Produit non trouvé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Produit introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Produit introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/stock/produits/low-stock': {
         get: {
           tags: ['Produits'],
           summary: 'Produits en faible stock',
-          description: 'Endpoint pour récupérer les produits dont le stock est inférieur au seuil d\'alerte',
+          description:
+            "Endpoint pour récupérer les produits dont le stock est inférieur au seuil d'alerte",
           security: [{ cookieAuth: [] }],
           responses: {
             200: {
@@ -3948,15 +3955,15 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Produit'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/Produit',
+                    },
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
-        }
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
 
       // ==================== ROUTES CATÉGORIES ====================
@@ -3971,10 +3978,10 @@ const options = {
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/CategorieInput'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/CategorieInput',
+                },
+              },
+            },
           },
           responses: {
             201: {
@@ -3982,24 +3989,24 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Categorie'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Categorie',
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Données invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Le nom de catégorie est déjà utilisé"
-                  }
-                }
-              }
+                    message: 'Le nom de catégorie est déjà utilisé',
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
+            401: { description: 'Non autorisé' },
+          },
         },
         get: {
           tags: ['Catégories'],
@@ -4014,22 +4021,22 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Categorie'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/Categorie',
+                    },
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
-        }
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
 
       '/stock/categories/{id}': {
         put: {
           tags: ['Catégories'],
           summary: 'Mettre à jour une catégorie',
-          description: 'Endpoint pour modifier les informations d\'une catégorie',
+          description: "Endpoint pour modifier les informations d'une catégorie",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -4037,18 +4044,18 @@ const options = {
               name: 'id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID de la catégorie'
-            }
+              description: 'ID de la catégorie',
+            },
           ],
           requestBody: {
             required: true,
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/CategorieInput'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/CategorieInput',
+                },
+              },
+            },
           },
           responses: {
             200: {
@@ -4056,35 +4063,35 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Categorie'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Categorie',
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Données invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Le nom de catégorie est déjà utilisé"
-                  }
-                }
-              }
+                    message: 'Le nom de catégorie est déjà utilisé',
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Catégorie non trouvée',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Catégorie introuvable"
-                  }
-                }
-              }
-            }
-          }
+                    message: 'Catégorie introuvable',
+                  },
+                },
+              },
+            },
+          },
         },
         delete: {
           tags: ['Catégories'],
@@ -4097,50 +4104,50 @@ const options = {
               name: 'id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID de la catégorie'
-            }
+              description: 'ID de la catégorie',
+            },
           ],
           responses: {
             200: {
               description: 'Catégorie supprimée',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: true,
-                    message: "Catégorie supprimée avec succès"
-                  }
-                }
-              }
+                    message: 'Catégorie supprimée avec succès',
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            403: { 
+            403: {
               description: 'Action non autorisée',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Impossible de supprimer une catégorie avec des produits associés"
-                  }
-                }
-              }
+                    message: 'Impossible de supprimer une catégorie avec des produits associés',
+                  },
+                },
+              },
             },
-            404: { 
+            404: {
               description: 'Catégorie non trouvée',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Catégorie introuvable"
-                  }
-                }
-              }
-            }
-          }
+                    message: 'Catégorie introuvable',
+                  },
+                },
+              },
+            },
+          },
         },
         get: {
           tags: ['Catégories'],
           summary: 'Obtenir une catégorie par ID',
-          description: 'Endpoint pour récupérer les détails d\'une catégorie spécifique',
+          description: "Endpoint pour récupérer les détails d'une catégorie spécifique",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -4148,8 +4155,8 @@ const options = {
               name: 'id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID de la catégorie'
-            }
+              description: 'ID de la catégorie',
+            },
           ],
           responses: {
             200: {
@@ -4157,25 +4164,25 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Categorie'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Categorie',
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Catégorie non trouvée',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Catégorie introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Catégorie introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       // ==================== ROUTES MOUVEMENTS STOCK ====================
@@ -4190,10 +4197,10 @@ const options = {
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/MouvementStockInput'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/MouvementStockInput',
+                },
+              },
+            },
           },
           responses: {
             201: {
@@ -4201,35 +4208,35 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/MouvementStock'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/MouvementStock',
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Données invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "La quantité doit être positive"
-                  }
-                }
-              }
+                    message: 'La quantité doit être positive',
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Produit non trouvé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Produit introuvable"
-                  }
-                }
-              }
-            }
-          }
+                    message: 'Produit introuvable',
+                  },
+                },
+              },
+            },
+          },
         },
         get: {
           tags: ['Mouvements Stock'],
@@ -4240,21 +4247,21 @@ const options = {
             {
               in: 'query',
               name: 'date_debut',
-              schema: { 
-                type: 'string', 
-                format: 'date' 
+              schema: {
+                type: 'string',
+                format: 'date',
               },
-              description: 'Date de début (YYYY-MM-DD)'
+              description: 'Date de début (YYYY-MM-DD)',
             },
             {
               in: 'query',
               name: 'date_fin',
-              schema: { 
-                type: 'string', 
-                format: 'date' 
+              schema: {
+                type: 'string',
+                format: 'date',
               },
-              description: 'Date de fin (YYYY-MM-DD)'
-            }
+              description: 'Date de fin (YYYY-MM-DD)',
+            },
           ],
           responses: {
             200: {
@@ -4264,22 +4271,22 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/MouvementStock'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/MouvementStock',
+                    },
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
-        }
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
 
       '/stock/mouvements/produit/{produitId}': {
         get: {
           tags: ['Mouvements Stock'],
           summary: 'Mouvements par produit',
-          description: 'Endpoint pour récupérer l\'historique des mouvements d\'un produit',
+          description: "Endpoint pour récupérer l'historique des mouvements d'un produit",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -4287,8 +4294,8 @@ const options = {
               name: 'produitId',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID du produit'
-            }
+              description: 'ID du produit',
+            },
           ],
           responses: {
             200: {
@@ -4298,26 +4305,26 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/MouvementStock'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/MouvementStock',
+                    },
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Produit non trouvé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Produit introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Produit introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       // ==================== ROUTES VENTES ====================
@@ -4332,10 +4339,10 @@ const options = {
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/VenteInput'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/VenteInput',
+                },
+              },
+            },
           },
           responses: {
             201: {
@@ -4343,24 +4350,24 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Vente'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Vente',
+                  },
+                },
+              },
             },
-            400: { 
+            400: {
               description: 'Données invalides',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Le montant payé doit couvrir le montant total"
-                  }
-                }
-              }
+                    message: 'Le montant payé doit couvrir le montant total',
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
+            401: { description: 'Non autorisé' },
+          },
         },
         get: {
           tags: ['Ventes'],
@@ -4371,21 +4378,21 @@ const options = {
             {
               in: 'query',
               name: 'date_debut',
-              schema: { 
-                type: 'string', 
-                format: 'date' 
+              schema: {
+                type: 'string',
+                format: 'date',
               },
-              description: 'Date de début (YYYY-MM-DD)'
+              description: 'Date de début (YYYY-MM-DD)',
             },
             {
               in: 'query',
               name: 'date_fin',
-              schema: { 
-                type: 'string', 
-                format: 'date' 
+              schema: {
+                type: 'string',
+                format: 'date',
               },
-              description: 'Date de fin (YYYY-MM-DD)'
-            }
+              description: 'Date de fin (YYYY-MM-DD)',
+            },
           ],
           responses: {
             200: {
@@ -4395,22 +4402,22 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Vente'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/Vente',
+                    },
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
-        }
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
 
       '/stock/ventes/{id}': {
         get: {
           tags: ['Ventes'],
           summary: 'Obtenir une vente par ID',
-          description: 'Endpoint pour récupérer les détails d\'une vente spécifique',
+          description: "Endpoint pour récupérer les détails d'une vente spécifique",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -4418,8 +4425,8 @@ const options = {
               name: 'id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID de la vente'
-            }
+              description: 'ID de la vente',
+            },
           ],
           responses: {
             200: {
@@ -4427,24 +4434,24 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/Vente'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/Vente',
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Vente non trouvée',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Vente introuvable"
-                  }
-                }
-              }
-            }
-          }
+                    message: 'Vente introuvable',
+                  },
+                },
+              },
+            },
+          },
         },
         delete: {
           tags: ['Ventes'],
@@ -4457,46 +4464,46 @@ const options = {
               name: 'id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID de la vente'
-            }
+              description: 'ID de la vente',
+            },
           ],
           responses: {
             200: {
               description: 'Vente annulée',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: true,
-                    message: "Vente annulée avec succès"
-                  }
-                }
-              }
+                    message: 'Vente annulée avec succès',
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            403: { 
+            403: {
               description: 'Action non autorisée',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Impossible d'annuler une vente de plus de 24h"
-                  }
-                }
-              }
+                    message: "Impossible d'annuler une vente de plus de 24h",
+                  },
+                },
+              },
             },
-            404: { 
+            404: {
               description: 'Vente non trouvée',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Vente introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Vente introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/stock/ventes/caissier/{caissierId}': {
@@ -4511,17 +4518,17 @@ const options = {
               name: 'caissierId',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID du caissier'
+              description: 'ID du caissier',
             },
             {
               in: 'query',
               name: 'date',
-              schema: { 
-                type: 'string', 
-                format: 'date' 
+              schema: {
+                type: 'string',
+                format: 'date',
               },
-              description: 'Filtrer par date spécifique (YYYY-MM-DD)'
-            }
+              description: 'Filtrer par date spécifique (YYYY-MM-DD)',
+            },
           ],
           responses: {
             200: {
@@ -4531,33 +4538,33 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Vente'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/Vente',
+                    },
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Caissier non trouvé',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Caissier introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Caissier introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       '/stock/ventes/{id}/lignes': {
         get: {
           tags: ['Ventes'],
           summary: 'Lignes de vente',
-          description: 'Endpoint pour récupérer les lignes détaillées d\'une vente',
+          description: "Endpoint pour récupérer les lignes détaillées d'une vente",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -4565,8 +4572,8 @@ const options = {
               name: 'id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID de la vente'
-            }
+              description: 'ID de la vente',
+            },
           ],
           responses: {
             200: {
@@ -4576,26 +4583,26 @@ const options = {
                   schema: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/LigneVente'
-                    }
-                  }
-                }
-              }
+                      $ref: '#/components/schemas/LigneVente',
+                    },
+                  },
+                },
+              },
             },
             401: { description: 'Non autorisé' },
-            404: { 
+            404: {
               description: 'Vente non trouvée',
               content: {
                 'application/json': {
-                  example: { 
+                  example: {
                     success: false,
-                    message: "Vente introuvable"
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: 'Vente introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       // ==================== ROUTES STATISTIQUES ====================
@@ -4611,14 +4618,14 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/StatsStock'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/StatsStock',
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
-        }
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
 
       '/stock/stats/ventes': {
@@ -4631,13 +4638,13 @@ const options = {
             {
               in: 'query',
               name: 'periode',
-              schema: { 
+              schema: {
                 type: 'string',
                 enum: ['jour', 'semaine', 'mois', 'annee'],
-                default: 'mois'
+                default: 'mois',
               },
-              description: 'Période d\'analyse'
-            }
+              description: "Période d'analyse",
+            },
           ],
           responses: {
             200: {
@@ -4645,19 +4652,18 @@ const options = {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/StatsVentes'
-                  }
-                }
-              }
+                    $ref: '#/components/schemas/StatsVentes',
+                  },
+                },
+              },
             },
-            401: { description: 'Non autorisé' }
-          }
-        }
-      }
-    
-    }
+            401: { description: 'Non autorisé' },
+          },
+        },
+      },
+    },
   },
-  apis: [] // On utilise la documentation manuelle dans ce fichier
+  apis: [], // On utilise la documentation manuelle dans ce fichier
 };
 
 const swaggerSpec = swaggerJsdoc(options);

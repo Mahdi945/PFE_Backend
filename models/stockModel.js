@@ -10,8 +10,13 @@ const Stock = {
   // ==================== PRODUITS ====================
   createProduit: async (produitData, imagePath = null) => {
     // Validation des champs obligatoires
-    if (!produitData.code_barre || !produitData.nom || !produitData.categorie_id || 
-        produitData.prix_achat === undefined || produitData.prix_vente === undefined) {
+    if (
+      !produitData.code_barre ||
+      !produitData.nom ||
+      !produitData.categorie_id ||
+      produitData.prix_achat === undefined ||
+      produitData.prix_vente === undefined
+    ) {
       throw new Error('Champs obligatoires manquants');
     }
 
@@ -30,7 +35,7 @@ const Stock = {
       produitData.prix_vente,
       produitData.quantite_stock || 0,
       produitData.seuil_alerte || null,
-      imagePath
+      imagePath,
     ];
 
     const [result] = await db.execute(query, values);
@@ -38,9 +43,14 @@ const Stock = {
   },
 
   updateProduit: async (id, produitData, imagePath = null) => {
-  // Validation des champs obligatoires
-    if (!produitData.code_barre || !produitData.nom || !produitData.categorie_id || 
-        produitData.prix_achat === undefined || produitData.prix_vente === undefined) {
+    // Validation des champs obligatoires
+    if (
+      !produitData.code_barre ||
+      !produitData.nom ||
+      !produitData.categorie_id ||
+      produitData.prix_achat === undefined ||
+      produitData.prix_vente === undefined
+    ) {
       throw new Error('Champs obligatoires manquants');
     }
 
@@ -54,7 +64,6 @@ const Stock = {
           fs.unlinkSync(oldImagePath);
         }
       }
-    
     }
 
     const query = `
@@ -80,7 +89,7 @@ const Stock = {
       produitData.quantite_stock || 0,
       produitData.seuil_alerte || null,
       imagePath,
-      id
+      id,
     ];
     await db.execute(query, values);
     return { id, ...produitData, image_url: imagePath || produitData.image_url };
@@ -132,7 +141,7 @@ const Stock = {
     const [result] = await db.execute(query, [
       categorieData.nom,
       categorieData.description || null,
-      categorieData.parent_id || null
+      categorieData.parent_id || null,
     ]);
     return { id: result.insertId, ...categorieData };
   },
@@ -153,7 +162,7 @@ const Stock = {
       categorieData.nom,
       categorieData.description || null,
       categorieData.parent_id || null,
-      id
+      id,
     ]);
     return { id, ...categorieData };
   },
@@ -174,9 +183,9 @@ const Stock = {
   },
 
   // ==================== MOUVEMENTS STOCK ====================
-createMouvement: async (mouvementData) => {
+  createMouvement: async (mouvementData) => {
     if (!mouvementData.produit_id || !mouvementData.type || mouvementData.quantite === undefined) {
-        throw new Error('produit_id, type et quantite sont obligatoires');
+      throw new Error('produit_id, type et quantite sont obligatoires');
     }
 
     const query = `
@@ -185,20 +194,21 @@ createMouvement: async (mouvementData) => {
         VALUES (?, ?, ?, ?, ?)
     `;
     const values = [
-        mouvementData.produit_id,
-        mouvementData.type,
-        mouvementData.quantite,
-        mouvementData.agent_id || null,
-        mouvementData.raison || null
+      mouvementData.produit_id,
+      mouvementData.type,
+      mouvementData.quantite,
+      mouvementData.agent_id || null,
+      mouvementData.raison || null,
     ];
 
     const [result] = await db.execute(query, values);
-    
-    return { id: result.insertId, ...mouvementData };
-},
 
-getMouvementsByProduit: async (produitId) => {
-    const [mouvements] = await db.execute(`
+    return { id: result.insertId, ...mouvementData };
+  },
+
+  getMouvementsByProduit: async (produitId) => {
+    const [mouvements] = await db.execute(
+      `
       SELECT 
         m.*, 
         p.nom AS produit_nom,
@@ -208,13 +218,15 @@ getMouvementsByProduit: async (produitId) => {
       LEFT JOIN utilisateurs u ON m.agent_id = u.id
       WHERE m.produit_id = ?
       ORDER BY m.date_mouvement DESC
-    `, [produitId]);
+    `,
+      [produitId],
+    );
     return mouvements;
-},
-
+  },
 
   getMouvementsByDate: async (startDate, endDate) => {
-    const [mouvements] = await db.execute(`
+    const [mouvements] = await db.execute(
+      `
       SELECT 
         m.*, 
         p.nom AS produit_nom,
@@ -224,21 +236,28 @@ getMouvementsByProduit: async (produitId) => {
       LEFT JOIN utilisateurs u ON m.agent_id = u.id
       WHERE m.date_mouvement BETWEEN ? AND ?
       ORDER BY m.date_mouvement DESC
-    `, [startDate, endDate]);
+    `,
+      [startDate, endDate],
+    );
     return mouvements;
   },
 
-// ==================== VENTES ====================
-// ==================== VENTES ====================
-createVente: async (venteData) => {
-    if (!venteData.montant_total || !venteData.montant_paye || !venteData.mode_paiement || 
-        !venteData.produits_vendus || !Array.isArray(venteData.produits_vendus)) {
+  // ==================== VENTES ====================
+  // ==================== VENTES ====================
+  createVente: async (venteData) => {
+    if (
+      !venteData.montant_total ||
+      !venteData.montant_paye ||
+      !venteData.mode_paiement ||
+      !venteData.produits_vendus ||
+      !Array.isArray(venteData.produits_vendus)
+    ) {
       throw new Error('Données de vente incomplètes');
     }
 
     // Obtenir une connexion spécifique du pool
     const conn = await db.getConnection();
-    
+
     try {
       await conn.beginTransaction();
 
@@ -251,8 +270,8 @@ createVente: async (venteData) => {
           venteData.montant_total,
           venteData.montant_paye,
           venteData.mode_paiement,
-          venteData.id_caissier || null
-        ]
+          venteData.id_caissier || null,
+        ],
       );
 
       const venteId = resultVente.insertId;
@@ -264,15 +283,14 @@ createVente: async (venteData) => {
         }
 
         // Vérifier le stock disponible
-        const [rows] = await conn.execute(
-          'SELECT quantite_stock FROM produits WHERE id = ?',
-          [produit.id]
-        );
-        
+        const [rows] = await conn.execute('SELECT quantite_stock FROM produits WHERE id = ?', [
+          produit.id,
+        ]);
+
         if (rows.length === 0) {
           throw new Error(`Produit ${produit.id} non trouvé`);
         }
-        
+
         const stockDisponible = rows[0].quantite_stock;
         if (stockDisponible < produit.quantite) {
           throw new Error(`Stock insuffisant pour le produit ${produit.id}`);
@@ -283,34 +301,29 @@ createVente: async (venteData) => {
           `INSERT INTO ligne_vente 
           (vente_id, produit_id, quantite, prix_unitaire)
           VALUES (?, ?, ?, ?)`,
-          [venteId, produit.id, produit.quantite, produit.prix_unitaire]
+          [venteId, produit.id, produit.quantite, produit.prix_unitaire],
         );
 
         // Mettre à jour le stock
-        await conn.execute(
-          'UPDATE produits SET quantite_stock = quantite_stock - ? WHERE id = ?',
-          [produit.quantite, produit.id]
-        );
+        await conn.execute('UPDATE produits SET quantite_stock = quantite_stock - ? WHERE id = ?', [
+          produit.quantite,
+          produit.id,
+        ]);
 
         // Enregistrer le mouvement de stock
         await conn.execute(
           `INSERT INTO mouvements_stock 
           (produit_id, type, quantite, agent_id, raison)
           VALUES (?, 'SORTIE', ?, ?, ?)`,
-          [
-            produit.id,
-            produit.quantite,
-            venteData.id_caissier || null,
-            `Vente #${venteId}`
-          ]
+          [produit.id, produit.quantite, venteData.id_caissier || null, `Vente #${venteId}`],
         );
       }
 
       await conn.commit();
-      
+
       // Libérer la connexion
       conn.release();
-      
+
       // Récupérer la vente complète avec la monnaie calculée
       return await Stock.getVenteById(venteId);
     } catch (err) {
@@ -321,40 +334,40 @@ createVente: async (venteData) => {
       }
       throw err;
     }
-},
+  },
 
-getVenteById: async (id) => {
+  getVenteById: async (id) => {
     const [ventes] = await db.execute('SELECT * FROM ventes WHERE id = ?', [id]);
     if (ventes.length === 0) return null;
-    
+
     const [lignes] = await db.execute(
       `SELECT lv.*, p.nom as produit_nom, p.code_barre 
        FROM ligne_vente lv
        JOIN produits p ON lv.produit_id = p.id
        WHERE lv.vente_id = ?`,
-      [id]
+      [id],
     );
-    
+
     return {
       ...ventes[0],
-      produits_vendus: lignes.map(l => ({
+      produits_vendus: lignes.map((l) => ({
         id: l.produit_id,
         nom: l.produit_nom,
         code_barre: l.code_barre,
         quantite: l.quantite,
-        prix_unitaire: l.prix_unitaire
-      }))
+        prix_unitaire: l.prix_unitaire,
+      })),
     };
-},
+  },
 
-getVentesByDate: async (startDate, endDate) => {
+  getVentesByDate: async (startDate, endDate) => {
     const [ventes] = await db.execute(
       `SELECT v.*, u.username as caissier_nom
        FROM ventes v
        LEFT JOIN utilisateurs u ON v.id_caissier = u.id
        WHERE v.date_vente BETWEEN ? AND ?
        ORDER BY v.date_vente DESC`,
-      [startDate, endDate]
+      [startDate, endDate],
     );
 
     // Récupérer les lignes pour chaque vente
@@ -364,15 +377,15 @@ getVentesByDate: async (startDate, endDate) => {
          FROM ligne_vente lv
          JOIN produits p ON lv.produit_id = p.id
          WHERE vente_id = ?`,
-        [vente.id]
+        [vente.id],
       );
       vente.produits_vendus = lignes;
     }
 
     return ventes;
-},
+  },
 
-getVentesByCaissier: async (caissierId, startDate, endDate) => {
+  getVentesByCaissier: async (caissierId, startDate, endDate) => {
     const [ventes] = await db.execute(
       `SELECT v.*, u.username as caissier_nom
        FROM ventes v
@@ -380,7 +393,7 @@ getVentesByCaissier: async (caissierId, startDate, endDate) => {
        WHERE v.id_caissier = ?
        AND v.date_vente BETWEEN ? AND ?
        ORDER BY v.date_vente DESC`,
-      [caissierId, startDate, endDate]
+      [caissierId, startDate, endDate],
     );
 
     // Récupérer les lignes pour chaque vente
@@ -390,15 +403,15 @@ getVentesByCaissier: async (caissierId, startDate, endDate) => {
          FROM ligne_vente lv
          JOIN produits p ON lv.produit_id = p.id
          WHERE vente_id = ?`,
-        [vente.id]
+        [vente.id],
       );
       vente.produits_vendus = lignes;
     }
 
     return ventes;
-},
+  },
 
-cancelVente: async (id) => {
+  cancelVente: async (id) => {
     const vente = await Stock.getVenteById(id);
     if (!vente) throw new Error('Vente non trouvée');
 
@@ -407,41 +420,36 @@ cancelVente: async (id) => {
     try {
       // Restaurer le stock pour chaque produit
       for (const produit of vente.produits_vendus) {
-        await db.execute(
-          'UPDATE produits SET quantite_stock = quantite_stock + ? WHERE id = ?',
-          [produit.quantite, produit.id]
-        );
+        await db.execute('UPDATE produits SET quantite_stock = quantite_stock + ? WHERE id = ?', [
+          produit.quantite,
+          produit.id,
+        ]);
 
         // Enregistrer l'annulation
         await db.execute(
           `INSERT INTO mouvements_stock 
           (produit_id, type, quantite, agent_id, raison)
           VALUES (?, 'AJUSTEMENT', ?, ?, ?)`,
-          [
-            produit.id,
-            produit.quantite,
-            vente.id_caissier || null,
-            `Annulation vente #${id}`
-          ]
+          [produit.id, produit.quantite, vente.id_caissier || null, `Annulation vente #${id}`],
         );
       }
 
       // Supprimer les lignes
       await db.execute('DELETE FROM ligne_vente WHERE vente_id = ?', [id]);
-      
+
       // Supprimer la vente
       await db.execute('DELETE FROM ventes WHERE id = ?', [id]);
-      
+
       await db.commit();
       return { id, annule: true };
     } catch (err) {
       await db.rollback();
       throw err;
     }
-},
+  },
 
   // ==================== STATISTIQUES ====================
-getStockStats: async () => {
+  getStockStats: async () => {
     // Statistiques de base du stock
     const [baseStats] = await db.execute(`
         SELECT 
@@ -454,20 +462,24 @@ getStockStats: async () => {
 
     // Ventes du jour
     const today = new Date().toISOString().split('T')[0];
-    const [todaySales] = await db.execute(`
+    const [todaySales] = await db.execute(
+      `
         SELECT 
             COUNT(*) AS todaySalesCount,
             SUM(montant_total) AS todaySalesAmount
         FROM ventes
         WHERE DATE(date_vente) = ?
-    `, [today]);
+    `,
+      [today],
+    );
 
     // Ventes des 7 derniers jours
     const date = new Date();
     date.setDate(date.getDate() - 7);
     const sevenDaysAgo = date.toISOString().split('T')[0];
-    
-    const [last7DaysSales] = await db.execute(`
+
+    const [last7DaysSales] = await db.execute(
+      `
         SELECT 
             DATE(date_vente) AS sale_date,
             SUM(montant_total) AS daily_amount
@@ -475,9 +487,12 @@ getStockStats: async () => {
         WHERE DATE(date_vente) BETWEEN ? AND ?
         GROUP BY DATE(date_vente)
         ORDER BY sale_date ASC
-    `, [sevenDaysAgo, today]);
+    `,
+      [sevenDaysAgo, today],
+    );
     // Dans votre modèle getStockStats()
-const [todayMovements] = await db.execute(`
+    const [todayMovements] = await db.execute(
+      `
     SELECT 
         m.*,
         p.nom AS produit_nom,
@@ -487,7 +502,9 @@ const [todayMovements] = await db.execute(`
     LEFT JOIN utilisateurs u ON m.agent_id = u.id
     WHERE DATE(m.date_mouvement) = ?
     ORDER BY m.date_mouvement DESC
-`, [today]);
+`,
+      [today],
+    );
     // Top 5 produits vendus
     const [topProducts] = await db.execute(`
         SELECT 
@@ -511,32 +528,33 @@ const [todayMovements] = await db.execute(`
     `);
 
     return {
-        // Stats de base
-        ...baseStats[0],
-        
-        // Ventes aujourd'hui
-        todaySalesCount: todaySales[0]?.todaySalesCount || 0,
-        todaySalesAmount: todaySales[0]?.todaySalesAmount || 0,
-        
-        // Ventes 7 derniers jours
-        last7DaysLabels: last7DaysSales.map(sale => {
-            const date = new Date(sale.sale_date);
-            return date.toLocaleDateString('fr-FR', { weekday: 'short' });
-        }),
-        last7DaysData: last7DaysSales.map(sale => sale.daily_amount),
-        
-        // Top produits
-        topProductsLabels: topProducts.map(product => product.product_name),
-        topProductsData: topProducts.map(product => product.total_quantity),
-        
-        // Produits en alerte
-        lowStockProductsList: lowStockProducts,
-        todayMovements: todayMovements
+      // Stats de base
+      ...baseStats[0],
+
+      // Ventes aujourd'hui
+      todaySalesCount: todaySales[0]?.todaySalesCount || 0,
+      todaySalesAmount: todaySales[0]?.todaySalesAmount || 0,
+
+      // Ventes 7 derniers jours
+      last7DaysLabels: last7DaysSales.map((sale) => {
+        const date = new Date(sale.sale_date);
+        return date.toLocaleDateString('fr-FR', { weekday: 'short' });
+      }),
+      last7DaysData: last7DaysSales.map((sale) => sale.daily_amount),
+
+      // Top produits
+      topProductsLabels: topProducts.map((product) => product.product_name),
+      topProductsData: topProducts.map((product) => product.total_quantity),
+
+      // Produits en alerte
+      lowStockProductsList: lowStockProducts,
+      todayMovements: todayMovements,
     };
-},
+  },
 
   getVentesStats: async (startDate, endDate) => {
-    const [stats] = await db.execute(`
+    const [stats] = await db.execute(
+      `
       SELECT 
         COUNT(*) AS nombre_ventes,
         SUM(montant_total) AS chiffre_affaires,
@@ -545,9 +563,11 @@ const [todayMovements] = await db.execute(`
       FROM ventes
       WHERE date_vente BETWEEN ? AND ?
       GROUP BY mode_paiement
-    `, [startDate, endDate]);
+    `,
+      [startDate, endDate],
+    );
     return stats;
-  }
+  },
 };
 
 export default Stock;

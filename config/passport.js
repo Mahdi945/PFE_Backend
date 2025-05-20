@@ -8,7 +8,7 @@ dotenv.config();
 // Options pour extraire le JWT du cookie HTTP-only
 const options = {
   jwtFromRequest: ExtractJwt.fromExtractors([
-    (req) => req.cookies.jwt // Extraction du token depuis le cookie "jwt"
+    (req) => req.cookies.jwt, // Extraction du token depuis le cookie "jwt"
   ]),
   secretOrKey: process.env.JWT_SECRET,
 };
@@ -25,7 +25,7 @@ passport.use(
     } catch (error) {
       return done(error, false); // Erreur lors de la recherche
     }
-  })
+  }),
 );
 
 export default passport;

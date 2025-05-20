@@ -37,7 +37,9 @@ const generateEmailTemplate = (title, content, actionLink = null, actionText = n
         <div style="font-size: 16px; color: #555555;">
           ${content}
         </div>
-        ${actionLink && actionText ? `
+        ${
+          actionLink && actionText
+            ? `
           <div style="text-align: center; margin: 50px 0 40px;">
             <a href="${actionLink}" style="
               display: inline-block;
@@ -55,7 +57,9 @@ const generateEmailTemplate = (title, content, actionLink = null, actionText = n
               ${actionText}
             </a>
           </div>
-        ` : ''}
+        `
+            : ''
+        }
       </div>
       <div style="padding: 24px; text-align: center; font-size: 14px; color: #95a5a6; background: #f9f9f9;">
         <p style="margin: 0;">
@@ -70,25 +74,22 @@ const generateEmailTemplate = (title, content, actionLink = null, actionText = n
 };
 
 const createTransaction = async (req, res) => {
- 
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
-    
+
     const { id_vehicule, quantite, montant, id_credit, id_pompiste } = req.body;
     let preuvePath = null;
 
     // Validation des données
     if (!id_vehicule || !quantite || !montant || !id_pompiste) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        error: 'Tous les champs obligatoires doivent être fournis' 
+        error: 'Tous les champs obligatoires doivent être fournis',
       });
     }
     console.log('Données reçues pour la transaction:', req.body);
     console.log('ID Pompiste reçu:', req.body.id_pompiste);
-    
-  
 
     // Le fichier est déjà enregistré dans le dossier final par Multer
     if (req.file) {
@@ -98,14 +99,14 @@ const createTransaction = async (req, res) => {
     // Vérification que l'utilisateur est bien un pompiste
     const [userCheck] = await connection.execute(
       `SELECT id, username, role FROM utilisateurs WHERE id = ?`,
-      [id_pompiste]
+      [id_pompiste],
     );
-    
+
     if (!userCheck || userCheck.length === 0 || userCheck[0].role !== 'pompiste') {
       if (req.file) fs.unlinkSync(req.file.path);
       return res.status(403).json({
         success: false,
-        error: 'Seuls les pompistes peuvent enregistrer des transactions'
+        error: 'Seuls les pompistes peuvent enregistrer des transactions',
       });
     }
 
@@ -121,32 +122,32 @@ const createTransaction = async (req, res) => {
         `SELECT dc.* 
          FROM details_credits dc
          WHERE dc.id = ?`,
-        [id_credit]
+        [id_credit],
       );
-      
+
       if (!credit || credit.length === 0) {
         await connection.rollback();
         if (req.file) fs.unlinkSync(req.file.path);
-        return res.status(404).json({ 
+        return res.status(404).json({
           success: false,
-          error: 'Crédit non trouvé' 
+          error: 'Crédit non trouvé',
         });
       }
-      
+
       creditInfo = credit[0];
       id_utilisateur = creditInfo.id_utilisateur;
       creditUtilise = parseFloat(creditInfo.credit_utilise) || 0;
       const soldeCredit = parseFloat(creditInfo.solde_credit);
       nouveauSolde = soldeCredit - creditUtilise - parseFloat(montant);
-      
+
       if (nouveauSolde < 0) {
         await connection.rollback();
         if (req.file) fs.unlinkSync(req.file.path);
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          error: 'Solde insuffisant', 
+          error: 'Solde insuffisant',
           solde_disponible: soldeCredit - creditUtilise,
-          montant_demande: montant
+          montant_demande: montant,
         });
       }
     } else {
@@ -156,18 +157,18 @@ const createTransaction = async (req, res) => {
          FROM vehicules v
          LEFT JOIN details_credits dc ON v.id_credit = dc.id
          WHERE v.id = ?`,
-        [id_vehicule]
+        [id_vehicule],
       );
-      
+
       if (!vehicule || vehicule.length === 0) {
         await connection.rollback();
         if (req.file) fs.unlinkSync(req.file.path);
-        return res.status(404).json({ 
+        return res.status(404).json({
           success: false,
-          error: 'Véhicule non trouvé' 
+          error: 'Véhicule non trouvé',
         });
       }
-      
+
       id_utilisateur = vehicule[0].id_utilisateur;
     }
 
@@ -183,7 +184,7 @@ const createTransaction = async (req, res) => {
        JOIN vehicules v ON v.id = ?
        ${id_credit ? 'JOIN details_credits dc ON dc.id = ?' : ''}
        WHERE u.id = ?`,
-      id_credit ? [id_vehicule, id_credit, id_utilisateur] : [id_vehicule, id_utilisateur]
+      id_credit ? [id_vehicule, id_credit, id_utilisateur] : [id_vehicule, id_utilisateur],
     );
 
     if (!info || info.length === 0) {
@@ -191,28 +192,28 @@ const createTransaction = async (req, res) => {
       if (req.file) fs.unlinkSync(req.file.path);
       return res.status(404).json({
         success: false,
-        error: 'Informations non trouvées'
+        error: 'Informations non trouvées',
       });
     }
 
     const userInfo = info[0];
     // Avant la ligne où vous appelez addTransaction, ajoutez ce log:
-console.log('Paramètres pour addTransaction:', {
-  id_vehicule,
-  quantite,
-  montant,
-  id_credit: id_credit || null,
-  id_pompiste,
-  preuve: preuvePath
-});
+    console.log('Paramètres pour addTransaction:', {
+      id_vehicule,
+      quantite,
+      montant,
+      id_credit: id_credit || null,
+      id_pompiste,
+      preuve: preuvePath,
+    });
     // Création de la transaction avec preuve et id_pompiste
     const transactionResult = await Transaction.addTransaction(
-      id_vehicule, 
-      quantite, 
-      montant, 
+      id_vehicule,
+      quantite,
+      montant,
       id_credit || null,
       preuvePath,
-      id_pompiste
+      id_pompiste,
     );
 
     // Mettre à jour le crédit si nécessaire
@@ -221,7 +222,7 @@ console.log('Paramètres pour addTransaction:', {
       // Recharger les infos crédit après mise à jour
       const [updatedCredit] = await connection.execute(
         'SELECT credit_utilise, solde_credit FROM details_credits WHERE id = ?',
-        [id_credit]
+        [id_credit],
       );
       creditUtilise = parseFloat(updatedCredit[0].credit_utilise);
     }
@@ -235,28 +236,34 @@ console.log('Paramètres pour addTransaction:', {
           <li>Véhicule: ${userInfo.marque} (${userInfo.immatriculation})</li>
           <li>Quantité: ${quantite}L</li>
           <li>Montant: ${montant} DT</li>
-          ${id_credit ? `
+          ${
+            id_credit
+              ? `
             <li>Crédit utilisé: #${id_credit}</li>
             <li>Crédit consommé: ${(parseFloat(creditUtilise) + parseFloat(montant)).toFixed(2)} DT</li>
             <li>Solde restant: ${(parseFloat(userInfo.solde_credit) - (parseFloat(creditUtilise) + parseFloat(montant))).toFixed(2)} DT</li>
-          ` : '<li>Paiement: Direct</li>'}
+          `
+              : '<li>Paiement: Direct</li>'
+          }
           ${preuvePath ? `<li>Preuve: <a href="${preuvePath}">Voir la preuve</a></li>` : ''}
         </ul>
       `;
-      
+
       const mailOptions = {
         from: `"Carbotrack" <${process.env.EMAIL_USER}>`,
         to: userInfo.email,
         subject: 'Confirmation de transaction',
         html: generateEmailTemplate('Transaction enregistrée', emailContent),
-        attachments: [{
-          filename: 'logobg.png',
-          path: path.join(__dirname, '../public', 'logobg.png'),
-          cid: 'logo'
-        }]
+        attachments: [
+          {
+            filename: 'logobg.png',
+            path: path.join(__dirname, '../public', 'logobg.png'),
+            cid: 'logo',
+          },
+        ],
       };
 
-      transporter.sendMail(mailOptions).catch(err => {
+      transporter.sendMail(mailOptions).catch((err) => {
         console.error('Erreur envoi email:', err);
       });
     }
@@ -275,72 +282,71 @@ console.log('Paramètres pour addTransaction:', {
         preuve: preuvePath,
         id_credit: id_credit || null,
         credit_utilise: id_credit ? creditUtilise : null,
-        solde_restant: id_credit ? (parseFloat(userInfo.solde_credit) - creditUtilise) : null,
+        solde_restant: id_credit ? parseFloat(userInfo.solde_credit) - creditUtilise : null,
         id_pompiste: id_pompiste,
-        pompiste: pompisteInfo.username
-      }
+        pompiste: pompisteInfo.username,
+      },
     });
-
   } catch (err) {
     await connection.rollback();
     console.error('Erreur création transaction:', err);
-    
+
     // Clean up uploaded file if error occurred
     if (req.file && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path);
     }
-    
-    res.status(500).json({ 
+
+    res.status(500).json({
       success: false,
       error: 'Erreur lors de la création de la transaction',
-      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined,
     });
   } finally {
     connection.release();
   }
 };
-  const getAllTransactions = async (req, res) => {
-    try {
-      const [transactions] = await Transaction.getAllTransactions();
-      res.status(200).json(transactions);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  };
-  
-  const getTransactionsByUser = async (req, res) => {
-    try {
-      const { id_utilisateur } = req.params;
-      const [transactions] = await Transaction.getTransactionsByUser(id_utilisateur);
-      res.status(200).json(transactions);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  };
-  const getTransactionStats = async (req, res) => {
-    try {
-      const { id_utilisateur } = req.params;
-      const [stats] = await Transaction.getTransactionStats(id_utilisateur);
-      res.json({ success: true, data: stats[0] });
-    } catch (err) {
-      res.status(500).json({ success: false, error: err.message });
-    }
-  };
-  
-  const getRecentTransactions = async (req, res) => {
-    try {
-      const { id_utilisateur } = req.params;
-      const transactions = await Transaction.getRecentTransactions(id_utilisateur);
-      res.json({ success: true, data: transactions });
-    } catch (err) {
-      res.status(500).json({ success: false, error: err.message });
-    }
-  };
+const getAllTransactions = async (req, res) => {
+  try {
+    const [transactions] = await Transaction.getAllTransactions();
+    res.status(200).json(transactions);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+const getTransactionsByUser = async (req, res) => {
+  try {
+    const { id_utilisateur } = req.params;
+    const [transactions] = await Transaction.getTransactionsByUser(id_utilisateur);
+    res.status(200).json(transactions);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+const getTransactionStats = async (req, res) => {
+  try {
+    const { id_utilisateur } = req.params;
+    const [stats] = await Transaction.getTransactionStats(id_utilisateur);
+    res.json({ success: true, data: stats[0] });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+const getRecentTransactions = async (req, res) => {
+  try {
+    const { id_utilisateur } = req.params;
+    const transactions = await Transaction.getRecentTransactions(id_utilisateur);
+    res.json({ success: true, data: transactions });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
 // Export des fonctions
 export default {
   createTransaction,
   getAllTransactions,
   getTransactionsByUser,
   getTransactionStats,
-  getRecentTransactions
+  getRecentTransactions,
 };
