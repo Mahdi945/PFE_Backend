@@ -35,7 +35,7 @@ Solution web complète pour la gestion des stations-service développée avec :
 - RxJS 7.8  
 
 **Backend** :
-- Node.js 20  
+- Node.js 18  
 - Express 4.18  
 - MySQL 8.0  
 - JWT  
