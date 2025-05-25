@@ -21,6 +21,7 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './swagger-config.js';
 import stockRouter from './routes/stockRoute.js';
 import reclamationRouter from './routes/reclamationRoute.js';
+import messageRouter from './routes/messageRoute.js';
 //import OdooService from './services/OdooService.js';
 //import odooRouter from './routes/odooRoute.js';
 dotenv.config();
@@ -61,6 +62,7 @@ app.use('/api/credit', creditRouter);
 app.use('/api/stock', stockRouter);
 app.use('/api/Reclamation', reclamationRouter);
 app.use('/api/notifications', notificationRouter);
+app.use('/api/messages', messageRouter);
 
 // Ajoutez cette ligne APRÈS les autres app.use() et AVANT les routes
 app.use(

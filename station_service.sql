@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : mer. 21 mai 2025 à 14:59
+-- Généré le : dim. 25 mai 2025 à 14:34
 -- Version du serveur : 10.4.28-MariaDB
 -- Version de PHP : 8.2.4
 
@@ -756,7 +756,7 @@ INSERT INTO `details_credits` (`id`, `id_utilisateur`, `type_credit`, `solde_cre
 (16, 10, 'individuelle', 500.00, '2025-05-02', 30, 500.00, 'expiré', 500.00, '2025-05-02 23:20:01'),
 (17, 10, 'organisationnelle', 500.00, '2025-05-02', 30, 498.00, 'actif', 100.00, '2025-05-13 20:25:47'),
 (18, 13, 'individuelle', 200.00, '2025-05-16', 30, NULL, 'actif', 100.00, '2025-05-16 02:28:08'),
-(19, 10, 'individuelle', 500.00, '2025-05-19', 30, 100.00, 'actif', 500.00, '2025-05-21 00:42:10');
+(19, 10, 'individuelle', 500.00, '2025-05-19', 30, 410.00, 'actif', 500.00, '2025-05-24 22:38:55');
 
 --
 -- Déclencheurs `details_credits`
@@ -881,6 +881,28 @@ CREATE TRIGGER `before_ligne_vente_insert` BEFORE INSERT ON `ligne_vente` FOR EA
 END
 $$
 DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `messages`
+--
+
+CREATE TABLE `messages` (
+  `id` int(11) NOT NULL,
+  `sender_id` int(11) NOT NULL,
+  `receiver_id` int(11) NOT NULL,
+  `content` text NOT NULL,
+  `is_read` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `messages`
+--
+
+INSERT INTO `messages` (`id`, `sender_id`, `receiver_id`, `content`, `is_read`, `created_at`) VALUES
+(13, 14, 15, 'HI', 0, '2025-05-25 12:30:37');
 
 -- --------------------------------------------------------
 
@@ -1102,7 +1124,13 @@ INSERT INTO `notifications` (`id`, `id_utilisateur`, `entity_type`, `entity_id`,
 (15, 13, 'reclamation', 5, 'reclamation_resolved', 'Votre réclamation #REC-069248-224 a été marquée comme résolue', 1, '2025-05-16 17:13:33'),
 (19, 13, 'reclamation', 4, 'reclamation_updated', 'Le statut de votre réclamation #REC-553193-986 a été mis à jour: en_cours', 1, '2025-05-17 20:27:23'),
 (20, 13, 'reclamation', 8, 'reclamation_created', 'Votre réclamation #REC-634834-416 a été créée avec succès', 0, '2025-05-18 14:30:34'),
-(21, 13, 'reclamation', 4, 'reclamation_resolved', 'Votre réclamation #REC-553193-986 a été marquée comme résolue', 0, '2025-05-18 14:32:34');
+(21, 13, 'reclamation', 4, 'reclamation_resolved', 'Votre réclamation #REC-553193-986 a été marquée comme résolue', 0, '2025-05-18 14:32:34'),
+(22, 10, 'credit', 9, 'expiration_proche', 'Votre crédit #9 expire dans 7 jours', 0, '2025-05-24 23:00:01'),
+(23, 9, 'credit', 10, 'expiration_proche', 'Votre crédit #10 expire dans 7 jours', 0, '2025-05-24 23:00:05'),
+(24, 9, 'credit', 12, 'expiration_proche', 'Votre crédit #12 expire dans 7 jours', 0, '2025-05-24 23:00:07'),
+(25, 10, 'credit', 14, 'expiration_proche', 'Votre crédit #14 expire dans 7 jours', 0, '2025-05-24 23:00:09'),
+(26, 9, 'credit', 15, 'expiration_proche', 'Votre crédit #15 expire dans 7 jours', 0, '2025-05-24 23:00:11'),
+(27, 10, 'credit', 17, 'expiration_proche', 'Votre crédit #17 expire dans 7 jours', 0, '2025-05-24 23:00:13');
 
 -- --------------------------------------------------------
 
@@ -1202,7 +1230,7 @@ INSERT INTO `permissions` (`id`, `role`, `element_name`, `parent_element`, `is_v
 (105, 'cogerant', 'Liste pompes', 'Pompes', 1),
 (109, 'caissier', 'Saisie Paiements', NULL, 1),
 (110, 'cogerant', 'Saisie Paiements', 'Crédits', 1),
-(111, 'gerant', 'Saisie Paiements', 'Crédits', 1),
+(111, 'gerant', 'Saisie Paiements', 'Crédits', 0),
 (112, 'gerant', 'Visualiser Revenues', NULL, 1),
 (113, 'cogerant', 'Visualiser Revenues', NULL, 1),
 (114, 'gerant', 'Dashboard', NULL, 1),
@@ -1253,7 +1281,7 @@ INSERT INTO `pistolets` (`id`, `pompe_id`, `numero_pistolet`, `statut`, `created
 (5, 35, 'PI01', 'maintenance', '2025-04-22 00:34:53', '2025-05-08 19:26:49', 'SP95', 2.50, 'Litre', '2025-04-24', NULL),
 (6, 35, 'PI03', 'disponible', '2025-04-22 00:34:53', '2025-05-08 19:27:10', 'GPL', 2.70, 'Litre', '2025-04-24', NULL),
 (7, 35, 'PI02', 'disponible', '2025-04-22 00:34:53', '2025-05-08 19:27:33', 'GAZOLE', 2.30, 'Litre', '2025-04-30', NULL),
-(8, 36, 'PI04', 'disponible', '2025-04-22 00:39:26', '2025-05-13 16:30:18', 'SP95', 2.50, 'Litre', '2025-05-13', 200.00);
+(8, 36, 'PI04', 'disponible', '2025-04-22 00:39:26', '2025-05-23 21:29:18', 'SP95', 2.50, 'Litre', '2025-05-23', 100.00);
 
 -- --------------------------------------------------------
 
@@ -1407,6 +1435,13 @@ CREATE TABLE `releves_postes` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Déchargement des données de la table `releves_postes`
+--
+
+INSERT INTO `releves_postes` (`id`, `affectation_id`, `pistolet_id`, `index_ouverture`, `index_fermeture`, `date_heure_saisie`, `statut`, `updated_at`) VALUES
+(20, 11111, 8, 0.00, 100.00, '2025-05-23 22:29:18', 'saisie', NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -1498,7 +1533,15 @@ INSERT INTO `transactions` (`id`, `id_vehicule`, `quantite`, `montant`, `date_tr
 (72, 28, 0.48, 5.00, '2025-05-13 19:26:34', 17, '25', NULL),
 (73, 28, 0.19, 2.00, '2025-05-13 19:30:16', 17, '25', NULL),
 (75, 28, 0.10, 1.00, '2025-05-13 19:36:22', 17, 'http://localhost:3000/transactions/transaction_1747161382077.png', 25),
-(76, 8, 9.52, 100.00, '2025-05-21 00:42:10', 19, 'http://localhost:3000/transactions/transaction_1747784530471.jpeg', 25);
+(76, 8, 9.52, 100.00, '2025-05-21 00:42:10', 19, 'http://localhost:3000/transactions/transaction_1747784530471.jpeg', 25),
+(77, 8, 9.52, 100.00, '2025-05-23 22:27:10', 19, 'http://localhost:3000/transactions/transaction_1748035629223.JPG', 25),
+(78, 8, 4.76, 50.00, '2025-05-24 21:37:56', 19, 'http://localhost:3000/transactions/transaction_1748119076154.png', 25),
+(79, 8, 4.76, 50.00, '2025-05-24 21:49:33', 19, 'http://localhost:3000/transactions/transaction_1748119773735.jpg', 25),
+(80, 8, 4.76, 50.00, '2025-05-24 21:52:16', 19, 'http://localhost:3000/transactions/transaction_1748119936223.jpg', 25),
+(81, 8, 4.76, 50.00, '2025-05-24 22:31:59', 19, NULL, 25),
+(82, 8, 4.76, 50.00, '2025-05-24 22:32:23', 19, NULL, 25),
+(83, 8, 4.76, 50.00, '2025-05-24 22:37:32', 19, NULL, 25),
+(84, 8, 0.95, 10.00, '2025-05-24 22:38:55', 19, NULL, 25);
 
 --
 -- Déclencheurs `transactions`
@@ -1663,6 +1706,14 @@ ALTER TABLE `ligne_vente`
   ADD KEY `produit_id` (`produit_id`);
 
 --
+-- Index pour la table `messages`
+--
+ALTER TABLE `messages`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_sender_receiver` (`sender_id`,`receiver_id`),
+  ADD KEY `idx_receiver_sender` (`receiver_id`,`sender_id`);
+
+--
 -- Index pour la table `mouvements_stock`
 --
 ALTER TABLE `mouvements_stock`
@@ -1806,6 +1857,12 @@ ALTER TABLE `ligne_vente`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
+-- AUTO_INCREMENT pour la table `messages`
+--
+ALTER TABLE `messages`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+
+--
 -- AUTO_INCREMENT pour la table `mouvements_stock`
 --
 ALTER TABLE `mouvements_stock`
@@ -1815,7 +1872,7 @@ ALTER TABLE `mouvements_stock`
 -- AUTO_INCREMENT pour la table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT pour la table `paiements_credits`
@@ -1869,13 +1926,13 @@ ALTER TABLE `reclamations`
 -- AUTO_INCREMENT pour la table `releves_postes`
 --
 ALTER TABLE `releves_postes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT pour la table `transactions`
 --
 ALTER TABLE `transactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=77;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=85;
 
 --
 -- AUTO_INCREMENT pour la table `utilisateurs`
@@ -1925,6 +1982,13 @@ ALTER TABLE `details_credits`
 ALTER TABLE `ligne_vente`
   ADD CONSTRAINT `ligne_vente_ibfk_1` FOREIGN KEY (`vente_id`) REFERENCES `ventes` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `ligne_vente_ibfk_2` FOREIGN KEY (`produit_id`) REFERENCES `produits` (`id`);
+
+--
+-- Contraintes pour la table `messages`
+--
+ALTER TABLE `messages`
+  ADD CONSTRAINT `messages_ibfk_1` FOREIGN KEY (`sender_id`) REFERENCES `utilisateurs` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `messages_ibfk_2` FOREIGN KEY (`receiver_id`) REFERENCES `utilisateurs` (`id`) ON DELETE CASCADE;
 
 --
 -- Contraintes pour la table `mouvements_stock`

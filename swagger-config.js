@@ -990,7 +990,45 @@ const options = {
           code_barre: { type: 'string', example: '5449000000995' },
         },
       },
-
+      Message: {
+  type: 'object',
+  properties: {
+    id: { type: 'integer', example: 1 },
+    sender_id: { type: 'integer', example: 13 },
+    receiver_id: { type: 'integer', example: 14 },
+    content: { type: 'string', example: 'Bonjour, comment ça va ?' },
+    is_read: { type: 'boolean', example: false },
+    created_at: { 
+      type: 'string', 
+      format: 'date-time', 
+      example: '2025-05-25T00:35:23Z' 
+    }
+  }
+},
+MessageInput: {
+  type: 'object',
+  required: ['receiver_id', 'content'],
+  properties: {
+    receiver_id: { type: 'integer', example: 14 },
+    content: { 
+      type: 'string', 
+      minLength: 1,
+      maxLength: 1000,
+      example: 'Bonjour, comment ça va ?' 
+    }
+  }
+},
+MarkAsReadInput: {
+  type: 'object',
+  required: ['message_ids'],
+  properties: {
+    message_ids: {
+      type: 'array',
+      items: { type: 'integer' },
+      example: [1, 2, 3]
+    }
+  }
+},
       // ==================== SCHÉMAS STATISTIQUES ====================
       StatsStock: {
         type: 'object',
@@ -4604,7 +4642,214 @@ const options = {
           },
         },
       },
-
+      '/messages': {
+  post: {
+    tags: ['Messages'],
+    summary: 'Envoyer un message',
+    description: 'Endpoint pour envoyer un message à un autre utilisateur',
+    security: [{ cookieAuth: [] }],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            $ref: '#/components/schemas/MessageInput'
+          }
+        }
+      }
+    },
+    responses: {
+      201: {
+        description: 'Message envoyé avec succès',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/Message'
+            }
+          }
+        }
+      },
+      400: { description: 'Données invalides' },
+      401: { description: 'Non autorisé' },
+      404: { description: 'Destinataire non trouvé' }
+    }
+  }
+},
+'/messages/conversation/{user1}/{user2}': {
+  get: {
+    tags: ['Messages'],
+    summary: 'Obtenir une conversation',
+    description: 'Endpoint pour récupérer la conversation entre deux utilisateurs',
+    security: [{ cookieAuth: [] }],
+    parameters: [
+      {
+        in: 'path',
+        name: 'user1',
+        required: true,
+        schema: { type: 'integer' },
+        description: 'ID du premier utilisateur'
+      },
+      {
+        in: 'path',
+        name: 'user2',
+        required: true,
+        schema: { type: 'integer' },
+        description: 'ID du deuxième utilisateur'
+      }
+    ],
+    responses: {
+      200: {
+        description: 'Liste des messages de la conversation',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'array',
+              items: {
+                $ref: '#/components/schemas/Message'
+              }
+            }
+          }
+        }
+      },
+      401: { description: 'Non autorisé' }
+    }
+  }
+},
+'/messages/user/{userId}': {
+  get: {
+    tags: ['Messages'],
+    summary: 'Obtenir tous les messages',
+    description: "Endpoint pour récupérer tous les messages d'un utilisateur",
+    security: [{ cookieAuth: [] }],
+    parameters: [
+      {
+        in: 'path',
+        name: 'userId',
+        required: true,
+        schema: { type: 'integer' },
+        description: "ID de l'utilisateur"
+      }
+    ],
+    responses: {
+      200: {
+        description: 'Liste des messages',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'array',
+              items: {
+                $ref: '#/components/schemas/Message'
+              }
+            }
+          }
+        }
+      },
+      401: { description: 'Non autorisé' },
+      404: { description: 'Utilisateur non trouvé' }
+    }
+  }
+},
+'/messages/unread-count/{userId}': {
+  get: {
+    tags: ['Messages'],
+    summary: 'Nombre de messages non lus',
+    description: "Endpoint pour obtenir le nombre de messages non lus d'un utilisateur",
+    security: [{ cookieAuth: [] }],
+    parameters: [
+      {
+        in: 'path',
+        name: 'userId',
+        required: true,
+        schema: { type: 'integer' },
+        description: "ID de l'utilisateur"
+      }
+    ],
+    responses: {
+      200: {
+        description: 'Nombre de messages non lus',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                count: { type: 'integer', example: 3 }
+              }
+            }
+          }
+        }
+      },
+      401: { description: 'Non autorisé' },
+      404: { description: 'Utilisateur non trouvé' }
+    }
+  }
+},
+'/messages/mark-as-read': {
+  put: {
+    tags: ['Messages'],
+    summary: 'Marquer comme lu',
+    description: 'Endpoint pour marquer des messages comme lus',
+    security: [{ cookieAuth: [] }],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            $ref: '#/components/schemas/MarkAsReadInput'
+          }
+        }
+      }
+    },
+    responses: {
+      200: {
+        description: 'Messages marqués comme lus',
+        content: {
+          'application/json': {
+            example: {
+              success: true,
+              message: '3 messages marqués comme lus'
+            }
+          }
+        }
+      },
+      400: { description: 'Données invalides' },
+      401: { description: 'Non autorisé' }
+    }
+  }
+},
+'/messages/contacts/{userId}': {
+  get: {
+    tags: ['Messages'],
+    summary: 'Obtenir tous les contacts',
+    description: "Endpoint pour récupérer tous les contacts avec qui l'utilisateur a échangé des messages",
+    security: [{ cookieAuth: [] }],
+    parameters: [
+      {
+        in: 'path',
+        name: 'userId',
+        required: true,
+        schema: { type: 'integer' },
+        description: "ID de l'utilisateur"
+      }
+    ],
+    responses: {
+      200: {
+        description: 'Liste des contacts',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'array',
+              items: {
+                $ref: '#/components/schemas/User'
+              }
+            }
+          }
+        }
+      },
+      401: { description: 'Non autorisé' },
+      404: { description: 'Utilisateur non trouvé' }
+    }
+  }
+},
       // ==================== ROUTES STATISTIQUES ====================
       '/stock/stats/stock': {
         get: {
