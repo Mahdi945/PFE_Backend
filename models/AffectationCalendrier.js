@@ -176,7 +176,7 @@ addAffectationAutomatiqueEquitable: async (mois, annee, regenerate = false) => {
       );
 
       return {
-        success: true,
+         success: true,
         message: `Affectations générées avec succès pour ${mois}/${annee}`,
         stats: {
           jours: dates.length,
@@ -184,7 +184,8 @@ addAffectationAutomatiqueEquitable: async (mois, annee, regenerate = false) => {
           dernier_jour: dates[dates.length - 1],
           total_affectations: totalAffectations,
           verification_bdd: verification[0][0],
-          repartition: Object.fromEntries(affectationsParPompiste)
+          repartition: Object.fromEntries(affectationsParPompiste),
+          pompistes_affectes: pompistes.length // Ajouté pour référence
         }
       };
     } catch (error) {
