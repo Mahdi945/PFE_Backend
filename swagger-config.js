@@ -1059,6 +1059,193 @@ MarkAsReadInput: {
           },
         },
       },
+
+      // ==================== SCHÉMAS FOURNISSEURS ====================
+      Fournisseur: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 1 },
+          nom: { type: 'string', example: 'Fournisseur ABC' },
+          adresse: { 
+            type: 'string', 
+            example: '123 Rue de la Livraison, Tunis',
+            nullable: true 
+          },
+          telephone: { 
+            type: 'string', 
+            example: '+216 12 345 678',
+            nullable: true 
+          },
+          email: { 
+            type: 'string', 
+            example: 'contact@fournisseur-abc.com',
+            nullable: true 
+          },
+          contact_personne: { 
+            type: 'string', 
+            example: 'Ahmed Ben Ali',
+            nullable: true 
+          },
+          date_creation: {
+            type: 'string',
+            format: 'date-time',
+            example: '2025-01-15T10:30:00Z',
+          },
+          date_modification: {
+            type: 'string',
+            format: 'date-time',
+            example: '2025-01-20T14:45:00Z',
+            nullable: true,
+          },
+        },
+      },
+      FournisseurInput: {
+        type: 'object',
+        required: ['nom'],
+        properties: {
+          nom: { type: 'string', example: 'Fournisseur ABC' },
+          adresse: { 
+            type: 'string', 
+            example: '123 Rue de la Livraison, Tunis',
+            nullable: true 
+          },
+          telephone: { 
+            type: 'string', 
+            example: '+216 12 345 678',
+            nullable: true 
+          },
+          email: { 
+            type: 'string', 
+            example: 'contact@fournisseur-abc.com',
+            nullable: true 
+          },
+          contact_personne: { 
+            type: 'string', 
+            example: 'Ahmed Ben Ali',
+            nullable: true 
+          },
+        },
+      },
+
+      // ==================== SCHÉMAS COMMANDES D'ACHAT ====================
+      CommandeAchat: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 1 },
+          numero_commande: { type: 'string', example: 'CMD-2025-001' },
+          fournisseur_id: { type: 'integer', example: 1 },
+          date_commande: {
+            type: 'string',
+            format: 'date-time',
+            example: '2025-01-15T10:30:00Z',
+          },
+          statut: {
+            type: 'string',
+            enum: ['en_attente', 'validee', 'recue', 'annulee'],
+            example: 'en_attente',
+          },
+          montant_total: { 
+            type: 'number', 
+            format: 'float', 
+            example: 1250.50 
+          },
+          date_livraison_prevue: {
+            type: 'string',
+            format: 'date',
+            example: '2025-01-25',
+            nullable: true,
+          },
+          date_livraison_reelle: {
+            type: 'string',
+            format: 'date',
+            example: '2025-01-24',
+            nullable: true,
+          },
+          notes: { 
+            type: 'string', 
+            example: 'Livraison urgente demandée',
+            nullable: true 
+          },
+          utilisateur_id: { type: 'integer', example: 14 },
+          date_creation: {
+            type: 'string',
+            format: 'date-time',
+            example: '2025-01-15T10:30:00Z',
+          },
+          date_modification: {
+            type: 'string',
+            format: 'date-time',
+            example: '2025-01-20T14:45:00Z',
+            nullable: true,
+          },
+        },
+      },
+      CommandeAchatInput: {
+        type: 'object',
+        required: ['fournisseur_id', 'lignes'],
+        properties: {
+          fournisseur_id: { type: 'integer', example: 1 },
+          date_livraison_prevue: {
+            type: 'string',
+            format: 'date',
+            example: '2025-01-25',
+            nullable: true,
+          },
+          notes: { 
+            type: 'string', 
+            example: 'Livraison urgente demandée',
+            nullable: true 
+          },
+          lignes: {
+            type: 'array',
+            items: {
+              type: 'object',
+              required: ['produit_id', 'quantite', 'prix_unitaire'],
+              properties: {
+                produit_id: { type: 'integer', example: 2 },
+                quantite: {
+                  type: 'integer',
+                  minimum: 1,
+                  example: 50,
+                },
+                prix_unitaire: {
+                  type: 'number',
+                  format: 'float',
+                  minimum: 0,
+                  example: 8.50,
+                },
+              },
+            },
+          },
+        },
+      },
+
+      // ==================== SCHÉMAS LIGNES COMMANDE ====================
+      LigneCommande: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 1 },
+          commande_id: { type: 'integer', example: 1 },
+          produit_id: { type: 'integer', example: 2 },
+          quantite: { type: 'integer', example: 50 },
+          prix_unitaire: { type: 'number', format: 'float', example: 8.50 },
+          montant_ligne: { type: 'number', format: 'float', example: 425.00 },
+          produit_nom: { type: 'string', example: 'Produit Exemple' },
+          code_barre: { type: 'string', example: '1234567890123' },
+        },
+      },
+
+      // ==================== SCHÉMAS STATISTIQUES ====================
+      StatsStock: {
+        type: 'object',
+        properties: {
+          total_produits: { type: 'integer', example: 125 },
+          total_categories: { type: 'integer', example: 8 },
+          valeur_stock_total: { type: 'number', format: 'float', example: 15750.25 },
+          produits_faible_stock: { type: 'integer', example: 12 },
+          mouvements_jour: { type: 'integer', example: 25 },
+        },
+      },
     },
     paths: {
       '/login': {
@@ -1097,7 +1284,7 @@ MarkAsReadInput: {
       },
       '/register': {
         post: {
-          tags: ['Authentification'],
+          tags: ['Créer compte utilisateur'],
           summary: 'Inscription utilisateur',
           description:
             'Endpoint pour créer un nouveau compte utilisateur (réservé aux administrateurs)',
@@ -1295,7 +1482,7 @@ MarkAsReadInput: {
 
       '/users': {
         get: {
-          tags: ['Utilisateurs'],
+          tags: ['Lister les utilisateurs'],
           summary: 'Liste des utilisateurs',
           description: 'Récupère tous les utilisateurs (réservé aux administrateurs)',
           security: [{ cookieAuth: [] }],
@@ -1318,6 +1505,543 @@ MarkAsReadInput: {
           },
         },
       },
+  '/desactiver/{id}': {
+    put: {
+      tags: ['Lister les utilisateurs'], // Même tag que /users
+      summary: 'Désactiver un utilisateur',
+      description: 'Endpoint pour désactiver un utilisateur (réservé aux administrateurs)',
+      // ... (reste inchangé)
+    }
+  },
+
+  '/reactiver/{id}': {
+    put: {
+      tags: ['Lister les utilisateurs'], // Même tag que /users
+      summary: 'Réactiver un utilisateur',
+      description: 'Endpoint pour réactiver un utilisateur désactivé (réservé aux administrateurs)',
+      // ... (reste inchangé)
+    }
+  },
+
+  '/update/{id}': {
+    put: {
+      tags: ['Lister les utilisateurs'], // Même tag que /users
+      summary: 'Modifier le rôle d\'un utilisateur',
+      description: 'Endpoint pour changer le rôle d\'un utilisateur (réservé aux administrateurs)',
+      // ... (reste inchangé)
+    }
+  },
+
+  '/user/username/{username}': {
+    get: {
+      tags: ['Lister les utilisateurs'], // Même tag que /users
+      summary: 'Récupérer un utilisateur par son nom d\'utilisateur',
+      description: 'Endpoint pour obtenir les détails d\'un utilisateur spécifique par son username',
+      // ... (reste inchangé)
+    }
+  },'/permissions': {
+    get: {
+      tags: ['Permissions'],
+      summary: 'Obtenir toutes les permissions',
+      description: 'Endpoint pour récupérer toutes les permissions disponibles dans le système',
+      security: [{ cookieAuth: [] }],
+      responses: {
+        200: {
+          description: 'Liste des permissions',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'integer', example: 1 },
+                    name: { type: 'string', example: 'manage_users' },
+                    description: { type: 'string', example: 'Permission de gérer les utilisateurs' }
+                  }
+                }
+              }
+            }
+          }
+        },
+        401: { description: 'Non autorisé' }
+      }
+    }
+  },
+
+  '/permissions/update': {
+    post: {
+      tags: ['Permissions'],
+      summary: 'Mettre à jour une permission',
+      description: 'Endpoint pour modifier les accords d\'une permission spécifique',
+      security: [{ cookieAuth: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              required: ['permissionId', 'role', 'allowed'],
+              properties: {
+                permissionId: { type: 'integer', example: 1 },
+                role: { type: 'string', example: 'admin' },
+                allowed: { type: 'boolean', example: true }
+              }
+            }
+          }
+        }
+      },
+      responses: {
+        200: {
+          description: 'Permission mise à jour avec succès',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Permission mise à jour avec succès' }
+                }
+              }
+            }
+          }
+        },
+        400: { description: 'Données invalides' },
+        401: { description: 'Non autorisé' }
+      }
+    }
+  },
+
+  '/permissions/role/:role': {
+    get: {
+      tags: ['Permissions'],
+      summary: 'Obtenir les permissions par rôle',
+      description: 'Endpoint pour récupérer toutes les permissions associées à un rôle spécifique',
+      security: [{ cookieAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'role',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Nom du rôle (ex: admin, user, manager)'
+        }
+      ],
+      responses: {
+        200: {
+          description: 'Liste des permissions pour le rôle',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'integer', example: 1 },
+                    name: { type: 'string', example: 'manage_users' },
+                    allowed: { type: 'boolean', example: true }
+                  }
+                }
+              }
+            }
+          }
+        },
+        401: { description: 'Non autorisé' },
+        404: { description: 'Rôle non trouvé' }
+      }
+    }
+  },
+
+  '/permissions/dashboard/:role': {
+    get: {
+      tags: ['Permissions'],
+      summary: 'Obtenir les permissions du dashboard par rôle',
+      description: 'Endpoint pour récupérer les permissions spécifiques au dashboard pour un rôle',
+      security: [{ cookieAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'role',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Nom du rôle (ex: admin, user, manager)'
+        }
+      ],
+      responses: {
+        200: {
+          description: 'Permissions du dashboard pour le rôle',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  canViewDashboard: { type: 'boolean', example: true },
+                  modules: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        name: { type: 'string', example: 'analytics' },
+                        access: { type: 'boolean', example: true }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        401: { description: 'Non autorisé' },
+        404: { description: 'Rôle non trouvé' }
+      }
+    }
+  },
+
+  '/permissions/roles': {
+    get: {
+      tags: ['Permissions'],
+      summary: 'Obtenir tous les rôles',
+      description: 'Endpoint pour récupérer la liste de tous les rôles disponibles dans le système',
+      security: [{ cookieAuth: [] }],
+      responses: {
+        200: {
+          description: 'Liste des rôles',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'array',
+                items: {
+                  type: 'string',
+                  example: 'admin'
+                }
+              }
+            }
+          }
+        },
+        401: { description: 'Non autorisé' }
+      }
+    }
+  },
+
+  '/permissions/update-multiple': {
+    post: {
+      tags: ['Permissions'],
+      summary: 'Mettre à jour plusieurs permissions',
+      description: 'Endpoint pour modifier plusieurs permissions en une seule requête',
+      security: [{ cookieAuth: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              required: ['updates'],
+              properties: {
+                updates: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    required: ['permissionId', 'role', 'allowed'],
+                    properties: {
+                      permissionId: { type: 'integer', example: 1 },
+                      role: { type: 'string', example: 'admin' },
+                      allowed: { type: 'boolean', example: true }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      responses: {
+        200: {
+          description: 'Permissions mises à jour avec succès',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Permissions mises à jour avec succès' },
+                  updatedCount: { type: 'integer', example: 3 }
+                }
+              }
+            }
+          }
+        },
+        400: { description: 'Données invalides' },
+        401: { description: 'Non autorisé' }
+      }
+    }
+  },
+ '/notifications/{id_utilisateur}': {
+    get: {
+      tags: ['Notifications'],
+      summary: 'Obtenir les notifications d\'un utilisateur',
+      description: 'Endpoint pour récupérer toutes les notifications d\'un utilisateur spécifique',
+      security: [{ cookieAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'id_utilisateur',
+          required: true,
+          schema: { type: 'integer' },
+          description: 'ID de l\'utilisateur'
+        },
+        {
+          in: 'query',
+          name: 'limit',
+          schema: { type: 'integer', default: 10 },
+          description: 'Limite le nombre de notifications retournées'
+        },
+        {
+          in: 'query',
+          name: 'offset',
+          schema: { type: 'integer', default: 0 },
+          description: 'Décalage pour la pagination'
+        }
+      ],
+      responses: {
+        200: {
+          description: 'Liste des notifications',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'array',
+                items: {
+                  $ref: '#/components/schemas/Notification'
+                }
+              }
+            }
+          }
+        },
+        401: { description: 'Non autorisé' },
+        404: { description: 'Utilisateur non trouvé' }
+      }
+    }
+  },
+
+  '/notifications/mark-as-read': {
+    put: {
+      tags: ['Notifications'],
+      summary: 'Marquer une notification comme lue',
+      description: 'Endpoint pour marquer une notification spécifique comme lue',
+      security: [{ cookieAuth: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              required: ['notification_id'],
+              properties: {
+                notification_id: { 
+                  type: 'integer',
+                  example: 123,
+                  description: 'ID de la notification à marquer comme lue'
+                }
+              }
+            }
+          }
+        }
+      },
+      responses: {
+        200: {
+          description: 'Notification marquée comme lue',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Notification marquée comme lue' }
+                }
+              }
+            }
+          }
+        },
+        400: { description: 'ID de notification invalide' },
+        401: { description: 'Non autorisé' },
+        404: { description: 'Notification non trouvée' }
+      }
+    }
+  },
+
+  '/notifications/mark-all-as-read': {
+    put: {
+      tags: ['Notifications'],
+      summary: 'Marquer toutes les notifications comme lues',
+      description: 'Endpoint pour marquer toutes les notifications d\'un utilisateur comme lues',
+      security: [{ cookieAuth: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              required: ['user_id'],
+              properties: {
+                user_id: { 
+                  type: 'integer',
+                  example: 456,
+                  description: 'ID de l\'utilisateur'
+                }
+              }
+            }
+          }
+        }
+      },
+      responses: {
+        200: {
+          description: 'Toutes les notifications marquées comme lues',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Toutes les notifications marquées comme lues' },
+                  updatedCount: { type: 'integer', example: 5 }
+                }
+              }
+            }
+          }
+        },
+        400: { description: 'ID utilisateur invalide' },
+        401: { description: 'Non autorisé' },
+        404: { description: 'Utilisateur non trouvé' }
+      }
+    }
+  },
+
+  '/notifications/unread-count/{id_utilisateur}': {
+    get: {
+      tags: ['Notifications'],
+      summary: 'Obtenir le nombre de notifications non lues',
+      description: 'Endpoint pour récupérer le nombre de notifications non lues d\'un utilisateur',
+      security: [{ cookieAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'id_utilisateur',
+          required: true,
+          schema: { type: 'integer' },
+          description: 'ID de l\'utilisateur'
+        }
+      ],
+      responses: {
+        200: {
+          description: 'Nombre de notifications non lues',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  count: { type: 'integer', example: 3 }
+                }
+              }
+            }
+          }
+        },
+        401: { description: 'Non autorisé' },
+        404: { description: 'Utilisateur non trouvé' }
+      }
+    }
+  },
+
+  '/notifications/hide': {
+    delete: {
+      tags: ['Notifications'],
+      summary: 'Masquer une notification',
+      description: 'Endpoint pour masquer une notification spécifique (soft delete)',
+      security: [{ cookieAuth: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              required: ['notification_id'],
+              properties: {
+                notification_id: { 
+                  type: 'integer',
+                  example: 123,
+                  description: 'ID de la notification à masquer'
+                }
+              }
+            }
+          }
+        }
+      },
+      responses: {
+        200: {
+          description: 'Notification masquée avec succès',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Notification masquée avec succès' }
+                }
+              }
+            }
+          }
+        },
+        400: { description: 'ID de notification invalide' },
+        401: { description: 'Non autorisé' },
+        404: { description: 'Notification non trouvée' }
+      }
+    }
+  },
+
+  '/notifications/hide-all': {
+    delete: {
+      tags: ['Notifications'],
+      summary: 'Masquer toutes les notifications',
+      description: 'Endpoint pour masquer toutes les notifications d\'un utilisateur (soft delete)',
+      security: [{ cookieAuth: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              required: ['user_id'],
+              properties: {
+                user_id: { 
+                  type: 'integer',
+                  example: 456,
+                  description: 'ID de l\'utilisateur'
+                }
+              }
+            }
+          }
+        }
+      },
+      responses: {
+        200: {
+          description: 'Toutes les notifications masquées avec succès',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Toutes les notifications masquées avec succès' },
+                  hiddenCount: { type: 'integer', example: 5 }
+                }
+              }
+            }
+          }
+        },
+        400: { description: 'ID utilisateur invalide' },
+        401: { description: 'Non autorisé' },
+        404: { description: 'Utilisateur non trouvé' }
+      }
+    }
+  },
       '/pompe/pompes': {
         post: {
           tags: ['Pompes'],
@@ -4215,6 +4939,824 @@ MarkAsReadInput: {
                   example: {
                     success: false,
                     message: 'Catégorie introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+
+      // ==================== ROUTES FOURNISSEURS ====================
+      '/stock/fournisseurs': {
+        post: {
+          tags: ['Fournisseurs'],
+          summary: 'Créer un nouveau fournisseur',
+          description: 'Endpoint pour ajouter un nouveau fournisseur',
+          security: [{ cookieAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/FournisseurInput',
+                },
+              },
+            },
+          },
+          responses: {
+            201: {
+              description: 'Fournisseur créé avec succès',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Fournisseur',
+                  },
+                },
+              },
+            },
+            400: {
+              description: 'Données invalides',
+              content: {
+                'application/json': {
+                  example: {
+                    success: false,
+                    message: 'Le nom du fournisseur est obligatoire',
+                  },
+                },
+              },
+            },
+            401: { description: 'Non autorisé' },
+          },
+        },
+        get: {
+          tags: ['Fournisseurs'],
+          summary: 'Lister tous les fournisseurs',
+          description: 'Endpoint pour récupérer tous les fournisseurs',
+          security: [{ cookieAuth: [] }],
+          responses: {
+            200: {
+              description: 'Liste des fournisseurs',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'array',
+                    items: {
+                      $ref: '#/components/schemas/Fournisseur',
+                    },
+                  },
+                },
+              },
+            },
+            401: { description: 'Non autorisé' },
+          },
+        },
+      },
+
+      '/stock/fournisseurs/{id}': {
+        get: {
+          tags: ['Fournisseurs'],
+          summary: 'Obtenir un fournisseur par ID',
+          description: "Endpoint pour récupérer les détails d'un fournisseur spécifique",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'id',
+              required: true,
+              schema: { type: 'integer' },
+              description: 'ID du fournisseur',
+            },
+          ],
+          responses: {
+            200: {
+              description: 'Détails du fournisseur',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Fournisseur',
+                  },
+                },
+              },
+            },
+            401: { description: 'Non autorisé' },
+            404: {
+              description: 'Fournisseur non trouvé',
+              content: {
+                'application/json': {
+                  example: {
+                    success: false,
+                    message: 'Fournisseur introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
+        put: {
+          tags: ['Fournisseurs'],
+          summary: 'Mettre à jour un fournisseur',
+          description: "Endpoint pour modifier les informations d'un fournisseur",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'id',
+              required: true,
+              schema: { type: 'integer' },
+              description: 'ID du fournisseur',
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/FournisseurInput',
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'Fournisseur mis à jour',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Fournisseur',
+                  },
+                },
+              },
+            },
+            400: {
+              description: 'Données invalides',
+              content: {
+                'application/json': {
+                  example: {
+                    success: false,
+                    message: 'Le nom du fournisseur est obligatoire',
+                  },
+                },
+              },
+            },
+            401: { description: 'Non autorisé' },
+            404: {
+              description: 'Fournisseur non trouvé',
+              content: {
+                'application/json': {
+                  example: {
+                    success: false,
+                    message: 'Fournisseur introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
+        delete: {
+          tags: ['Fournisseurs'],
+          summary: 'Supprimer un fournisseur',
+          description: 'Endpoint pour supprimer un fournisseur',
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'id',
+              required: true,
+              schema: { type: 'integer' },
+              description: 'ID du fournisseur',
+            },
+          ],
+          responses: {
+            200: {
+              description: 'Fournisseur supprimé',
+              content: {
+                'application/json': {
+                  example: {
+                    success: true,
+                    message: 'Fournisseur supprimé avec succès',
+                  },
+                },
+              },
+            },
+            401: { description: 'Non autorisé' },
+            403: {
+              description: 'Action non autorisée',
+              content: {
+                'application/json': {
+                  example: {
+                    success: false,
+                    message: 'Impossible de supprimer un fournisseur avec des commandes associées',
+                  },
+                },
+              },
+            },
+            404: {
+              description: 'Fournisseur non trouvé',
+              content: {
+                'application/json': {
+                  example: {
+                    success: false,
+                    message: 'Fournisseur introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+
+      // ==================== ROUTES COMMANDES D'ACHAT ====================
+      '/stock/commandes-achat': {
+        post: {
+          tags: ['Achats'],
+          summary: 'Créer une commande d\'achat',
+          description: 'Endpoint pour créer une nouvelle commande d\'achat auprès d\'un fournisseur',
+          security: [{ cookieAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/CommandeAchatInput',
+                },
+              },
+            },
+          },
+          responses: {
+            201: {
+              description: 'Commande d\'achat créée avec succès',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/CommandeAchat',
+                  },
+                },
+              },
+            },
+            400: {
+              description: 'Données invalides',
+              content: {
+                'application/json': {
+                  example: {
+                    success: false,
+                    message: 'fournisseur_id et produits sont obligatoires',
+                  },
+                },
+              },
+            },
+            401: { description: 'Non autorisé' },
+            404: {
+              description: 'Fournisseur non trouvé',
+              content: {
+                'application/json': {
+                  example: {
+                    success: false,
+                    message: 'Fournisseur introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
+        get: {
+          tags: ['Achats'],
+          summary: 'Lister toutes les commandes d\'achat',
+          description: 'Endpoint pour récupérer toutes les commandes d\'achat avec filtres optionnels',
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              in: 'query',
+              name: 'fournisseur_id',
+              schema: { type: 'integer' },
+              description: 'Filtrer par ID du fournisseur',
+            },
+            {
+              in: 'query',
+              name: 'statut',
+              schema: {
+                type: 'string',
+                enum: ['en_attente', 'validee', 'recue', 'annulee'],
+              },
+              description: 'Filtrer par statut de la commande',
+            },
+            {
+              in: 'query',
+              name: 'startDate',
+              schema: {
+                type: 'string',
+                format: 'date',
+              },
+              description: 'Date de début pour le filtrage (YYYY-MM-DD)',
+            },
+            {
+              in: 'query',
+              name: 'endDate',
+              schema: {
+                type: 'string',
+                format: 'date',
+              },
+              description: 'Date de fin pour le filtrage (YYYY-MM-DD)',
+            },
+          ],
+          responses: {
+            200: {
+              description: 'Liste des commandes d\'achat',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'array',
+                    items: {
+                      $ref: '#/components/schemas/CommandeAchat',
+                    },
+                  },
+                },
+              },
+            },
+            401: { description: 'Non autorisé' },
+          },
+        },
+      },
+
+      '/stock/commandes-achat/{id}': {
+        get: {
+          tags: ['Achats'],
+          summary: 'Obtenir une commande d\'achat par ID',
+          description: "Endpoint pour récupérer les détails d'une commande d'achat spécifique",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'id',
+              required: true,
+              schema: { type: 'integer' },
+              description: 'ID de la commande d\'achat',
+            },
+          ],
+          responses: {
+            200: {
+              description: 'Détails de la commande d\'achat',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/CommandeAchat',
+                  },
+                },
+              },
+            },
+            401: { description: 'Non autorisé' },
+            404: {
+              description: 'Commande d\'achat non trouvée',
+              content: {
+                'application/json': {
+                  example: {
+                    success: false,
+                    message: 'Commande d\'achat introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
+        put: {
+          tags: ['Achats'],
+          summary: 'Mettre à jour une commande d\'achat',
+          description: "Endpoint pour modifier une commande d'achat (uniquement si en_attente)",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'id',
+              required: true,
+              schema: { type: 'integer' },
+              description: 'ID de la commande d\'achat',
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/CommandeAchatInput',
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'Commande d\'achat mise à jour',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/CommandeAchat',
+                  },
+                },
+              },
+            },
+            400: {
+              description: 'Modification non autorisée',
+              content: {
+                'application/json': {
+                  example: {
+                    success: false,
+                    message: 'Impossible de modifier une commande validée',
+                  },
+                },
+              },
+            },
+            401: { description: 'Non autorisé' },
+            404: {
+              description: 'Commande d\'achat non trouvée',
+              content: {
+                'application/json': {
+                  example: {
+                    success: false,
+                    message: 'Commande d\'achat introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
+        delete: {
+          tags: ['Achats'],
+          summary: 'Supprimer une commande d\'achat',
+          description: 'Endpoint pour supprimer une commande d\'achat (uniquement si en_attente)',
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'id',
+              required: true,
+              schema: { type: 'integer' },
+              description: 'ID de la commande d\'achat',
+            },
+          ],
+          responses: {
+            200: {
+              description: 'Commande d\'achat supprimée',
+              content: {
+                'application/json': {
+                  example: {
+                    success: true,
+                    message: 'Commande d\'achat supprimée avec succès',
+                  },
+                },
+              },
+            },
+            400: {
+              description: 'Suppression non autorisée',
+              content: {
+                'application/json': {
+                  example: {
+                    success: false,
+                    message: 'Impossible de supprimer une commande validée',
+                  },
+                },
+              },
+            },
+            401: { description: 'Non autorisé' },
+            404: {
+              description: 'Commande d\'achat non trouvée',
+              content: {
+                'application/json': {
+                  example: {
+                    success: false,
+                    message: 'Commande d\'achat introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+
+      '/stock/commandes-achat/{id}/valider': {
+        post: {
+          tags: ['Achats'],
+          summary: 'Valider une commande d\'achat',
+          description: 'Endpoint pour valider une commande d\'achat et la passer au statut "validee"',
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'id',
+              required: true,
+              schema: { type: 'integer' },
+              description: 'ID de la commande d\'achat',
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    agent_id: {
+                      type: 'integer',
+                      example: 1,
+                      description: 'ID de l\'agent qui valide la commande',
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'Commande d\'achat validée',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/CommandeAchat',
+                  },
+                },
+              },
+            },
+            400: {
+              description: 'Validation impossible',
+              content: {
+                'application/json': {
+                  example: {
+                    success: false,
+                    message: 'Seules les commandes en attente peuvent être validées',
+                  },
+                },
+              },
+            },
+            401: { description: 'Non autorisé' },
+            404: {
+              description: 'Commande d\'achat non trouvée',
+              content: {
+                'application/json': {
+                  example: {
+                    success: false,
+                    message: 'Commande d\'achat introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+
+      '/stock/commandes-achat/{id}/recevoir': {
+        post: {
+          tags: ['Achats'],
+          summary: 'Marquer une commande comme reçue',
+          description: 'Endpoint pour marquer une commande d\'achat comme reçue et mettre à jour les stocks',
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'id',
+              required: true,
+              schema: { type: 'integer' },
+              description: 'ID de la commande d\'achat',
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['agent_id'],
+                  properties: {
+                    agent_id: {
+                      type: 'integer',
+                      example: 1,
+                      description: 'ID de l\'agent qui réceptionne la commande',
+                    },
+                    reception_data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          ligne_id: {
+                            type: 'integer',
+                            example: 1,
+                            description: 'ID de la ligne de commande',
+                          },
+                          quantite_recue: {
+                            type: 'integer',
+                            example: 45,
+                            description: 'Quantité effectivement reçue',
+                          },
+                        },
+                      },
+                      description: 'Données de réception par ligne de commande',
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'Commande d\'achat marquée comme reçue',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/CommandeAchat',
+                  },
+                },
+              },
+            },
+            400: {
+              description: 'Réception impossible',
+              content: {
+                'application/json': {
+                  example: {
+                    success: false,
+                    message: 'Seules les commandes validées peuvent être reçues',
+                  },
+                },
+              },
+            },
+            401: { description: 'Non autorisé' },
+            404: {
+              description: 'Commande d\'achat non trouvée',
+              content: {
+                'application/json': {
+                  example: {
+                    success: false,
+                    message: 'Commande d\'achat introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+
+      '/stock/commandes-achat/{id}/annuler': {
+        post: {
+          tags: ['Achats'],
+          summary: 'Annuler une commande d\'achat',
+          description: 'Endpoint pour annuler une commande d\'achat',
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'id',
+              required: true,
+              schema: { type: 'integer' },
+              description: 'ID de la commande d\'achat',
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    agent_id: {
+                      type: 'integer',
+                      example: 1,
+                      description: 'ID de l\'agent qui annule la commande',
+                    },
+                    raison: {
+                      type: 'string',
+                      example: 'Fournisseur indisponible',
+                      description: 'Raison de l\'annulation',
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'Commande d\'achat annulée',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/CommandeAchat',
+                  },
+                },
+              },
+            },
+            400: {
+              description: 'Annulation impossible',
+              content: {
+                'application/json': {
+                  example: {
+                    success: false,
+                    message: 'Impossible d\'annuler une commande déjà reçue',
+                  },
+                },
+              },
+            },
+            401: { description: 'Non autorisé' },
+            404: {
+              description: 'Commande d\'achat non trouvée',
+              content: {
+                'application/json': {
+                  example: {
+                    success: false,
+                    message: 'Commande d\'achat introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+
+      '/stock/commandes-achat/{id}/lignes': {
+        get: {
+          tags: ['Achats'],
+          summary: 'Lignes d\'une commande d\'achat',
+          description: "Endpoint pour récupérer les lignes détaillées d'une commande d'achat",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'id',
+              required: true,
+              schema: { type: 'integer' },
+              description: 'ID de la commande d\'achat',
+            },
+          ],
+          responses: {
+            200: {
+              description: 'Liste des lignes de la commande d\'achat',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'array',
+                    items: {
+                      $ref: '#/components/schemas/LigneCommande',
+                    },
+                  },
+                },
+              },
+            },
+            401: { description: 'Non autorisé' },
+            404: {
+              description: 'Commande d\'achat non trouvée',
+              content: {
+                'application/json': {
+                  example: {
+                    success: false,
+                    message: 'Commande d\'achat introuvable',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+
+      '/stock/fournisseurs/{fournisseurId}/commandes': {
+        get: {
+          tags: ['Achats'],
+          summary: 'Commandes d\'achat par fournisseur',
+          description: "Endpoint pour récupérer toutes les commandes d'achat d'un fournisseur spécifique",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'fournisseurId',
+              required: true,
+              schema: { type: 'integer' },
+              description: 'ID du fournisseur',
+            },
+            {
+              in: 'query',
+              name: 'statut',
+              schema: {
+                type: 'string',
+                enum: ['en_attente', 'validee', 'recue', 'annulee'],
+              },
+              description: 'Filtrer par statut de la commande',
+            },
+          ],
+          responses: {
+            200: {
+              description: 'Liste des commandes d\'achat du fournisseur',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'array',
+                    items: {
+                      $ref: '#/components/schemas/CommandeAchat',
+                    },
+                  },
+                },
+              },
+            },
+            401: { description: 'Non autorisé' },
+            404: {
+              description: 'Fournisseur non trouvé',
+              content: {
+                'application/json': {
+                  example: {
+                    success: false,
+                    message: 'Fournisseur introuvable',
                   },
                 },
               },

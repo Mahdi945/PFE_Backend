@@ -270,6 +270,212 @@ const stockController = {
     }
   },
 
+  // ==================== FOURNISSEURS ====================
+  createFournisseur: async (req, res) => {
+    try {
+      if (!req.body.nom) {
+        return res.status(400).json({ error: 'Le nom du fournisseur est obligatoire' });
+      }
+
+      const fournisseur = await Stock.createFournisseur(req.body);
+      res.status(201).json(fournisseur);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  updateFournisseur: async (req, res) => {
+    try {
+      if (!req.body.nom) {
+        return res.status(400).json({ error: 'Le nom du fournisseur est obligatoire' });
+      }
+
+      const fournisseur = await Stock.updateFournisseur(req.params.id, req.body);
+      res.json(fournisseur);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  deleteFournisseur: async (req, res) => {
+    try {
+      const result = await Stock.deleteFournisseur(req.params.id);
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  getFournisseur: async (req, res) => {
+    try {
+      const fournisseur = await Stock.getFournisseurById(req.params.id);
+      if (!fournisseur) {
+        return res.status(404).json({ error: 'Fournisseur non trouvé' });
+      }
+      res.json(fournisseur);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  getAllFournisseurs: async (req, res) => {
+    try {
+      const fournisseurs = await Stock.getAllFournisseurs();
+      res.json(fournisseurs);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  // ==================== COMMANDES ACHAT ====================
+  createCommandeAchat: async (req, res) => {
+    try {
+      if (!req.body.fournisseur_id || !req.body.produits || !Array.isArray(req.body.produits)) {
+        return res.status(400).json({ error: 'fournisseur_id et produits sont obligatoires' });
+      }
+
+      if (req.body.produits.length === 0) {
+        return res.status(400).json({ error: 'Au moins un produit doit être commandé' });
+      }
+
+      // Validation des produits
+      for (const produit of req.body.produits) {
+        if (!produit.produit_id || !produit.quantite || !produit.prix_unitaire) {
+          return res.status(400).json({ 
+            error: 'Chaque produit doit avoir un produit_id, quantite et prix_unitaire' 
+          });
+        }
+      }
+
+      const commande = await Stock.createCommandeAchat({
+        ...req.body,
+        agent_id: req.body.agent_id || null,
+      });
+      res.status(201).json(commande);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  updateCommandeAchat: async (req, res) => {
+    try {
+      if (!req.body.produits || !Array.isArray(req.body.produits)) {
+        return res.status(400).json({ error: 'produits est obligatoire et doit être un tableau' });
+      }
+
+      // Validation des produits
+      for (const produit of req.body.produits) {
+        if (!produit.produit_id || !produit.quantite || !produit.prix_unitaire) {
+          return res.status(400).json({ 
+            error: 'Chaque produit doit avoir un produit_id, quantite et prix_unitaire' 
+          });
+        }
+      }
+
+      const commande = await Stock.updateCommandeAchat(req.params.id, req.body);
+      res.json(commande);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  deleteCommandeAchat: async (req, res) => {
+    try {
+      const result = await Stock.deleteCommandeAchat(req.params.id);
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  getCommandeAchat: async (req, res) => {
+    try {
+      const commande = await Stock.getCommandeAchatById(req.params.id);
+      if (!commande) {
+        return res.status(404).json({ error: 'Commande non trouvée' });
+      }
+      res.json(commande);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  getAllCommandesAchat: async (req, res) => {
+    try {
+      const filters = {
+        fournisseur_id: req.query.fournisseur_id,
+        statut: req.query.statut,
+        startDate: req.query.startDate,
+        endDate: req.query.endDate,
+      };
+
+      const commandes = await Stock.getAllCommandesAchat(filters);
+      res.json(commandes);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  validerCommandeAchat: async (req, res) => {
+    try {
+      const commande = await Stock.validerCommandeAchat(req.params.id, req.body.agent_id);
+      res.json(commande);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  recevoirCommandeAchat: async (req, res) => {
+    try {
+      const commande = await Stock.recevoirCommandeAchat(
+        req.params.id, 
+        req.body.agent_id, 
+        req.body.reception_data
+      );
+      res.json(commande);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  annulerCommandeAchat: async (req, res) => {
+    try {
+      const commande = await Stock.annulerCommandeAchat(req.params.id, req.body.agent_id);
+      res.json(commande);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  getCommandesAchatByFournisseur: async (req, res) => {
+    try {
+      const filters = {
+        statut: req.query.statut,
+        startDate: req.query.startDate,
+        endDate: req.query.endDate,
+      };
+
+      const commandes = await Stock.getCommandesAchatByFournisseur(req.params.fournisseurId, filters);
+      res.json(commandes);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  getStatsCommandesAchat: async (req, res) => {
+    try {
+      const { startDate, endDate } = req.query;
+      if (!startDate || !endDate) {
+        return res.status(400).json({ error: 'startDate et endDate sont requis' });
+      }
+
+      const stats = await Stock.getStatsCommandesAchat(startDate, endDate);
+      res.json(stats);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
   // ==================== STATISTIQUES ====================
   getStockStats: async (req, res) => {
     try {

@@ -447,6 +447,477 @@ const Stock = {
       throw err;
     }
   },
+  // ==================== FOURNISSEURS ====================
+  createFournisseur: async (fournisseurData) => {
+    if (!fournisseurData.nom) {
+      throw new Error('Le nom du fournisseur est obligatoire');
+    }
+
+    const query = `
+      INSERT INTO fournisseurs 
+      (nom, contact, telephone, email, adresse)
+      VALUES (?, ?, ?, ?, ?)
+    `;
+    const [result] = await db.execute(query, [
+      fournisseurData.nom,
+      fournisseurData.contact || null,
+      fournisseurData.telephone || null,
+      fournisseurData.email || null,
+      fournisseurData.adresse || null,
+    ]);
+    return { id: result.insertId, ...fournisseurData };
+  },
+
+  updateFournisseur: async (id, fournisseurData) => {
+    if (!fournisseurData.nom) {
+      throw new Error('Le nom du fournisseur est obligatoire');
+    }
+
+    const query = `
+      UPDATE fournisseurs 
+      SET nom = ?, contact = ?, telephone = ?, email = ?, adresse = ?
+      WHERE id = ?
+    `;
+    await db.execute(query, [
+      fournisseurData.nom,
+      fournisseurData.contact || null,
+      fournisseurData.telephone || null,
+      fournisseurData.email || null,
+      fournisseurData.adresse || null,
+      id,
+    ]);
+    return { id: parseInt(id), ...fournisseurData };
+  },
+
+  deleteFournisseur: async (id) => {
+    // Vérifier s'il y a des commandes associées à ce fournisseur
+    const [commandes] = await db.execute('SELECT COUNT(*) as count FROM commandes_achat WHERE fournisseur_id = ?', [id]);
+    if (commandes[0].count > 0) {
+      throw new Error('Impossible de supprimer un fournisseur avec des commandes associées');
+    }
+
+    const [result] = await db.execute('DELETE FROM fournisseurs WHERE id = ?', [id]);
+    if (result.affectedRows === 0) {
+      throw new Error('Fournisseur non trouvé');
+    }
+    return { id: parseInt(id), deleted: true };
+  },
+
+  getFournisseurById: async (id) => {
+    const [fournisseurs] = await db.execute('SELECT * FROM fournisseurs WHERE id = ?', [id]);
+    return fournisseurs[0] || null;
+  },
+
+  getAllFournisseurs: async () => {
+    const [fournisseurs] = await db.execute(`
+      SELECT f.*, 
+             COUNT(ca.id) as nb_commandes,
+             COALESCE(SUM(ca.montant_total), 0) as total_commandes
+      FROM fournisseurs f
+      LEFT JOIN commandes_achat ca ON f.id = ca.fournisseur_id
+      GROUP BY f.id
+      ORDER BY f.nom
+    `);
+    return fournisseurs;
+  },
+
+  // ==================== COMMANDES ACHAT ====================
+  createCommandeAchat: async (commandeData) => {
+    if (!commandeData.fournisseur_id || !commandeData.produits || !Array.isArray(commandeData.produits)) {
+      throw new Error('fournisseur_id et produits sont obligatoires');
+    }
+
+    if (commandeData.produits.length === 0) {
+      throw new Error('Au moins un produit doit être commandé');
+    }
+
+    // Calculer le montant total
+    let montantTotal = 0;
+    for (const produit of commandeData.produits) {
+      if (!produit.produit_id || !produit.quantite || !produit.prix_unitaire) {
+        throw new Error('Chaque produit doit avoir un produit_id, quantite et prix_unitaire');
+      }
+      montantTotal += produit.quantite * produit.prix_unitaire;
+    }
+
+    const conn = await db.getConnection();
+
+    try {
+      await conn.beginTransaction();
+
+      // 1. Créer l'en-tête de commande
+      const [resultCommande] = await conn.execute(
+        `INSERT INTO commandes_achat 
+        (fournisseur_id, date_commande, montant_total, statut, agent_id)
+        VALUES (?, NOW(), ?, 'brouillon', ?)`,
+        [commandeData.fournisseur_id, montantTotal, commandeData.agent_id || null],
+      );
+
+      const commandeId = resultCommande.insertId;
+
+      // 2. Ajouter les lignes de commande
+      for (const produit of commandeData.produits) {
+        await conn.execute(
+          `INSERT INTO ligne_commande 
+          (commande_id, produit_id, quantite, prix_unitaire)
+          VALUES (?, ?, ?, ?)`,
+          [commandeId, produit.produit_id, produit.quantite, produit.prix_unitaire],
+        );
+      }
+
+      await conn.commit();
+      conn.release();
+
+      return await Stock.getCommandeAchatById(commandeId);
+    } catch (err) {
+      if (conn) {
+        await conn.rollback();
+        conn.release();
+      }
+      throw err;
+    }
+  },
+
+  updateCommandeAchat: async (id, commandeData) => {
+    const commande = await Stock.getCommandeAchatById(id);
+    if (!commande) {
+      throw new Error('Commande non trouvée');
+    }
+
+    if (commande.statut === 'reçue' || commande.statut === 'annulée') {
+      throw new Error('Impossible de modifier une commande reçue ou annulée');
+    }
+
+    if (!commandeData.produits || !Array.isArray(commandeData.produits)) {
+      throw new Error('produits est obligatoire et doit être un tableau');
+    }
+
+    // Calculer le nouveau montant total
+    let montantTotal = 0;
+    for (const produit of commandeData.produits) {
+      if (!produit.produit_id || !produit.quantite || !produit.prix_unitaire) {
+        throw new Error('Chaque produit doit avoir un produit_id, quantite et prix_unitaire');
+      }
+      montantTotal += produit.quantite * produit.prix_unitaire;
+    }
+
+    const conn = await db.getConnection();
+
+    try {
+      await conn.beginTransaction();
+
+      // 1. Mettre à jour l'en-tête
+      await conn.execute(
+        `UPDATE commandes_achat 
+        SET fournisseur_id = ?, montant_total = ?, agent_id = ?
+        WHERE id = ?`,
+        [commandeData.fournisseur_id || commande.fournisseur_id, montantTotal, commandeData.agent_id || commande.agent_id, id],
+      );
+
+      // 2. Supprimer les anciennes lignes
+      await conn.execute('DELETE FROM ligne_commande WHERE commande_id = ?', [id]);
+
+      // 3. Ajouter les nouvelles lignes
+      for (const produit of commandeData.produits) {
+        await conn.execute(
+          `INSERT INTO ligne_commande 
+          (commande_id, produit_id, quantite, prix_unitaire)
+          VALUES (?, ?, ?, ?)`,
+          [id, produit.produit_id, produit.quantite, produit.prix_unitaire],
+        );
+      }
+
+      await conn.commit();
+      conn.release();
+
+      return await Stock.getCommandeAchatById(id);
+    } catch (err) {
+      if (conn) {
+        await conn.rollback();
+        conn.release();
+      }
+      throw err;
+    }
+  },
+
+  deleteCommandeAchat: async (id) => {
+    const commande = await Stock.getCommandeAchatById(id);
+    if (!commande) {
+      throw new Error('Commande non trouvée');
+    }
+
+    if (commande.statut === 'reçue') {
+      throw new Error('Impossible de supprimer une commande déjà reçue');
+    }
+
+    const conn = await db.getConnection();
+
+    try {
+      await conn.beginTransaction();
+
+      // Supprimer les lignes de commande
+      await conn.execute('DELETE FROM ligne_commande WHERE commande_id = ?', [id]);
+
+      // Supprimer la commande
+      await conn.execute('DELETE FROM commandes_achat WHERE id = ?', [id]);
+
+      await conn.commit();
+      conn.release();
+
+      return { id: parseInt(id), deleted: true };
+    } catch (err) {
+      if (conn) {
+        await conn.rollback();
+        conn.release();
+      }
+      throw err;
+    }
+  },
+
+  getCommandeAchatById: async (id) => {
+    const [commandes] = await db.execute(`
+      SELECT ca.*, f.nom as fournisseur_nom, u.username as agent_nom
+      FROM commandes_achat ca
+      JOIN fournisseurs f ON ca.fournisseur_id = f.id
+      LEFT JOIN utilisateurs u ON ca.agent_id = u.id
+      WHERE ca.id = ?
+    `, [id]);
+
+    if (commandes.length === 0) return null;
+
+    const [lignes] = await db.execute(`
+      SELECT lc.*, p.nom as produit_nom, p.code_barre
+      FROM ligne_commande lc
+      JOIN produits p ON lc.produit_id = p.id
+      WHERE lc.commande_id = ?
+    `, [id]);
+
+    return {
+      ...commandes[0],
+      produits: lignes.map((l) => ({
+        id: l.produit_id,
+        nom: l.produit_nom,
+        code_barre: l.code_barre,
+        quantite: l.quantite,
+        prix_unitaire: l.prix_unitaire,
+      })),
+    };
+  },
+
+  getAllCommandesAchat: async (filters = {}) => {
+    let query = `
+      SELECT ca.*, f.nom as fournisseur_nom, u.username as agent_nom
+      FROM commandes_achat ca
+      JOIN fournisseurs f ON ca.fournisseur_id = f.id
+      LEFT JOIN utilisateurs u ON ca.agent_id = u.id
+    `;
+    
+    const conditions = [];
+    const params = [];
+
+    if (filters.fournisseur_id) {
+      conditions.push('ca.fournisseur_id = ?');
+      params.push(filters.fournisseur_id);
+    }
+
+    if (filters.statut) {
+      conditions.push('ca.statut = ?');
+      params.push(filters.statut);
+    }
+
+    if (filters.startDate && filters.endDate) {
+      conditions.push('DATE(ca.date_commande) BETWEEN ? AND ?');
+      params.push(filters.startDate, filters.endDate);
+    }
+
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
+
+    query += ' ORDER BY ca.date_commande DESC';
+
+    const [commandes] = await db.execute(query, params);
+
+    // Récupérer les produits pour chaque commande
+    for (const commande of commandes) {
+      const [lignes] = await db.execute(`
+        SELECT lc.*, p.nom as produit_nom, p.code_barre
+        FROM ligne_commande lc
+        JOIN produits p ON lc.produit_id = p.id
+        WHERE lc.commande_id = ?
+      `, [commande.id]);
+
+      commande.produits = lignes;
+    }
+
+    return commandes;
+  },
+
+  validerCommandeAchat: async (id, agentId) => {
+    const commande = await Stock.getCommandeAchatById(id);
+    if (!commande) {
+      throw new Error('Commande non trouvée');
+    }
+
+    if (commande.statut !== 'brouillon') {
+      throw new Error('Seules les commandes en brouillon peuvent être validées');
+    }
+
+    await db.execute(
+      'UPDATE commandes_achat SET statut = ?, agent_id = ? WHERE id = ?',
+      ['validée', agentId, id]
+    );
+
+    return await Stock.getCommandeAchatById(id);
+  },
+
+  recevoirCommandeAchat: async (id, agentId, receptionData) => {
+    const commande = await Stock.getCommandeAchatById(id);
+    if (!commande) {
+      throw new Error('Commande non trouvée');
+    }
+
+    if (commande.statut !== 'validée') {
+      throw new Error('Seules les commandes validées peuvent être reçues');
+    }
+
+    const conn = await db.getConnection();
+
+    try {
+      await conn.beginTransaction();
+
+      // 1. Marquer la commande comme reçue
+      await conn.execute(
+        'UPDATE commandes_achat SET statut = ?, agent_id = ? WHERE id = ?',
+        ['reçue', agentId, id]
+      );
+
+      // 2. Mettre à jour le stock pour chaque produit
+      for (const produit of commande.produits) {
+        const quantiteRecue = receptionData && receptionData[produit.id] 
+          ? receptionData[produit.id] 
+          : produit.quantite;
+
+        // Mettre à jour le stock
+        await conn.execute(
+          'UPDATE produits SET quantite_stock = quantite_stock + ? WHERE id = ?',
+          [quantiteRecue, produit.id]
+        );
+
+        // Enregistrer le mouvement de stock
+        await conn.execute(
+          `INSERT INTO mouvements_stock 
+          (produit_id, type, quantite, agent_id, raison)
+          VALUES (?, 'ENTREE', ?, ?, ?)`,
+          [produit.id, quantiteRecue, agentId, `Réception commande #${id}`]
+        );
+      }
+
+      await conn.commit();
+      conn.release();
+
+      return await Stock.getCommandeAchatById(id);
+    } catch (err) {
+      if (conn) {
+        await conn.rollback();
+        conn.release();
+      }
+      throw err;
+    }
+  },
+
+  annulerCommandeAchat: async (id, agentId) => {
+    const commande = await Stock.getCommandeAchatById(id);
+    if (!commande) {
+      throw new Error('Commande non trouvée');
+    }
+
+    if (commande.statut === 'reçue') {
+      throw new Error('Impossible d\'annuler une commande déjà reçue');
+    }
+
+    await db.execute(
+      'UPDATE commandes_achat SET statut = ?, agent_id = ? WHERE id = ?',
+      ['annulée', agentId, id]
+    );
+
+    return await Stock.getCommandeAchatById(id);
+  },
+
+  getCommandesAchatByFournisseur: async (fournisseurId, filters = {}) => {
+    let query = `
+      SELECT ca.*, f.nom as fournisseur_nom, u.username as agent_nom
+      FROM commandes_achat ca
+      JOIN fournisseurs f ON ca.fournisseur_id = f.id
+      LEFT JOIN utilisateurs u ON ca.agent_id = u.id
+      WHERE ca.fournisseur_id = ?
+    `;
+    
+    const params = [fournisseurId];
+
+    if (filters.statut) {
+      query += ' AND ca.statut = ?';
+      params.push(filters.statut);
+    }
+
+    if (filters.startDate && filters.endDate) {
+      query += ' AND DATE(ca.date_commande) BETWEEN ? AND ?';
+      params.push(filters.startDate, filters.endDate);
+    }
+
+    query += ' ORDER BY ca.date_commande DESC';
+
+    const [commandes] = await db.execute(query, params);
+
+    // Récupérer les produits pour chaque commande
+    for (const commande of commandes) {
+      const [lignes] = await db.execute(`
+        SELECT lc.*, p.nom as produit_nom, p.code_barre
+        FROM ligne_commande lc
+        JOIN produits p ON lc.produit_id = p.id
+        WHERE lc.commande_id = ?
+      `, [commande.id]);
+
+      commande.produits = lignes;
+    }
+
+    return commandes;
+  },
+
+  getStatsCommandesAchat: async (startDate, endDate) => {
+    const [stats] = await db.execute(`
+      SELECT 
+        COUNT(*) as total_commandes,
+        COUNT(CASE WHEN statut = 'brouillon' THEN 1 END) as commandes_brouillon,
+        COUNT(CASE WHEN statut = 'validée' THEN 1 END) as commandes_validees,
+        COUNT(CASE WHEN statut = 'reçue' THEN 1 END) as commandes_recues,
+        COUNT(CASE WHEN statut = 'annulée' THEN 1 END) as commandes_annulees,
+        COALESCE(SUM(montant_total), 0) as montant_total_commandes,
+        COALESCE(SUM(CASE WHEN statut = 'reçue' THEN montant_total ELSE 0 END), 0) as montant_commandes_recues
+      FROM commandes_achat
+      WHERE DATE(date_commande) BETWEEN ? AND ?
+    `, [startDate, endDate]);
+
+    // Top fournisseurs par montant
+    const [topFournisseurs] = await db.execute(`
+      SELECT 
+        f.nom as fournisseur_nom,
+        COUNT(ca.id) as nb_commandes,
+        COALESCE(SUM(ca.montant_total), 0) as montant_total
+      FROM fournisseurs f
+      LEFT JOIN commandes_achat ca ON f.id = ca.fournisseur_id 
+        AND DATE(ca.date_commande) BETWEEN ? AND ?
+      GROUP BY f.id, f.nom
+      HAVING nb_commandes > 0
+      ORDER BY montant_total DESC
+      LIMIT 5
+    `, [startDate, endDate]);
+
+    return {
+      ...stats[0],
+      top_fournisseurs: topFournisseurs
+    };
+  },
 
   // ==================== STATISTIQUES ====================
   getStockStats: async () => {

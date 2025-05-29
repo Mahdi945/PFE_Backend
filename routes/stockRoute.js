@@ -98,9 +98,47 @@ router.get('/ventes/:id/lignes', requireAuth, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// ==================== ROUTES FOURNISSEURS ====================
+router.post('/fournisseurs', requireAuth, StockController.createFournisseur);
+router.put('/fournisseurs/:id', requireAuth, StockController.updateFournisseur);
+router.delete('/fournisseurs/:id', requireAuth, StockController.deleteFournisseur);
+router.get('/fournisseurs/:id', requireAuth, StockController.getFournisseur);
+router.get('/fournisseurs', requireAuth, StockController.getAllFournisseurs);
+
+// ==================== ROUTES COMMANDES ACHAT ====================
+router.post('/commandes-achat', requireAuth, StockController.createCommandeAchat);
+router.put('/commandes-achat/:id', requireAuth, StockController.updateCommandeAchat);
+router.delete('/commandes-achat/:id', requireAuth, StockController.deleteCommandeAchat);
+router.get('/commandes-achat/:id', requireAuth, StockController.getCommandeAchat);
+router.get('/commandes-achat', requireAuth, StockController.getAllCommandesAchat);
+
+// Actions sur les commandes
+router.post('/commandes-achat/:id/valider', requireAuth, StockController.validerCommandeAchat);
+router.post('/commandes-achat/:id/recevoir', requireAuth, StockController.recevoirCommandeAchat);
+router.post('/commandes-achat/:id/annuler', requireAuth, StockController.annulerCommandeAchat);
+
+// Commandes par fournisseur
+router.get('/fournisseurs/:fournisseurId/commandes', requireAuth, StockController.getCommandesAchatByFournisseur);
+
+// Route pour récupérer les lignes de commande d'achat
+router.get('/commandes-achat/:id/lignes', requireAuth, async (req, res) => {
+  try {
+    const [lignes] = await db.execute(
+      `SELECT lc.*, p.nom as produit_nom, p.code_barre
+       FROM ligne_commande lc
+       JOIN produits p ON lc.produit_id = p.id
+       WHERE lc.commande_id = ?`,
+      [req.params.id],
+    );
+    res.json(lignes);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // ==================== ROUTES STATISTIQUES ====================
 router.get('/stats/stock', requireAuth, StockController.getStockStats);
 router.get('/stats/ventes', requireAuth, StockController.getVentesStats);
+router.get('/stats/commandes-achat', requireAuth, StockController.getStatsCommandesAchat);
 
 export default router;
