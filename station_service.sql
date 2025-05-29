@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : jeu. 29 mai 2025 à 18:20
+-- Généré le : ven. 30 mai 2025 à 00:34
 -- Version du serveur : 10.4.28-MariaDB
 -- Version de PHP : 8.2.4
 
@@ -1288,7 +1288,9 @@ CREATE TABLE `commandes_achat` (
 INSERT INTO `commandes_achat` (`id`, `fournisseur_id`, `date_commande`, `montant_total`, `statut`, `agent_id`) VALUES
 (1, 1, '2025-05-29 00:00:00', 450.00, 'validée', 14),
 (2, 1, '2025-05-29 11:53:31', 1.00, 'annulée', 14),
-(3, 1, '2025-05-29 12:32:09', 5.00, 'reçue', 14);
+(3, 1, '2025-05-29 12:32:09', 5.00, 'reçue', 14),
+(4, 1, '2025-05-29 21:01:05', 16.00, 'reçue', 14),
+(5, 1, '2025-05-29 23:25:38', 1.20, 'brouillon', 14);
 
 -- --------------------------------------------------------
 
@@ -1445,7 +1447,9 @@ INSERT INTO `ligne_commande` (`id`, `commande_id`, `produit_id`, `quantite`, `pr
 (17, 1, 5, 200, 1.00),
 (18, 1, 18, 500, 0.30),
 (19, 2, 19, 1, 1.00),
-(20, 3, 5, 5, 1.00);
+(20, 3, 5, 5, 1.00),
+(21, 4, 20, 16, 1.00),
+(22, 5, 18, 4, 0.30);
 
 -- --------------------------------------------------------
 
@@ -1587,7 +1591,8 @@ INSERT INTO `mouvements_stock` (`id`, `produit_id`, `type`, `quantite`, `date_mo
 (31, 19, 'SORTIE', 6, '2025-05-26 16:31:01', 27, 'Vente #5'),
 (32, 19, 'AJUSTEMENT', 103, '2025-05-28 22:19:06', 14, 'Inventaire - Écart: -103 dans le produit Chocotom'),
 (33, 19, 'ENTREE', 1, '2025-05-29 00:26:24', 14, NULL),
-(34, 5, 'ENTREE', 5, '2025-05-29 13:20:07', 14, 'Réception commande #3');
+(34, 5, 'ENTREE', 5, '2025-05-29 13:20:07', 14, 'Réception commande #3'),
+(35, 20, 'ENTREE', 16, '2025-05-29 21:11:07', 14, 'Réception commande #4');
 
 --
 -- Déclencheurs `mouvements_stock`
@@ -1730,7 +1735,7 @@ CREATE TABLE `notifications` (
   `id_utilisateur` int(11) NOT NULL,
   `entity_type` enum('paiement','transaction','credit','vehicule','utilisateur','reclamation','stock') NOT NULL,
   `entity_id` int(11) NOT NULL,
-  `type` enum('paiement_reussi','remboursement','transaction_reussie','expiration','expiration_proche','systeme','autre','reclamation_created','reclamation_closed','reclamation_updated','reclamation_resolved','alerte_stock') NOT NULL,
+  `type` enum('paiement_reussi','remboursement','transaction_reussie','expiration','expiration_proche','systeme','autre','reclamation_created','reclamation_closed','reclamation_updated','reclamation_resolved','alerte_stock','réapprovisionnement') NOT NULL,
   `message` varchar(255) NOT NULL,
   `vue` tinyint(1) NOT NULL DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
@@ -1785,7 +1790,9 @@ INSERT INTO `notifications` (`id`, `id_utilisateur`, `entity_type`, `entity_id`,
 (45, 9, 'credit', 15, 'expiration_proche', 'Votre crédit #15 expire dans 3 jours', 0, '2025-05-28 23:00:05'),
 (46, 10, 'credit', 17, 'expiration_proche', 'Votre crédit #17 expire dans 3 jours', 0, '2025-05-28 23:00:07'),
 (47, 13, 'credit', 18, 'remboursement', 'Crédit #18 complètement remboursé (100 DT)', 0, '2025-05-29 04:04:47'),
-(48, 13, 'credit', 18, 'remboursement', 'Votre crédit #18 a été complètement remboursé', 0, '2025-05-29 05:00:00');
+(48, 13, 'credit', 18, 'remboursement', 'Votre crédit #18 a été complètement remboursé', 0, '2025-05-29 05:00:00'),
+(49, 14, 'stock', 20, 'alerte_stock', 'Produit \"Yaoughrt\" (Produits Alimentaires) sous le seuil: 5 restants (seuil: 8)', 0, '2025-05-29 20:01:01'),
+(50, 14, 'stock', 4, 'réapprovisionnement', 'Commande automatique #4 créée pour Delice. 1 produit(s) commandé(s).', 0, '2025-05-29 20:01:05');
 
 -- --------------------------------------------------------
 
@@ -2002,25 +2009,27 @@ CREATE TABLE `produits` (
   `seuil_alerte` int(11) DEFAULT NULL,
   `image_url` varchar(255) DEFAULT NULL,
   `date_creation` datetime DEFAULT current_timestamp(),
-  `date_modification` datetime DEFAULT NULL ON UPDATE current_timestamp()
+  `date_modification` datetime DEFAULT NULL ON UPDATE current_timestamp(),
+  `fournisseur_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Déchargement des données de la table `produits`
 --
 
-INSERT INTO `produits` (`id`, `code_barre`, `nom`, `description`, `categorie_id`, `prix_achat`, `prix_vente`, `quantite_stock`, `seuil_alerte`, `image_url`, `date_creation`, `date_modification`) VALUES
-(2, '1234567890123', 'Produit Exemple', 'Ceci est un produit exemple pour illustrer une insertion.', 1, 10.50, 15.00, 98, 10, 'http://localhost:3000/public/transactions/transaction_1746466704645.png', '2025-05-15 20:47:40', '2025-05-15 21:51:41'),
-(4, '5449000000995', 'Gaufrettes', NULL, 1, 1.00, 2.00, 40, 5, NULL, '2025-05-16 12:16:27', '2025-05-17 21:36:09'),
-(5, '3017620422003', 'Coca Cola Boycott', NULL, 1, 1.00, 2.00, 95, 20, NULL, '2025-05-16 12:35:19', '2025-05-29 13:20:07'),
-(10, '123444444444444442', 'Sablito', NULL, 3, 200.00, 300.00, 150, 5, NULL, '2025-05-16 19:51:33', '2025-05-16 23:11:07'),
-(13, '2222229999', 'mahdeeeen', NULL, 3, 1.00, 2.00, 52, 10, 'http://localhost:3000/images_produits/produit_1747433401088.jpeg', '2025-05-16 22:46:25', '2025-05-17 00:40:55'),
-(14, '3332222222222222', 'HUILE', NULL, 3, 1.00, 2.00, 50, 10, 'http://localhost:3000/images_produits/produit_1747433378757.jpg', '2025-05-16 22:54:43', '2025-05-16 23:09:38'),
-(15, '6666666666666666666666', 'Monoo', 'YHY', 4, 1.00, 2.00, 50, 30, 'http://localhost:3000/images_produits/produit_1747437711442.jpg', '2025-05-17 00:21:51', NULL),
-(16, 'CB2080557356', 'ghuuuuu', 'HHHH', 4, 1.00, 2.00, 121, 2, 'http://localhost:3000/images_produits/produit_1747438679148.jpeg', '2025-05-17 00:37:59', '2025-05-18 01:33:24'),
-(17, 'CB3508654297', 'zhéugzé', NULL, 3, 1.00, 2.00, 41, 20, NULL, '2025-05-17 15:07:37', '2025-05-18 01:16:50'),
-(18, 'CB8750034039', 'Yaoughrt', NULL, 4, 0.30, 0.50, 200, 50, NULL, '2025-05-18 05:04:19', NULL),
-(19, 'CB1307118694', 'Chocotom', NULL, 4, 1.00, 2.00, 30, 5, 'http://localhost:3000/images_produits/produit_1748273257558.webp', '2025-05-26 16:27:37', '2025-05-29 00:26:24');
+INSERT INTO `produits` (`id`, `code_barre`, `nom`, `description`, `categorie_id`, `prix_achat`, `prix_vente`, `quantite_stock`, `seuil_alerte`, `image_url`, `date_creation`, `date_modification`, `fournisseur_id`) VALUES
+(2, '1234567890123', 'Produit Exemple', 'Ceci est un produit exemple pour illustrer une insertion.', 1, 10.50, 15.00, 98, 10, 'http://localhost:3000/public/transactions/transaction_1746466704645.png', '2025-05-15 20:47:40', '2025-05-29 17:53:25', 1),
+(4, '5449000000995', 'Gaufrettes', NULL, 1, 1.00, 2.00, 40, 5, NULL, '2025-05-16 12:16:27', '2025-05-17 21:36:09', NULL),
+(5, '3017620422003', 'Coca Cola Boycott', NULL, 1, 1.00, 2.00, 95, 20, NULL, '2025-05-16 12:35:19', '2025-05-29 13:20:07', NULL),
+(10, '123444444444444442', 'Sablito', NULL, 3, 200.00, 300.00, 150, 5, NULL, '2025-05-16 19:51:33', '2025-05-16 23:11:07', NULL),
+(13, '2222229999', 'mahdeeeen', NULL, 3, 1.00, 2.00, 52, 10, 'http://localhost:3000/images_produits/produit_1747433401088.jpeg', '2025-05-16 22:46:25', '2025-05-17 00:40:55', NULL),
+(14, '3332222222222222', 'HUILE', NULL, 3, 1.00, 2.00, 50, 10, 'http://localhost:3000/images_produits/produit_1747433378757.jpg', '2025-05-16 22:54:43', '2025-05-16 23:09:38', NULL),
+(15, '6666666666666666666666', 'Monoo', 'YHY', 4, 1.00, 2.00, 50, 30, 'http://localhost:3000/images_produits/produit_1747437711442.jpg', '2025-05-17 00:21:51', NULL, NULL),
+(16, 'CB2080557356', 'ghuuuuu', 'HHHH', 4, 1.00, 2.00, 121, 2, 'http://localhost:3000/images_produits/produit_1747438679148.jpeg', '2025-05-17 00:37:59', '2025-05-18 01:33:24', NULL),
+(17, 'CB3508654297', 'zhéugzé', NULL, 3, 1.00, 2.00, 41, 20, NULL, '2025-05-17 15:07:37', '2025-05-18 01:16:50', NULL),
+(18, 'CB8750034039', 'Yaoughrt', NULL, 4, 0.30, 0.50, 200, 50, NULL, '2025-05-18 05:04:19', NULL, NULL),
+(19, 'CB1307118694', 'Chocotom', NULL, 4, 1.00, 2.00, 30, 5, 'http://localhost:3000/images_produits/produit_1748273257558.webp', '2025-05-26 16:27:37', '2025-05-29 00:26:24', NULL),
+(20, 'CB1937212160', 'Yaoughrt', NULL, 4, 1.00, 2.00, 37, 8, 'http://localhost:3000/images_produits/produit_1748541658185.png', '2025-05-29 18:59:19', '2025-05-29 21:11:07', 1);
 
 -- --------------------------------------------------------
 
@@ -2451,7 +2460,8 @@ ALTER TABLE `postes`
 ALTER TABLE `produits`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `code_barre` (`code_barre`),
-  ADD KEY `categorie_id` (`categorie_id`);
+  ADD KEY `categorie_id` (`categorie_id`),
+  ADD KEY `fournisseur_id` (`fournisseur_id`);
 
 --
 -- Index pour la table `rapports_journaliers`
@@ -2530,7 +2540,7 @@ ALTER TABLE `categories`
 -- AUTO_INCREMENT pour la table `commandes_achat`
 --
 ALTER TABLE `commandes_achat`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT pour la table `details_credits`
@@ -2548,7 +2558,7 @@ ALTER TABLE `fournisseurs`
 -- AUTO_INCREMENT pour la table `ligne_commande`
 --
 ALTER TABLE `ligne_commande`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT pour la table `ligne_vente`
@@ -2566,13 +2576,13 @@ ALTER TABLE `messages`
 -- AUTO_INCREMENT pour la table `mouvements_stock`
 --
 ALTER TABLE `mouvements_stock`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT pour la table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
 
 --
 -- AUTO_INCREMENT pour la table `paiements_credits`
@@ -2608,7 +2618,7 @@ ALTER TABLE `postes`
 -- AUTO_INCREMENT pour la table `produits`
 --
 ALTER TABLE `produits`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT pour la table `rapports_journaliers`
@@ -2734,7 +2744,8 @@ ALTER TABLE `pistolets`
 -- Contraintes pour la table `produits`
 --
 ALTER TABLE `produits`
-  ADD CONSTRAINT `produits_ibfk_1` FOREIGN KEY (`categorie_id`) REFERENCES `categories` (`id`);
+  ADD CONSTRAINT `produits_ibfk_1` FOREIGN KEY (`categorie_id`) REFERENCES `categories` (`id`),
+  ADD CONSTRAINT `produits_ibfk_2` FOREIGN KEY (`fournisseur_id`) REFERENCES `fournisseurs` (`id`);
 
 --
 -- Contraintes pour la table `rapports_journaliers`
