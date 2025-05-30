@@ -22,15 +22,16 @@ const Stock = {
 
     const query = `
       INSERT INTO produits 
-      (code_barre, nom, description, categorie_id, prix_achat, prix_vente, 
+      (code_barre, nom, description, categorie_id, fournisseur_id, prix_achat, prix_vente, 
        quantite_stock, seuil_alerte, image_url)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const values = [
       produitData.code_barre,
       produitData.nom,
       produitData.description || null,
       produitData.categorie_id,
+      produitData.fournisseur_id || null,
       produitData.prix_achat,
       produitData.prix_vente,
       produitData.quantite_stock || 0,
@@ -72,6 +73,7 @@ const Stock = {
         nom = ?,
         description = ?,
         categorie_id = ?,
+        fournisseur_id = ?,
         prix_achat = ?,
         prix_vente = ?,
         quantite_stock = ?,
@@ -84,6 +86,7 @@ const Stock = {
       produitData.nom,
       produitData.description || null,
       produitData.categorie_id,
+      produitData.fournisseur_id || null,
       produitData.prix_achat,
       produitData.prix_vente,
       produitData.quantite_stock || 0,
@@ -109,20 +112,32 @@ const Stock = {
   },
 
   getProduitById: async (id) => {
-    const [produit] = await db.execute('SELECT * FROM produits WHERE id = ?', [id]);
+    const [produit] = await db.execute(`
+      SELECT p.*, f.nom as fournisseur_nom 
+      FROM produits p 
+      LEFT JOIN fournisseurs f ON p.fournisseur_id = f.id 
+      WHERE p.id = ?
+    `, [id]);
     return produit[0] || null;
   },
 
   getAllProduits: async () => {
-    const [produits] = await db.execute('SELECT * FROM produits ORDER BY nom');
+    const [produits] = await db.execute(`
+      SELECT p.*, f.nom as fournisseur_nom 
+      FROM produits p 
+      LEFT JOIN fournisseurs f ON p.fournisseur_id = f.id 
+      ORDER BY p.nom
+    `);
     return produits;
   },
 
   getProduitsLowStock: async () => {
     const [produits] = await db.execute(`
-      SELECT * FROM produits 
-      WHERE quantite_stock <= seuil_alerte 
-      ORDER BY quantite_stock ASC
+      SELECT p.*, f.nom as fournisseur_nom 
+      FROM produits p 
+      LEFT JOIN fournisseurs f ON p.fournisseur_id = f.id 
+      WHERE p.quantite_stock <= p.seuil_alerte 
+      ORDER BY p.quantite_stock ASC
     `);
     return produits;
   },
