@@ -1,13 +1,47 @@
 import Message from '../models/Message.js';
 import db from '../config/db.js';
 
-export default {
-  sendMessage: async (req, res) => {
+export default {  sendMessage: async (req, res) => {
     try {
       const { senderId, receiverId, content } = req.body;
       const messageId = await Message.create(senderId, receiverId, content);
-      res.status(201).json({ id: messageId });
+      
+      // Get full message data with user info
+      const [messageData] = await db.execute(`
+        SELECT m.*, u1.username as sender_name, u1.photo as sender_photo, 
+               u2.username as receiver_name, u2.photo as receiver_photo
+        FROM messages m
+        JOIN utilisateurs u1 ON m.sender_id = u1.id
+        JOIN utilisateurs u2 ON m.receiver_id = u2.id
+        WHERE m.id = ?
+      `, [messageId]);
+
+      const fullMessage = messageData[0];
+
+      // Get io instance from app
+      const io = req.app.get('io');
+      
+      if (io) {
+        // Envoyer le message au destinataire s'il est connecté
+        io.emit('newMessage', fullMessage);
+        
+        // Mettre à jour le compteur de messages non lus pour le destinataire
+        const unreadCount = await Message.getUnreadCount(receiverId);
+        io.emit('unreadCountUpdate', { 
+          userId: receiverId, 
+          count: unreadCount 
+        });
+
+        console.log(`📨 Message sent via HTTP and WebSocket: ${senderId} -> ${receiverId}`);
+      }
+      
+      res.status(201).json({ 
+        success: true,
+        id: messageId, 
+        message: fullMessage 
+      });
     } catch (error) {
+      console.error('Error sending message via HTTP:', error);
       res.status(500).json({ error: error.message });
     }
   },
@@ -42,11 +76,21 @@ export default {
       res.status(500).json({ error: error.message });
     }
   },
-
   markAsRead: async (req, res) => {
     try {
       const { senderId, receiverId } = req.body;
       await Message.markAsRead(senderId, receiverId);
+      
+      // Get io instance and emit unread count update
+      const io = req.app.get('io');
+      if (io) {
+        const unreadCount = await Message.getUnreadCount(receiverId);
+        io.emit('unreadCountUpdate', { 
+          userId: receiverId, 
+          count: unreadCount 
+        });
+      }
+      
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: error.message });

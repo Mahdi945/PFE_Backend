@@ -1,5 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 import pool from './config/db.js';
 import authRouter from './routes/authRoute.js';
 import PermissionRouter from './routes/PermissionRoute.js';
@@ -27,6 +29,14 @@ import messageRouter from './routes/messageRoute.js';
 dotenv.config();
 
 const app = express();
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: ['http://localhost:4200'],
+    methods: ['GET', 'POST'],
+    credentials: true
+  }
+});
 const PORT = process.env.PORT || 3000;
 
 // Configuration du transporteur email
@@ -51,6 +61,104 @@ app.use(
 );
 app.use(cookieParser());
 app.use(passport.initialize());
+
+// WebSocket Configuration
+const connectedUsers = new Map(); // userId -> socketId
+
+io.on('connection', (socket) => {
+  console.log('🔌 User connected:', socket.id);
+
+  // User joins with their ID
+  socket.on('join', (userId) => {
+    connectedUsers.set(userId, socket.id);
+    console.log(`👤 User ${userId} joined with socket ${socket.id}`);
+  });
+
+  // Handle new message
+  socket.on('sendMessage', async (data) => {
+    try {
+      const { senderId, receiverId, content } = data;
+      
+      // Save message to database
+      const Message = (await import('./models/Message.js')).default;
+      const messageId = await Message.create(senderId, receiverId, content);
+      
+      // Get full message data with user info
+      const [messageData] = await pool.execute(`
+        SELECT m.*, u1.username as sender_name, u1.photo as sender_photo, 
+               u2.username as receiver_name, u2.photo as receiver_photo
+        FROM messages m
+        JOIN utilisateurs u1 ON m.sender_id = u1.id
+        JOIN utilisateurs u2 ON m.receiver_id = u2.id
+        WHERE m.id = ?
+      `, [messageId]);
+
+      const fullMessage = messageData[0];
+
+      // Send to receiver if online
+      const receiverSocketId = connectedUsers.get(receiverId);
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit('newMessage', fullMessage);
+        console.log(`📨 Message sent to receiver ${receiverId} (socket: ${receiverSocketId})`);
+      } else {
+        console.log(`📨 Receiver ${receiverId} is offline`);
+      }
+
+      // Send confirmation to sender
+      socket.emit('messageConfirmed', fullMessage);
+      console.log(`✅ Message confirmed to sender ${senderId}`);
+
+      // Update unread counts
+      const receiverUnreadCount = await Message.getUnreadCount(receiverId);
+      
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit('unreadCountUpdate', { 
+          userId: receiverId, 
+          count: receiverUnreadCount 
+        });
+      }
+
+      console.log(`📨 Message sent via WebSocket: ${senderId} -> ${receiverId}`);
+
+    } catch (error) {
+      console.error('Error sending message:', error);
+      socket.emit('messageError', { error: error.message });
+    }
+  });
+
+  // Mark messages as read
+  socket.on('markAsRead', async (data) => {
+    try {
+      const { senderId, receiverId } = data;
+      const Message = (await import('./models/Message.js')).default;
+      
+      await Message.markAsRead(senderId, receiverId);
+      
+      // Update unread count for receiver
+      const unreadCount = await Message.getUnreadCount(receiverId);
+      socket.emit('unreadCountUpdate', { count: unreadCount });
+      
+    } catch (error) {
+      console.error('Error marking as read:', error);
+    }
+  });
+
+  // Handle disconnect
+  socket.on('disconnect', () => {
+    // Remove user from connected users
+    for (const [userId, socketId] of connectedUsers.entries()) {
+      if (socketId === socket.id) {
+        connectedUsers.delete(userId);
+        console.log(`👤 User ${userId} disconnected`);
+        break;
+      }
+    }
+    console.log('🔌 User disconnected:', socket.id);
+  });
+});
+
+// Make io available to routes
+app.set('io', io);
 
 // Routes
 app.use('/api', authRouter);
@@ -588,8 +696,9 @@ cron.schedule('0 9 * * 1', async () => {
     console.error('❌ Error in weekly summary:', err);
   }
 });
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🔌 WebSocket server ready`);
 });
 
 export default app;
