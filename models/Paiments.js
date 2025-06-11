@@ -1,6 +1,7 @@
 import db from '../config/db.js';
 
 const Paiments = {
+  // Crée un nouveau paiement avec vérification du crédit
   create: async (id_credit, montant_paye, mode_paiement, description = '', id_caissier = null) => {
     let connection;
     try {
@@ -92,6 +93,8 @@ const Paiments = {
       if (connection) connection.release();
     }
   },
+
+  // Récupère tous les paiements
   getAll: async () => {
     try {
       const [rows] = await db.execute(
@@ -139,6 +142,7 @@ const Paiments = {
     }
   },
 
+  // Obtient les paiements associés à un crédit
   getByCredit: async (id_credit) => {
     const [rows] = await db.execute(
       `SELECT 
@@ -155,6 +159,7 @@ const Paiments = {
     return rows;
   },
 
+  // Récupère les paiements d'un utilisateur spécifique
   getByUser: async (id_utilisateur) => {
     const [rows] = await db.execute(
       `SELECT 
@@ -170,6 +175,7 @@ const Paiments = {
     return rows;
   },
 
+  // Trouve un paiement par référence unique
   getByReference: async (reference) => {
     const [rows] = await db.execute(
       `SELECT 
@@ -185,6 +191,8 @@ const Paiments = {
     );
     return rows[0];
   },
+
+  // Calcule les statistiques des paiements
   getPaymentStats: async (filterOrUserId) => {
     try {
       let query = `
@@ -242,6 +250,7 @@ const Paiments = {
     }
   },
 
+  // Obtient les paiements par plage de dates
   getPaymentsByDate: async (filter) => {
     let query = `
       SELECT 
@@ -270,6 +279,7 @@ const Paiments = {
     return rows;
   },
 
+  // Récupère les paiements récents du système
   getRecentPayments: async (id_utilisateur, limit = 5) => {
     const query = `
       SELECT 
@@ -284,6 +294,7 @@ const Paiments = {
     return db.execute(query, [id_utilisateur, limit]);
   },
 
+  // Obtient les paiements traités par un caissier
   getByCaissier: async (id_caissier, filters = {}) => {
     try {
       let query = `
@@ -362,7 +373,8 @@ const Paiments = {
       throw err;
     }
   },
-  // Méthode pour les stats (déjà correcte)
+
+  // Calcule les statistiques d'un caissier
   getCaissierStats: async (id_caissier, filters = {}) => {
     try {
       let query = `

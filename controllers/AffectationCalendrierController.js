@@ -61,8 +61,10 @@ const generateEmailTemplate = (title, content, actionLink = null, actionText = n
   `;
 };
 
-// Fonction pour envoyer l'email d'affectation
-// Fonction pour envoyer l'email d'affectation
+/**
+ * Fonction utilitaire pour envoyer des emails d'affectation aux pompistes
+ * Gère les notifications d'affectation, mise à jour et planification mensuelle
+ */
 const sendAffectationEmail = async (pompisteId, dateOrMois, annee = null, isUpdate = false) => {
   try {
     // Récupérer les informations du pompiste
@@ -185,6 +187,10 @@ const sendAffectationEmail = async (pompisteId, dateOrMois, annee = null, isUpda
   }
 };
 
+/**
+ * Ajoute une affectation manuelle d'un pompiste à un poste et une pompe
+ * Permet la planification ponctuelle d'affectations spécifiques
+ */
 const addAffectationManuelle = async (req, res) => {
   try {
     const { pompiste_id, poste_id, pompe_id, date } = req.body;
@@ -200,6 +206,11 @@ const addAffectationManuelle = async (req, res) => {
       .send({ message: error.message || "Erreur lors de l'ajout de l'affectation manuelle." });
   }
 };
+
+/**
+ * Génère automatiquement les affectations équitables pour un mois
+ * Distribue équitablement les pompistes sur tous les postes du mois
+ */
 const addAffectationAutomatiqueEquitable = async (req, res) => {
   try {
     const { mois, annee } = req.body;
@@ -232,6 +243,10 @@ const addAffectationAutomatiqueEquitable = async (req, res) => {
 };
 
 
+/**
+ * Régénère toutes les affectations pour un mois donné
+ * Supprime les affectations existantes et les recalcule équitablement
+ */
 const regenerateAffectations = async (req, res) => {
   try {
     const { mois, annee } = req.body;
@@ -263,6 +278,10 @@ const regenerateAffectations = async (req, res) => {
       .send({ message: error.message || 'Erreur lors de la régénération des affectations.' });
   }
 };
+/**
+ * Met à jour une affectation existante
+ * Permet la modification du pompiste, poste, pompe ou date
+ */
 const updateAffectation = async (req, res) => {
   try {
     const { id } = req.params;
@@ -298,7 +317,10 @@ const updateAffectation = async (req, res) => {
   }
 };
 
-// Les autres fonctions restent inchangées...
+/**
+ * Récupère toutes les affectations pour une date spécifique
+ * Retourne la liste des pompistes affectés pour un jour donné
+ */
 const getAffectationsByDate = async (req, res) => {
   try {
     const { date } = req.params;
@@ -311,6 +333,10 @@ const getAffectationsByDate = async (req, res) => {
   }
 };
 
+/**
+ * Récupère toutes les affectations pour un mois et une année
+ * Permet la visualisation du planning mensuel complet
+ */
 const getAffectationsByMonthYear = async (req, res) => {
   try {
     const { mois, annee } = req.params;
@@ -323,6 +349,10 @@ const getAffectationsByMonthYear = async (req, res) => {
   }
 };
 
+/**
+ * Récupère l'affectation actuelle d'un pompiste
+ * Vérifie si le pompiste est actuellement en service
+ */
 const getCurrentAffectation = async (req, res) => {
   try {
     const { pompiste_id } = req.params;
@@ -348,6 +378,10 @@ const getCurrentAffectation = async (req, res) => {
   }
 };
 
+/**
+ * Récupère les pistolets disponibles pour une affectation
+ * Liste les pistolets de la pompe assignée au pompiste
+ */
 const getAvailablePistolets = async (req, res) => {
   try {
     const { affectation_id } = req.params;

@@ -4,7 +4,10 @@ import Affectation from '../models/AffectationCalendrier.js';
 import db from '../config/db.js';
 
 const PistoletController = {
-  // [EXISTANT] Ajouter un pistolet (mis à jour avec les nouveaux champs)
+  /**
+   * Ajoute un nouveau pistolet à une pompe existante
+   * Crée un pistolet avec numéro, produit et prix unitaire
+   */
   addPistolet: async (req, res) => {
     try {
       const { numero_pompe, numero_pistolet, nom_produit, prix_unitaire } = req.body;
@@ -44,7 +47,10 @@ const PistoletController = {
       });
     }
   },
-  // Enregistrer un relevé
+  /**
+   * Enregistre un nouveau relevé de pistolet
+   * Valide les index d'ouverture et fermeture avant l'enregistrement
+   */
   enregistrerReleve: async (req, res) => {
     try {
       const { affectation_id, pistolet_id, index_ouverture, index_fermeture } = req.body;
@@ -81,7 +87,10 @@ const PistoletController = {
     }
   },
 
-  // Ajouter un relevé manuel
+  /**
+   * Ajoute un relevé manuel avec date/heure spécifiée
+   * Permet l'ajout rétroactif de relevés manqués
+   */
   ajouterReleveManuel: async (req, res) => {
     try {
       const { affectation_id, pistolet_id, index_ouverture, index_fermeture, date_heure } =
@@ -126,7 +135,10 @@ const PistoletController = {
     }
   },
 
-  // Générer un rapport journalier
+  /**
+   * Génère automatiquement un rapport journalier pour une date donnée
+   * Calcule les totaux de quantité et montant pour tous les pistolets
+   */
   genererRapportJournalier: async (req, res) => {
     try {
       const { date } = req.body;
@@ -153,6 +165,10 @@ const PistoletController = {
       });
     }
   },
+  /**
+   * Ajoute manuellement un rapport journalier pour un pistolet
+   * Permet la saisie directe des totaux sans calcul automatique
+   */
   ajouterRapportManuel: async (req, res) => {
     try {
       const { date_rapport, pistolet_id, total_quantite, total_montant } = req.body;
@@ -204,7 +220,10 @@ const PistoletController = {
       });
     }
   },
-  // Récupérer les revenus journaliers
+  /**
+   * Récupère les revenus journaliers pour une période donnée
+   * Filtre optionnellement par pistolet spécifique
+   */
   getRevenusJournaliers: async (req, res) => {
     try {
       const { date_debut, date_fin, pistolet_id } = req.query;
@@ -240,6 +259,10 @@ const PistoletController = {
       });
     }
   },
+  /**
+   * Met à jour le statut d'un relevé (validé, rejeté, etc.)
+   * Permet la validation ou correction des relevés existants
+   */
   updateStatut: async (req, res) => {
     try {
       const { id } = req.params;
@@ -267,7 +290,10 @@ const PistoletController = {
       });
     }
   },
-  // [EXISTANT] Mettre à jour l'index d'ouverture (déprécié - à conserver pour compatibilité)
+  /**
+   * Met à jour l'index d'ouverture d'un pistolet (méthode dépréciée)
+   * Conservée pour compatibilité avec l'ancien système
+   */
   updateIndexOuverture: async (req, res) => {
     try {
       const { id, index_ouverture } = req.body;
@@ -285,7 +311,10 @@ const PistoletController = {
     }
   },
 
-  // [EXISTANT] Mettre à jour l'index de fermeture (déprécié)
+  /**
+   * Met à jour l'index de fermeture d'un pistolet (méthode dépréciée)
+   * Conservée pour compatibilité avec l'ancien système
+   */
   updateIndexFermeture: async (req, res) => {
     try {
       const { id, index_fermeture } = req.body;
@@ -303,7 +332,10 @@ const PistoletController = {
     }
   },
 
-  // [EXISTANT] Récupérer les pistolets d'une pompe
+  /**
+   * Récupère tous les pistolets associés à une pompe spécifique
+   * Retourne la liste complète avec leurs informations
+   */
   getPistoletsByPompeId: async (req, res) => {
     try {
       const { pompe_id } = req.params;
@@ -317,7 +349,10 @@ const PistoletController = {
     }
   },
 
-  // [EXISTANT] Mettre à jour le statut d'un pistolet
+  /**
+   * Met à jour le statut opérationnel d'un pistolet
+   * Gère les états: disponible, indisponible, maintenance
+   */
   updateStatutPistolet: async (req, res) => {
     try {
       const { id, statut } = req.body;
@@ -338,7 +373,10 @@ const PistoletController = {
     }
   },
 
-  // [EXISTANT] Récupérer tous les pistolets
+  /**
+   * Récupère la liste complète de tous les pistolets
+   * Inclut toutes les informations des pistolets du système
+   */
   getAllPistolets: async (req, res) => {
     try {
       const pistolets = await Pistolet.getAllPistolets();
@@ -351,6 +389,10 @@ const PistoletController = {
     }
   },
 
+  /**
+   * Récupère l'historique des relevés pour un pistolet ou tous les pistolets
+   * Filtre par période et optionnellement par pistolet spécifique
+   */
   getHistoriqueReleves: async (req, res) => {
     try {
       const { pistolet_id } = req.params;

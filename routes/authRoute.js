@@ -87,7 +87,6 @@ router.post(
       .isLength({ max: 255 })
       .withMessage('Email trop long'),
   ],
-  validateRequest,
   authController.requestPasswordReset,
 );
 
@@ -99,7 +98,6 @@ router.put(
       .isLength({ min: 6, max: 20 })
       .withMessage('Le mot de passe doit contenir entre 6 et 20 caractères'),
   ],
-  validateRequest,
   authController.updatePassword,
 );
 
@@ -184,7 +182,7 @@ router.put(
       .withMessage('Le numéro de téléphone est trop long'),
     body('role')
       .optional()
-      .isIn(['gerant', 'cogerant', 'client', 'caissier', 'pompiste'])
+      .isIn(['gerant', 'Cogerant', 'client', 'caissier', 'pompiste'])
       .withMessage('Rôle invalide'),
   ],
   validateRequest,
@@ -243,7 +241,7 @@ router.get(
   '/user/role/:role',
   [
     param('role')
-      .isIn(['gerant', 'cogerant', 'client', 'caissier', 'pompiste'])
+      .isIn(['gerant', 'Cogerant', 'client', 'caissier', 'pompiste'])
       .withMessage('Rôle invalide'),
   ],
   validateRequest,

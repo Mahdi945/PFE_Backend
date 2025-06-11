@@ -14,16 +14,21 @@ const Credit = {
   getAllCredits: () => {
     const query = `
       SELECT 
-        dc.id, 
+        dc.id,
+        dc.id_utilisateur,
         u.username AS utilisateur, 
         dc.type_credit, 
         dc.solde_credit, 
         dc.date_debut, 
         dc.duree_credit, 
         dc.credit_utilise, 
-        dc.etat
+        dc.etat,
+        (dc.solde_credit - IFNULL(dc.credit_utilise, 0)) AS montant_restant,
+        dc.date_dernier_paiement,
+        DATE_ADD(dc.date_debut, INTERVAL dc.duree_credit DAY) AS date_expiration
       FROM details_credits dc
       JOIN utilisateurs u ON dc.id_utilisateur = u.id
+      ORDER BY dc.date_debut DESC
     `;
     return db.execute(query);
   },
@@ -32,14 +37,18 @@ const Credit = {
   getCreditById: (id_credit) => {
     const query = `
       SELECT 
-        dc.id, 
+        dc.id,
+        dc.id_utilisateur,
         u.username AS utilisateur, 
         dc.type_credit, 
         dc.solde_credit, 
         dc.date_debut, 
         dc.duree_credit, 
         dc.credit_utilise, 
-        dc.etat
+        dc.etat,
+        (dc.solde_credit - IFNULL(dc.credit_utilise, 0)) AS montant_restant,
+        dc.date_dernier_paiement,
+        DATE_ADD(dc.date_debut, INTERVAL dc.duree_credit DAY) AS date_expiration
       FROM details_credits dc
       JOIN utilisateurs u ON dc.id_utilisateur = u.id
       WHERE dc.id = ?

@@ -1,6 +1,9 @@
-// permission.controller.js
 import Permission from '../models/Permission.js';
 
+/**
+ * Récupère toutes les permissions disponibles dans le système
+ * Retourne la liste complète des permissions configurées
+ */
 const getPermissions = async (req, res) => {
   try {
     const results = await Permission.getAll();
@@ -11,6 +14,10 @@ const getPermissions = async (req, res) => {
   }
 };
 
+/**
+ * Récupère les permissions spécifiques à un rôle donné
+ * Filtre les permissions selon le rôle utilisateur (gérant, caissier, etc.)
+ */
 const getPermissionsParRole = async (req, res) => {
   try {
     const { role } = req.params;
@@ -27,6 +34,10 @@ const getPermissionsParRole = async (req, res) => {
   }
 };
 
+/**
+ * Récupère les permissions d'accès au tableau de bord pour un rôle
+ * Détermine quelles sections du dashboard sont accessibles
+ */
 const getDashboardPermission = async (req, res) => {
   try {
     const { role } = req.params;
@@ -38,6 +49,10 @@ const getDashboardPermission = async (req, res) => {
   }
 };
 
+/**
+ * Récupère tous les rôles disponibles dans le système
+ * Retourne la liste complète des rôles configurés
+ */
 const getAllRoles = async (req, res) => {
   try {
     const results = await Permission.getAllRoles();
@@ -48,6 +63,10 @@ const getAllRoles = async (req, res) => {
   }
 };
 
+/**
+ * Met à jour une permission spécifique
+ * Modifie les paramètres d'une permission selon les besoins
+ */
 const updatePermission = async (req, res) => {
   try {
     const { role, element_name, is_visible } = req.body;
@@ -67,6 +86,10 @@ const updatePermission = async (req, res) => {
   }
 };
 
+/**
+ * Met à jour plusieurs permissions en même temps
+ * Permet de modifier en masse les paramètres des permissions
+ */
 const updateMultiplePermissions = async (req, res) => {
   try {
     const { updates } = req.body;

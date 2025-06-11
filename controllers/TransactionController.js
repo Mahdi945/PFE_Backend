@@ -1,3 +1,8 @@
+/**
+ * Contrôleur pour la gestion des transactions
+ * Gère les opérations de transaction, notifications et communications par email
+ */
+
 import Transaction from '../models/Transaction.js';
 import Credit from '../models/Credit.js';
 import Notification from '../models/Notification.js';
@@ -14,7 +19,10 @@ const __dirname = dirname(__filename);
 
 dotenv.config();
 
-// Email transporter configuration
+/**
+ * Configuration du transporteur email pour les notifications
+ * Utilise Gmail avec les credentials d'environnement
+ */
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -23,7 +31,10 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Email template function
+/**
+ * Génère un template HTML personnalisé pour les emails
+ * Template responsive avec branding Carbotrack
+ */
 const generateEmailTemplate = (title, content, actionLink = null, actionText = null) => {
   return `
     <div style="font-family: 'Poppins', 'Segoe UI', sans-serif; max-width: 650px; margin: 0 auto; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 30px rgba(0, 0, 0, 0.1);">
@@ -73,6 +84,10 @@ const generateEmailTemplate = (title, content, actionLink = null, actionText = n
   `;
 };
 
+/**
+ * Crée une nouvelle transaction avec gestion de crédit et notifications
+ * Vérifie les soldes, traite les paiements et envoie des confirmations par email
+ */
 const createTransaction = async (req, res) => {
   const connection = await db.getConnection();
   try {
@@ -305,6 +320,10 @@ const createTransaction = async (req, res) => {
     connection.release();
   }
 };
+/**
+ * Récupère toutes les transactions du système
+ * Retourne la liste complète avec informations détaillées
+ */
 const getAllTransactions = async (req, res) => {
   try {
     const [transactions] = await Transaction.getAllTransactions();
@@ -314,6 +333,10 @@ const getAllTransactions = async (req, res) => {
   }
 };
 
+/**
+ * Récupère les transactions d'un utilisateur spécifique
+ * Filtre par ID utilisateur et retourne l'historique personnel
+ */
 const getTransactionsByUser = async (req, res) => {
   try {
     const { id_utilisateur } = req.params;
@@ -323,6 +346,10 @@ const getTransactionsByUser = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+/**
+ * Calcule et retourne les statistiques de transaction
+ * Agrège les données pour un utilisateur donné
+ */
 const getTransactionStats = async (req, res) => {
   try {
     const { id_utilisateur } = req.params;
@@ -333,6 +360,10 @@ const getTransactionStats = async (req, res) => {
   }
 };
 
+/**
+ * Récupère les transactions récentes d'un utilisateur
+ * Retourne les dernières transactions avec limite configurable
+ */
 const getRecentTransactions = async (req, res) => {
   try {
     const { id_utilisateur } = req.params;
@@ -342,6 +373,66 @@ const getRecentTransactions = async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+
+/**
+ * Récupère les transactions par pompiste avec statistiques et filtrage par date
+ * Supporte le filtrage par jour, mois, année ou période personnalisée
+ */
+const getTransactionsByPompiste = async (req, res) => {
+  try {
+    const { id_pompiste } = req.params;
+    const { type, date, month, year, startDate, endDate } = req.query;
+
+    // Validation de l'ID pompiste
+    if (!id_pompiste || isNaN(id_pompiste)) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'ID pompiste invalide ou manquant' 
+      });
+    }
+
+    // Construction du filtre basé sur les paramètres de requête
+    const filter = {};
+    
+    if (type) {
+      filter.type = type;
+      
+      // Validation et ajout des paramètres spécifiques selon le type
+      if (type === 'day' && date) {
+        filter.date = date;
+      } else if (type === 'month') {
+        filter.month = month ? parseInt(month) : new Date().getMonth() + 1;
+        filter.year = year ? parseInt(year) : new Date().getFullYear();
+      } else if (type === 'year') {
+        filter.year = year ? parseInt(year) : new Date().getFullYear();
+      }
+    }
+    
+    // Gestion des dates personnalisées
+    if (startDate && endDate) {
+      filter.startDate = startDate;
+      filter.endDate = endDate;
+    }
+
+    // Appel de la fonction du modèle
+    const result = await Transaction.getTransactionsByPompiste(parseInt(id_pompiste), filter);
+
+    res.json({ 
+      success: true, 
+      data: result,
+      message: `Transactions du pompiste ${id_pompiste} récupérées avec succès`
+    });
+
+  } catch (error) {
+    console.error('Erreur dans getTransactionsByPompiste:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Erreur lors de la récupération des transactions du pompiste',
+      details: error.message 
+    });
+  }
+};
+
 // Export des fonctions
 export default {
   createTransaction,
@@ -349,4 +440,5 @@ export default {
   getTransactionsByUser,
   getTransactionStats,
   getRecentTransactions,
+  getTransactionsByPompiste,
 };

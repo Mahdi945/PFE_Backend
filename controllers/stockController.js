@@ -4,13 +4,17 @@ import dotenv from 'dotenv';
 dotenv.config();
 const stockController = {
   // ==================== PRODUITS ====================
+  
+  /**
+   * Crée un nouveau produit dans le système
+   * Gère l'upload d'image et la validation des données
+   */
   createProduit: async (req, res) => {
     try {
       // Validation des données
       if (
         !req.body.code_barre ||
         !req.body.nom ||
-        !req.body.categorie_id ||
         req.body.prix_achat === undefined ||
         req.body.prix_vente === undefined
       ) {
@@ -27,6 +31,10 @@ const stockController = {
     }
   },
 
+  /**
+   * Met à jour un produit existant
+   * Permet la modification des informations et de l'image
+   */
   updateProduit: async (req, res) => {
     try {
       // Validation des données
@@ -50,6 +58,12 @@ const stockController = {
     }
   },
 
+  /**
+   * Supprime un produit du système
+   * @param {Object} req - Requête Express contenant l'ID du produit dans les paramètres
+   * @param {Object} res - Réponse Express
+   * @returns {Object} Confirmation de suppression
+   */
   deleteProduit: async (req, res) => {
     try {
       const result = await Stock.deleteProduit(req.params.id);
@@ -59,6 +73,9 @@ const stockController = {
     }
   },
 
+  /**
+   * Récupère un produit spécifique par son ID
+   */
   getProduit: async (req, res) => {
     try {
       const produit = await Stock.getProduitById(req.params.id);
@@ -71,6 +88,12 @@ const stockController = {
     }
   },
 
+  /**
+   * Récupère la liste complète de tous les produits
+   * @param {Object} req - Requête Express
+   * @param {Object} res - Réponse Express
+   * @returns {Array} Liste de tous les produits avec leurs informations
+   */
   getAllProduits: async (req, res) => {
     try {
       const produits = await Stock.getAllProduits();
@@ -80,6 +103,12 @@ const stockController = {
     }
   },
 
+  /**
+   * Récupère les produits ayant un stock faible (en rupture ou presque)
+   * @param {Object} req - Requête Express
+   * @param {Object} res - Réponse Express
+   * @returns {Array} Liste des produits avec stock faible
+   */
   getLowStockProduits: async (req, res) => {
     try {
       const produits = await Stock.getProduitsLowStock();
@@ -90,6 +119,9 @@ const stockController = {
   },
 
   // ==================== CATÉGORIES ====================
+  /**
+   * Crée une nouvelle catégorie de produits
+   */
   createCategorie: async (req, res) => {
     try {
       if (!req.body.nom) {
@@ -103,6 +135,9 @@ const stockController = {
     }
   },
 
+  /**
+   * Met à jour une catégorie existante
+   */
   updateCategorie: async (req, res) => {
     try {
       if (!req.body.nom) {
@@ -116,6 +151,9 @@ const stockController = {
     }
   },
 
+  /**
+   * Supprime une catégorie du système
+   */
   deleteCategorie: async (req, res) => {
     try {
       const result = await Stock.deleteCategorie(req.params.id);
@@ -125,6 +163,9 @@ const stockController = {
     }
   },
 
+  /**
+   * Récupère une catégorie spécifique par son ID
+   */
   getCategorie: async (req, res) => {
     try {
       const categorie = await Stock.getCategorieById(req.params.id);
@@ -137,6 +178,9 @@ const stockController = {
     }
   },
 
+  /**
+   * Récupère toutes les catégories disponibles
+   */
   getAllCategories: async (req, res) => {
     try {
       const categories = await Stock.getAllCategories();
@@ -147,6 +191,9 @@ const stockController = {
   },
 
   // ==================== MOUVEMENTS STOCK ====================
+  /**
+   * Crée un nouveau mouvement de stock (entrée/sortie)
+   */
   createMouvement: async (req, res) => {
     try {
       if (!req.body.produit_id || !req.body.type || req.body.quantite === undefined) {
@@ -167,6 +214,12 @@ const stockController = {
     }
   },
 
+  /**
+   * Récupère l'historique des mouvements pour un produit spécifique
+   * @param {Object} req - Requête Express contenant l'ID du produit
+   * @param {Object} res - Réponse Express
+   * @returns {Array} Liste des mouvements du produit
+   */
   getMouvementsByProduit: async (req, res) => {
     try {
       const mouvements = await Stock.getMouvementsByProduit(req.params.produitId);
@@ -176,6 +229,9 @@ const stockController = {
     }
   },
 
+  /**
+   * Récupère les mouvements de stock dans une période donnée
+   */
   getMouvementsByDate: async (req, res) => {
     try {
       const { startDate, endDate } = req.query;
@@ -191,6 +247,10 @@ const stockController = {
   },
 
   // ==================== VENTES ====================
+  /**
+   * Enregistre une nouvelle vente avec les produits vendus
+   * Met à jour automatiquement le stock des produits vendus
+   */
   createVente: async (req, res) => {
     try {
       if (
@@ -221,6 +281,9 @@ const stockController = {
     }
   },
 
+  /**
+   * Récupère les détails d'une vente spécifique
+   */
   getVente: async (req, res) => {
     try {
       const vente = await Stock.getVenteById(req.params.id);
@@ -233,6 +296,9 @@ const stockController = {
     }
   },
 
+  /**
+   * Récupère les ventes effectuées dans une période donnée
+   */
   getVentesByDate: async (req, res) => {
     try {
       const { startDate, endDate } = req.query;
@@ -247,6 +313,9 @@ const stockController = {
     }
   },
 
+  /**
+   * Récupère les ventes effectuées par un caissier spécifique
+   */
   getVentesByCaissier: async (req, res) => {
     try {
       const { startDate, endDate } = req.query;
@@ -261,6 +330,9 @@ const stockController = {
     }
   },
 
+  /**
+   * Annule une vente et restaure le stock des produits
+   */
   cancelVente: async (req, res) => {
     try {
       const result = await Stock.cancelVente(req.params.id);
@@ -271,6 +343,9 @@ const stockController = {
   },
 
   // ==================== FOURNISSEURS ====================
+  /**
+   * Crée un nouveau fournisseur dans le système
+   */
   createFournisseur: async (req, res) => {
     try {
       if (!req.body.nom) {
@@ -284,6 +359,9 @@ const stockController = {
     }
   },
 
+  /**
+   * Met à jour les informations d'un fournisseur
+   */
   updateFournisseur: async (req, res) => {
     try {
       if (!req.body.nom) {
@@ -297,6 +375,9 @@ const stockController = {
     }
   },
 
+  /**
+   * Supprime un fournisseur du système
+   */
   deleteFournisseur: async (req, res) => {
     try {
       const result = await Stock.deleteFournisseur(req.params.id);
@@ -306,6 +387,9 @@ const stockController = {
     }
   },
 
+  /**
+   * Récupère les informations d'un fournisseur spécifique
+   */
   getFournisseur: async (req, res) => {
     try {
       const fournisseur = await Stock.getFournisseurById(req.params.id);
@@ -318,6 +402,9 @@ const stockController = {
     }
   },
 
+  /**
+   * Récupère la liste de tous les fournisseurs
+   */
   getAllFournisseurs: async (req, res) => {
     try {
       const fournisseurs = await Stock.getAllFournisseurs();
@@ -328,6 +415,9 @@ const stockController = {
   },
 
   // ==================== COMMANDES ACHAT ====================
+  /**
+   * Crée une nouvelle commande d'achat auprès d'un fournisseur
+   */
   createCommandeAchat: async (req, res) => {
     try {
       if (!req.body.fournisseur_id || !req.body.produits || !Array.isArray(req.body.produits)) {
@@ -357,6 +447,9 @@ const stockController = {
     }
   },
 
+  /**
+   * Met à jour une commande d'achat existante
+   */
   updateCommandeAchat: async (req, res) => {
     try {
       if (!req.body.produits || !Array.isArray(req.body.produits)) {
@@ -379,6 +472,9 @@ const stockController = {
     }
   },
 
+  /**
+   * Supprime une commande d'achat du système
+   */
   deleteCommandeAchat: async (req, res) => {
     try {
       const result = await Stock.deleteCommandeAchat(req.params.id);
@@ -388,6 +484,9 @@ const stockController = {
     }
   },
 
+  /**
+   * Récupère les détails d'une commande d'achat spécifique
+   */
   getCommandeAchat: async (req, res) => {
     try {
       const commande = await Stock.getCommandeAchatById(req.params.id);
@@ -400,6 +499,9 @@ const stockController = {
     }
   },
 
+  /**
+   * Récupère toutes les commandes d'achat avec filtres optionnels
+   */
   getAllCommandesAchat: async (req, res) => {
     try {
       const filters = {
@@ -416,6 +518,9 @@ const stockController = {
     }
   },
 
+  /**
+   * Valide une commande d'achat (change son statut à "validée")
+   */
   validerCommandeAchat: async (req, res) => {
     try {
       const commande = await Stock.validerCommandeAchat(req.params.id, req.body.agent_id);
@@ -425,6 +530,9 @@ const stockController = {
     }
   },
 
+  /**
+   * Marque une commande d'achat comme reçue et met à jour le stock
+   */
   recevoirCommandeAchat: async (req, res) => {
     try {
       const commande = await Stock.recevoirCommandeAchat(
@@ -438,6 +546,10 @@ const stockController = {
     }
   },
 
+  /**
+   * Annule une commande d'achat
+
+   */
   annulerCommandeAchat: async (req, res) => {
     try {
       const commande = await Stock.annulerCommandeAchat(req.params.id, req.body.agent_id);
@@ -447,6 +559,9 @@ const stockController = {
     }
   },
 
+  /**
+   * Récupère les commandes d'achat d'un fournisseur spécifique
+   */
   getCommandesAchatByFournisseur: async (req, res) => {
     try {
       const filters = {
@@ -462,6 +577,9 @@ const stockController = {
     }
   },
 
+  /**
+   * Récupère les statistiques des commandes d'achat sur une période
+   */
   getStatsCommandesAchat: async (req, res) => {
     try {
       const { startDate, endDate } = req.query;
@@ -477,6 +595,9 @@ const stockController = {
   },
 
   // ==================== STATISTIQUES ====================
+  /**
+   * Récupère les statistiques générales du stock
+   */
   getStockStats: async (req, res) => {
     try {
       const stats = await Stock.getStockStats();
@@ -486,6 +607,9 @@ const stockController = {
     }
   },
 
+  /**
+   * Récupère les statistiques des ventes sur une période donnée
+   */
   getVentesStats: async (req, res) => {
     try {
       const { startDate, endDate } = req.query;

@@ -1,6 +1,9 @@
 import Pompe from '../models/Pompe.js';
 
-// Ajouter une nouvelle pompe
+/**
+ * Ajoute une nouvelle pompe au système
+ * Crée une pompe avec numéro, type et statut
+ */
 const addPompe = async (req, res) => {
   try {
     const { numero_pompe, type_pompe, statut } = req.body;
@@ -10,7 +13,11 @@ const addPompe = async (req, res) => {
     res.status(400).send({ message: 'Numero pompe deja utlisé.', error });
   }
 };
-// Récupérer les pompes filtrées
+
+/**
+ * Récupère les pompes avec filtres optionnels
+ * Permet la recherche par numéro, statut ou type de pompe
+ */
 const getPompesByFilters = async (req, res) => {
   try {
     const { numero_pompe, statut, type_pompe } = req.query;
@@ -21,7 +28,10 @@ const getPompesByFilters = async (req, res) => {
   }
 };
 
-// Récupérer toutes les pompes
+/**
+ * Récupère toutes les pompes du système
+ * Retourne la liste complète des pompes configurées
+ */
 const getAllPompes = async (req, res) => {
   try {
     const [pompes] = await Pompe.getAllPompes();
@@ -31,7 +41,10 @@ const getAllPompes = async (req, res) => {
   }
 };
 
-// Récupérer une pompe par ID
+/**
+ * Récupère une pompe spécifique par son ID
+ * Retourne les détails d'une pompe particulière
+ */
 const getPompeById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -46,6 +59,10 @@ const getPompeById = async (req, res) => {
   }
 };
 
+/**
+ * Met à jour les informations d'une pompe existante
+ * Permet la modification du statut, type ou autres propriétés
+ */
 const updatePompe = async (req, res) => {
   try {
     const { id } = req.params;
@@ -65,7 +82,10 @@ const updatePompe = async (req, res) => {
   }
 };
 
-// Supprimer une pompe
+/**
+ * Supprime une pompe du système
+ * Suppression définitive d'une pompe et de ses associations
+ */
 const deletePompe = async (req, res) => {
   try {
     const { id } = req.params;

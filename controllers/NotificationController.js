@@ -1,5 +1,9 @@
 import Notification from '../models/Notification.js';
 
+/**
+ * Récupère toutes les notifications d'un utilisateur spécifique
+ * Retourne la liste des notifications ordonnées par date
+ */
 const getNotifications = async (req, res) => {
   try {
     const { id_utilisateur } = req.params;
@@ -10,6 +14,10 @@ const getNotifications = async (req, res) => {
   }
 };
 
+/**
+ * Marque une notification spécifique comme lue
+ * Met à jour le statut de lecture d'une notification
+ */
 const markAsRead = async (req, res) => {
   try {
     const { id } = req.body;
@@ -20,6 +28,10 @@ const markAsRead = async (req, res) => {
   }
 };
 
+/**
+ * Récupère le nombre de notifications non lues d'un utilisateur
+ * Utilisé pour afficher le badge de compteur dans l'interface
+ */
 const getUnreadCount = async (req, res) => {
   try {
     const { id_utilisateur } = req.params;
@@ -29,6 +41,11 @@ const getUnreadCount = async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+
+/**
+ * Marque toutes les notifications d'un utilisateur comme lues
+ * Opération en lot pour effacer tous les badges de notification
+ */
 const markAllAsRead = async (req, res) => {
   try {
     const { id_utilisateur } = req.body;
@@ -38,6 +55,11 @@ const markAllAsRead = async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+
+/**
+ * Cache une notification spécifique sans la supprimer définitivement
+ * Permet à l'utilisateur de nettoyer sa liste de notifications
+ */
 const hideNotification = async (req, res) => {
   try {
     const { id, id_utilisateur } = req.body;
@@ -48,6 +70,10 @@ const hideNotification = async (req, res) => {
   }
 };
 
+/**
+ * Cache toutes les notifications d'un utilisateur
+ * Nettoie complètement la liste des notifications pour un utilisateur
+ */
 const hideAllNotifications = async (req, res) => {
   try {
     const { id_utilisateur } = req.body;

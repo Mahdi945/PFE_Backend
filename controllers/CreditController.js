@@ -1,6 +1,10 @@
 import Credit from '../models/Credit.js';
 import db from '../config/db.js';
 
+/**
+ * Crée un nouveau crédit pour un client
+ * Vérifie l'utilisateur et ajoute le crédit avec les paramètres spécifiés
+ */
 const createCredit = async (req, res) => {
   try {
     const { utilisateur, type_credit, solde_credit, date_debut, duree_credit } = req.body;
@@ -31,6 +35,10 @@ const createCredit = async (req, res) => {
   }
 };
 
+/**
+ * Récupère tous les crédits du système
+ * Retourne la liste complète avec détails utilisateurs
+ */
 const getAllCredits = async (req, res) => {
   try {
     const [credits] = await Credit.getAllCredits();
@@ -40,6 +48,10 @@ const getAllCredits = async (req, res) => {
   }
 };
 
+/**
+ * Récupère un crédit spécifique par son ID
+ * Retourne les détails complets du crédit ou erreur 404
+ */
 const getCreditById = async (req, res) => {
   try {
     const { id_credit } = req.params;
@@ -55,6 +67,10 @@ const getCreditById = async (req, res) => {
   }
 };
 
+/**
+ * Met à jour le solde d'un crédit existant
+ * Vérifie les limites du crédit avant d'effectuer la mise à jour
+ */
 const updateCredit = async (req, res) => {
   try {
     const { id_credit, montant } = req.body;
@@ -75,6 +91,10 @@ const updateCredit = async (req, res) => {
   }
 };
 
+/**
+ * Met à jour l'état d'un crédit (actif, expiré, annulé, etc.)
+ * Valide l'état fourni avant d'effectuer la mise à jour
+ */
 const updateCreditState = async (req, res) => {
   try {
     const { id_credit, etat } = req.body;
@@ -95,6 +115,10 @@ const updateCreditState = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+/**
+ * Renouvelle un crédit existant
+ * Crée un nouveau crédit basé sur un crédit précédent avec de nouveaux paramètres
+ */
 const renewCredit = async (req, res) => {
   try {
     const { id_credit, solde_credit, date_debut, duree_credit } = req.body;
@@ -116,6 +140,10 @@ const renewCredit = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+/**
+ * Met à jour automatiquement les crédits expirés
+ * Fonction utilitaire pour traiter les crédits dont la date d'expiration est dépassée
+ */
 const updateExpiredCredits = async (req, res) => {
   try {
     await Credit.updateExpiredCredits();
@@ -124,6 +152,10 @@ const updateExpiredCredits = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+/**
+ * Récupère tous les crédits associés à un utilisateur
+ * Retourne l'historique complet des crédits pour un client spécifique
+ */
 const getCreditsByUser = async (req, res) => {
   try {
     const { id_utilisateur } = req.params;
@@ -134,6 +166,10 @@ const getCreditsByUser = async (req, res) => {
   }
 };
 
+/**
+ * Récupère les statistiques de crédit d'un utilisateur
+ * Retourne les données agrégées sur l'utilisation du crédit par un client
+ */
 const getCreditStats = async (req, res) => {
   try {
     const { id_utilisateur } = req.params;

@@ -21,9 +21,9 @@ passport.use(
       if (user) {
         return done(null, user);
       }
-      return done(null, false); // Si l'utilisateur n'existe pas, renvoie false
+      return done(null, false);
     } catch (error) {
-      return done(error, false); // Erreur lors de la recherche
+      return done(error, false);
     }
   }),
 );

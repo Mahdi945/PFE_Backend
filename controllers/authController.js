@@ -373,7 +373,7 @@ const loginUser = async (req, res) => {
       httpOnly: true,
       secure: false, // Désactiver pour HTTP, activer pour HTTPS en production
       sameSite: 'Strict',
-      maxAge: 3600000, // 1 heure
+       maxAge: 18000000, // 5 heures (5 * 60 * 60 * 1000 = 18000000 ms)
     });
 
     res.status(200).json({
@@ -542,7 +542,7 @@ const requestPasswordReset = async (req, res) => {
     }
 
     // Générer un token JWT pour la réinitialisation du mot de passe
-    const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '15m' });
+    const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '30m' });
 
     // Construire le lien de réinitialisation
     const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
@@ -552,7 +552,7 @@ const requestPasswordReset = async (req, res) => {
       <p>Bonjour,</p>
       <p>Vous avez demandé à réinitialiser votre mot de passe Carbotrack.</p>
       <p>Cliquez sur le bouton ci-dessous pour définir un nouveau mot de passe :</p>
-      <p><small>Ce lien expirera dans 15 minutes.</small></p>
+      <p><small>Ce lien expirera dans 30 minutes.</small></p>
     `;
 
     // Options de l'email

@@ -1,3 +1,8 @@
+/**
+ * Contrôleur pour la gestion des paiements
+ * Gère les opérations de paiement, notifications et communications par email
+ */
+
 import Paiments from '../models/Paiments.js';
 import Notification from '../models/Notification.js';
 import db from '../config/db.js';
@@ -8,6 +13,10 @@ import dotenv from 'dotenv';
 // Configuration de l'environnement
 dotenv.config();
 
+/**
+ * Configuration du transporteur email pour les notifications de paiement
+ * Utilise Gmail avec les credentials d'environnement
+ */
 // Configuration du transporteur email
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -17,6 +26,10 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+/**
+ * Génère un template HTML personnalisé pour les emails de paiement
+ * Template responsive avec branding Carbotrack
+ */
 // Fonction pour générer le template email
 const generateEmailTemplate = (title, content, actionLink = null, actionText = null) => {
   return `
@@ -62,6 +75,10 @@ const generateEmailTemplate = (title, content, actionLink = null, actionText = n
   `;
 };
 
+/**
+ * Crée un nouveau paiement pour un crédit
+ * Traite le paiement, met à jour le crédit et envoie les notifications
+ */
 const createPayment = async (req, res) => {
   try {
     const { id_credit, montant_paye, mode_paiement, description, id_caissier } = req.body;
@@ -182,6 +199,11 @@ const createPayment = async (req, res) => {
     });
   }
 };
+
+/**
+ * Récupère tous les paiements du système
+ * Retourne la liste complète des paiements pour l'administration
+ */
 const getAllPayments = async (req, res) => {
   try {
     const payments = await Paiments.getAll();
@@ -198,6 +220,10 @@ const getAllPayments = async (req, res) => {
   }
 };
 
+/**
+ * Récupère tous les paiements d'un crédit spécifique
+ * Permet de voir l'historique des paiements pour un crédit donné
+ */
 const getPaymentsByCredit = async (req, res) => {
   try {
     const payments = await Paiments.getByCredit(req.params.id_credit);
@@ -210,6 +236,10 @@ const getPaymentsByCredit = async (req, res) => {
   }
 };
 
+/**
+ * Récupère tous les paiements d'un utilisateur spécifique
+ * Affiche l'historique des paiements pour un client donné
+ */
 const getPaymentsByUser = async (req, res) => {
   try {
     const payments = await Paiments.getByUser(req.params.id_utilisateur);
@@ -222,6 +252,10 @@ const getPaymentsByUser = async (req, res) => {
   }
 };
 
+/**
+ * Récupère un paiement par sa référence unique
+ * Permet la recherche et vérification d'un paiement spécifique
+ */
 const getPaymentByReference = async (req, res) => {
   try {
     const payment = await Paiments.getByReference(req.params.reference);
@@ -239,6 +273,11 @@ const getPaymentByReference = async (req, res) => {
     });
   }
 };
+
+/**
+ * Calcule et retourne les statistiques de paiement d'un utilisateur
+ * Fournit les totaux et métriques de paiement pour le tableau de bord
+ */
 const getPaymentStats = async (req, res) => {
   try {
     const { id_utilisateur } = req.params;
@@ -249,6 +288,10 @@ const getPaymentStats = async (req, res) => {
   }
 };
 
+/**
+ * Récupère les paiements récents d'un utilisateur
+ * Affiche les derniers paiements pour l'historique rapide
+ */
 const getRecentPayments = async (req, res) => {
   try {
     const { id_utilisateur } = req.params;
@@ -258,6 +301,7 @@ const getRecentPayments = async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+
 export default {
   createPayment,
   getAllPayments,

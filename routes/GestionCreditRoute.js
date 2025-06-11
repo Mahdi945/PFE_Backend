@@ -93,6 +93,11 @@ router.get(
   requireAuth,
   TransactionController.getTransactionsByUser,
 );
+router.get(
+  '/transactions/pompiste/:id_pompiste',
+  requireAuth,
+  TransactionController.getTransactionsByPompiste,
+);
 
 // ==================== ROUTES DASHBOARD ====================
 router.get('/dashboard/credits/:id_utilisateur', requireAuth, CreditController.getCreditsByUser);

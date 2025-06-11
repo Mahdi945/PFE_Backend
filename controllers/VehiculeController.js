@@ -4,7 +4,10 @@ import QRCode from 'qrcode';
 import fs from 'fs-extra';
 import path from 'path';
 
-// Ajouter un véhicule
+/**
+ * Crée un nouveau véhicule avec génération de QR code
+ * Vérifie l'existence et l'état du crédit avant création
+ */
 const create = async (req, res) => {
   try {
     const { id_credit, immatriculation, marque, type_vehicule } = req.body;
@@ -69,7 +72,10 @@ const create = async (req, res) => {
   }
 };
 
-// Récupérer tous les véhicules
+/**
+ * Récupère la liste complète de tous les véhicules
+ * Retourne tous les véhicules avec leurs informations détaillées
+ */
 const getAllVehicules = async (req, res) => {
   try {
     const vehicules = await Vehicule.getAllVehicules();
@@ -84,7 +90,11 @@ const getAllVehicules = async (req, res) => {
     });
   }
 };
-// Récupérer un véhicule par ID
+
+/**
+ * Récupère un véhicule spécifique par son ID
+ * Retourne les détails complets du véhicule ou erreur 404
+ */
 const getVehicule = async (req, res) => {
   try {
     const { id } = req.params;
@@ -110,7 +120,10 @@ const getVehicule = async (req, res) => {
   }
 };
 
-// Récupérer les véhicules d'un utilisateur par son username
+/**
+ * Récupère tous les véhicules associés à un client
+ * Recherche par nom d'utilisateur et retourne ses véhicules
+ */
 const getVehiculesByClient = async (req, res) => {
   try {
     const { username } = req.params;
@@ -147,7 +160,10 @@ const getVehiculesByClient = async (req, res) => {
   }
 };
 
-// Récupérer les véhicules par crédit
+/**
+ * Récupère tous les véhicules liés à un crédit spécifique
+ * Utile pour voir les véhicules financés par un crédit donné
+ */
 const getVehiculesByCredit = async (req, res) => {
   try {
     const { id_credit } = req.params;
@@ -173,7 +189,10 @@ const getVehiculesByCredit = async (req, res) => {
   }
 };
 
-// Récupérer un véhicule par immatriculation
+/**
+ * Recherche un véhicule par son numéro d'immatriculation
+ * Permet l'identification unique d'un véhicule
+ */
 const getVehiculeByImmatriculation = async (req, res) => {
   try {
     const { immatriculation } = req.params;
@@ -199,7 +218,10 @@ const getVehiculeByImmatriculation = async (req, res) => {
   }
 };
 
-// Mettre à jour seulement l'ID du crédit d'un véhicule
+/**
+ * Met à jour l'association crédit d'un véhicule
+ * Vérifie que le nouveau crédit est actif avant mise à jour
+ */
 const updateVehicule = async (req, res) => {
   try {
     const { id, id_credit } = req.body;
@@ -254,8 +276,10 @@ const updateVehicule = async (req, res) => {
   }
 };
 
-
-// Supprimer un véhicule
+/**
+ * Supprime définitivement un véhicule du système
+ * Opération irréversible avec vérification d'existence
+ */
 const deleteVehicule = async (req, res) => {
   try {
     const { id } = req.params;

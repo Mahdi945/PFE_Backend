@@ -1,4 +1,3 @@
-// controllers/DashboardController.js
 import Credit from '../models/Credit.js';
 import User from '../models/User.js';
 import Paiments from '../models/Paiments.js';
@@ -9,6 +8,10 @@ import Vehicule from '../models/Vehicule.js';
 import db from '../config/db.js';
 
 class DashboardController {
+  /**
+   * Récupère les données du tableau de bord client
+   * Agrège les statistiques de crédit, paiements, transactions et véhicules
+   */
   static async getClientDashboard(req, res) {
     try {
       const { id_utilisateur } = req.params;
@@ -101,6 +104,11 @@ class DashboardController {
       });
     }
   }
+
+  /**
+   * Récupère les paiements mensuels d'un utilisateur
+   * Retourne les données agrégées par mois pour l'année en cours
+   */
   // Ajoutez cette méthode au contrôleur
   static async getMonthlyPayments(req, res) {
     try {
@@ -132,6 +140,11 @@ class DashboardController {
       });
     }
   }
+
+  /**
+   * Récupère les données du tableau de bord gérant
+   * Fournit les statistiques globales et les métriques de performance
+   */
   static async getGerantDashboard(req, res) {
     try {
       const filter = req.query.filter || { type: 'year' };
@@ -207,6 +220,11 @@ class DashboardController {
       });
     }
   }
+
+  /**
+   * Récupère les données du tableau de bord caissier
+   * Affiche les statistiques et transactions spécifiques au caissier connecté
+   */
   static async getCaissierDashboard(req, res) {
     try {
       const { id_caissier } = req.params;

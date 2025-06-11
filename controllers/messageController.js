@@ -1,7 +1,12 @@
 import Message from '../models/Message.js';
 import db from '../config/db.js';
 
-export default {  sendMessage: async (req, res) => {
+export default {
+  /**
+   * Envoie un nouveau message entre utilisateurs
+   * Gère l'envoi via HTTP et WebSocket pour la notification en temps réel
+   */
+  sendMessage: async (req, res) => {
     try {
       const { senderId, receiverId, content } = req.body;
       const messageId = await Message.create(senderId, receiverId, content);
@@ -46,6 +51,10 @@ export default {  sendMessage: async (req, res) => {
     }
   },
 
+  /**
+   * Récupère la conversation entre deux utilisateurs
+   * Retourne l'historique des messages échangés
+   */
   getConversation: async (req, res) => {
     try {
       const { user1, user2 } = req.params;
@@ -57,6 +66,10 @@ export default {  sendMessage: async (req, res) => {
     }
   },
 
+  /**
+   * Récupère tous les messages d'un utilisateur
+   * Permet d'afficher l'historique complet des messages reçus et envoyés
+   */
   getUserMessages: async (req, res) => {
     try {
       const { userId } = req.params;
@@ -67,6 +80,10 @@ export default {  sendMessage: async (req, res) => {
     }
   },
 
+  /**
+   * Récupère le nombre de messages non lus pour un utilisateur
+   * Utile pour afficher les notifications de nouveaux messages
+   */
   getUnreadCount: async (req, res) => {
     try {
       const { userId } = req.params;
@@ -76,6 +93,11 @@ export default {  sendMessage: async (req, res) => {
       res.status(500).json({ error: error.message });
     }
   },
+
+  /**
+   * Marque les messages comme lus entre deux utilisateurs
+   * Met à jour le statut des messages dans la base de données
+   */
   markAsRead: async (req, res) => {
     try {
       const { senderId, receiverId } = req.body;
@@ -97,6 +119,10 @@ export default {  sendMessage: async (req, res) => {
     }
   },
 
+  /**
+   * Récupère tous les contacts d'un utilisateur avec qui il a conversé
+   * Inclut les informations sur le dernier message et le statut de l'utilisateur
+   */
   getAllContacts: async (req, res) => {
     try {
       const { userId } = req.params;

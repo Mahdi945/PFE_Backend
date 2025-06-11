@@ -1,8 +1,52 @@
+/**
+ * SERVEUR PRINCIPAL - STATION SERVICE MANAGEMENT SYSTEM
+ * =// ===== CONFIGURATION SERVEUR =====
+const app = express(); // Application Express
+const server = createServer(app); // Serveur HTTP pour WebSocket
+
+// Configuration WebSocket avec CORS pour Angular
+const io = new Server(server, {
+  cors: {
+    origin: ['http://localhost:4200'], // URL du frontend Angular
+    methods: ['GET', 'POST'],
+    credentials: true
+  }
+});
+
+const PORT = process.env.PORT || 3000; // Port d'écoute du serveur
+
+// ===== CONFIGURATION EMAIL =====
+// Service de messagerie pour notifications automatiques
+const transporter = nodemailer.createTransporter({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});===================================
+ * Ce fichier configure et lance le serveur Express avec WebSocket
+ * pour gérer une application de station-service avec:
+ * - Authentification et gestion des utilisateurs
+ * - Système de crédit et paiements
+ * - Gestion des stocks et réapprovisionnement automatique
+ * - Notifications en temps réel
+ * - Messagerie instantanée
+ * - Tâches planifiées (CRON jobs)
+ */
+
+// ===== IMPORTS DES MODULES PRINCIPAUX =====
+// Framework web et serveur HTTP
 import express from 'express';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
-import { Server } from 'socket.io';
-import pool from './config/db.js';
+import { Server } from 'socket.io'; // Communication temps réel
+
+// ===== IMPORTS DE CONFIGURATION ET BASE DE DONNÉES =====
+import pool from './config/db.js'; // Pool de connexions MySQL
+import passport from './config/passport.js'; // Authentification
+
+// ===== IMPORTS DES ROUTES =====
+// Routes pour chaque module de l'application
 import authRouter from './routes/authRoute.js';
 import PermissionRouter from './routes/PermissionRoute.js';
 import pompeRouter from './routes/PompeRoute.js';
@@ -10,22 +54,36 @@ import pistoletRouter from './routes/PistoletRoute.js';
 import creditRouter from './routes/GestionCreditRoute.js';
 import notificationRouter from './routes/NotificationRoute.js';
 import AffectationCalendrierRouter from './routes/AffectationCalendrierRoute.js';
-import passport from './config/passport.js';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import path from 'path';
-import cron from 'node-cron';
-import Credit from './models/Credit.js';
-import Notification from './models/Notification.js';
-import nodemailer from 'nodemailer';
-import fs from 'fs';
-import swaggerUi from 'swagger-ui-express';
-import swaggerSpec from './swagger-config.js';
 import stockRouter from './routes/stockRoute.js';
 import reclamationRouter from './routes/reclamationRoute.js';
 import messageRouter from './routes/messageRoute.js';
-//import OdooService from './services/OdooService.js';
-//import odooRouter from './routes/odooRoute.js';
+
+// ===== IMPORTS DES MIDDLEWARES =====
+import cors from 'cors'; // Cross-Origin Resource Sharing
+import cookieParser from 'cookie-parser'; // Gestion des cookies
+
+// ===== IMPORTS DES UTILITAIRES =====
+import path from 'path'; // Manipulation des chemins
+import fs from 'fs'; // Système de fichiers
+import nodemailer from 'nodemailer'; // Envoi d'emails
+
+// ===== IMPORTS POUR TÂCHES PLANIFIÉES =====
+import cron from 'node-cron'; // Planificateur de tâches
+
+// ===== IMPORTS DES MODÈLES =====
+import Credit from './models/Credit.js';
+import Notification from './models/Notification.js';
+
+// ===== IMPORTS POUR DOCUMENTATION API =====
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './swagger-config.js';
+
+// ===== SERVICES EXTERNES (DÉSACTIVÉS) =====
+// import OdooService from './services/OdooService.js';
+// import odooRouter from './routes/odooRoute.js';
+
+// ===== CHARGEMENT DES VARIABLES D'ENVIRONNEMENT =====
+// Doit être appelé en premier pour charger les variables .env
 dotenv.config();
 
 const app = express();
@@ -48,42 +106,48 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Middlewares
+// ===== CONFIGURATION MIDDLEWARES =====
+// Parsing JSON et URL encodés
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Configuration CORS pour autoriser le frontend Angular et Postman
 app.use(
   cors({
-    origin: ['http://localhost:4200', 'https://www.getpostman.com'], // Autorise à la fois Angular
+    origin: ['http://localhost:4200', 'https://www.getpostman.com'],
     methods: 'GET,POST,PUT,DELETE',
     allowedHeaders: 'Content-Type, Authorization',
-    credentials: true,
+    credentials: true, // Autorise les cookies et l'authentification
   }),
 );
+
+// Gestion des cookies et authentification
 app.use(cookieParser());
 app.use(passport.initialize());
 
-// WebSocket Configuration
+// ===== CONFIGURATION WEBSOCKET =====
+// Map pour suivre les utilisateurs connectés
 const connectedUsers = new Map(); // userId -> socketId
 
 io.on('connection', (socket) => {
   console.log('🔌 User connected:', socket.id);
 
-  // User joins with their ID
+  // ===== GESTION DE CONNEXION UTILISATEUR =====
   socket.on('join', (userId) => {
     connectedUsers.set(userId, socket.id);
     console.log(`👤 User ${userId} joined with socket ${socket.id}`);
   });
 
-  // Handle new message
+  // ===== GESTION DES MESSAGES EN TEMPS RÉEL =====
   socket.on('sendMessage', async (data) => {
     try {
       const { senderId, receiverId, content } = data;
       
-      // Save message to database
+      // Sauvegarder le message en base de données
       const Message = (await import('./models/Message.js')).default;
       const messageId = await Message.create(senderId, receiverId, content);
       
-      // Get full message data with user info
+      // Récupérer les données complètes du message avec info utilisateurs
       const [messageData] = await pool.execute(`
         SELECT m.*, u1.username as sender_name, u1.photo as sender_photo, 
                u2.username as receiver_name, u2.photo as receiver_photo
@@ -95,7 +159,7 @@ io.on('connection', (socket) => {
 
       const fullMessage = messageData[0];
 
-      // Send to receiver if online
+      // Envoyer au destinataire s'il est en ligne
       const receiverSocketId = connectedUsers.get(receiverId);
       if (receiverSocketId) {
         io.to(receiverSocketId).emit('newMessage', fullMessage);
@@ -104,11 +168,11 @@ io.on('connection', (socket) => {
         console.log(`📨 Receiver ${receiverId} is offline`);
       }
 
-      // Send confirmation to sender
+      // Confirmation à l'expéditeur
       socket.emit('messageConfirmed', fullMessage);
       console.log(`✅ Message confirmed to sender ${senderId}`);
 
-      // Update unread counts
+      // Mise à jour du compteur de messages non lus
       const receiverUnreadCount = await Message.getUnreadCount(receiverId);
       
       if (receiverSocketId) {
@@ -126,7 +190,7 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Mark messages as read
+  // ===== MARQUER LES MESSAGES COMME LUS =====
   socket.on('markAsRead', async (data) => {
     try {
       const { senderId, receiverId } = data;
@@ -134,7 +198,7 @@ io.on('connection', (socket) => {
       
       await Message.markAsRead(senderId, receiverId);
       
-      // Update unread count for receiver
+      // Mettre à jour le compteur pour le destinataire
       const unreadCount = await Message.getUnreadCount(receiverId);
       socket.emit('unreadCountUpdate', { count: unreadCount });
       
@@ -143,9 +207,9 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Handle disconnect
+  // ===== GESTION DE DÉCONNEXION =====
   socket.on('disconnect', () => {
-    // Remove user from connected users
+    // Supprimer l'utilisateur de la liste des connectés
     for (const [userId, socketId] of connectedUsers.entries()) {
       if (socketId === socket.id) {
         connectedUsers.delete(userId);
@@ -157,10 +221,11 @@ io.on('connection', (socket) => {
   });
 });
 
-// Make io available to routes
+// ===== CONFIGURATION DES ROUTES =====
+// Rendre WebSocket disponible pour les routes
 app.set('io', io);
 
-// Routes
+// Enregistrement des routes principales
 app.use('/api', authRouter);
 app.use('/api', PermissionRouter);
 app.use('/api/pompe', pompeRouter);
@@ -172,7 +237,7 @@ app.use('/api/Reclamation', reclamationRouter);
 app.use('/api/notifications', notificationRouter);
 app.use('/api/messages', messageRouter);
 
-// Ajoutez cette ligne APRÈS les autres app.use() et AVANT les routes
+// ===== DOCUMENTATION API SWAGGER =====
 app.use(
   '/api-docs',
   swaggerUi.serve,
@@ -185,20 +250,22 @@ app.use(
     customCss: '.swagger-ui .topbar { display: none }',
   }),
 );
-//app.use('/api/odoo', odooRouter);
-// Ensure uploads directory exists
+
+// ===== CONFIGURATION DES FICHIERS STATIQUES =====
+// Créer le dossier transactions s'il n'existe pas
 const uploadsDir = path.join(process.cwd(), 'public/transactions');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
-// Static files
+
+// Servir les fichiers statiques
 const __dirname = path.resolve();
 app.use('/images', express.static(path.join(__dirname, 'public/images')));
 app.use('/qrcodes', express.static(path.join(__dirname, 'public/qrcodes')));
 app.use('/transactions', express.static(path.join(__dirname, 'public/transactions')));
 app.use('/images_produits', express.static(path.join(__dirname, 'public/images_produits')));
 
-// Database connection check
+// ===== VÉRIFICATION CONNEXION BASE DE DONNÉES =====
 (async () => {
   try {
     await pool.query('SELECT 1');
@@ -209,11 +276,11 @@ app.use('/images_produits', express.static(path.join(__dirname, 'public/images_p
   }
 })();
 
-// Vérification de la connexion Odoo
+// ===== VÉRIFICATION CONNEXION ODOO (DÉSACTIVÉ) =====
+// Connexion au système ERP Odoo pour intégration métier
 //(async () => {
 //try {
 //const result = await OdooService.testConnection();
-
 //if (result.success) {
 //console.log('✅ Odoo connection successful', {
 //uid: result.uid,
@@ -222,15 +289,14 @@ app.use('/images_produits', express.static(path.join(__dirname, 'public/images_p
 //});
 //} else {
 //console.error('❌ Odoo connection failed:', result.error);
-// Optionnel: arrêter le serveur si Odoo est essentiel
-// process.exit(1);
 //}
 //} catch (err) {
 //console.error('❌ Odoo connection error:', err);
 //}
 //})();
 
-// Fonction pour envoyer des emails de notification
+// ===== UTILITAIRES EMAIL =====
+// Fonction pour envoyer des emails de notification aux utilisateurs
 const sendNotificationEmail = async (userId, subject, message) => {
   try {
     const [user] = await pool.query('SELECT email, username FROM utilisateurs WHERE id = ?', [
@@ -254,13 +320,15 @@ const sendNotificationEmail = async (userId, subject, message) => {
     console.error('Erreur envoi email notification:', err);
   }
 };
-// Nouveau CRON Job pour désactiver les comptes avec plus de 2 crédits expirés
+// ===== TÂCHES PLANIFIÉES (CRON JOBS) =====
+
+// ===== CRON JOB 1: DÉSACTIVATION DES COMPTES AVEC TROP DE CRÉDITS EXPIRÉS =====
+// Exécution quotidienne à 3h du matin pour vérifier les comptes à risque
 cron.schedule('0 3 * * *', async () => {
-  // Tous les jours à 3h du matin
   try {
     console.log('🔄 Vérification des comptes avec crédits expirés...');
 
-    // 1. Trouver les utilisateurs avec plus de 2 crédits expirés
+    // Trouver les utilisateurs avec plus de 2 crédits expirés
     const [usersWithExpiredCredits] = await pool.query(`
       SELECT 
         u.id, 
@@ -277,7 +345,7 @@ cron.schedule('0 3 * * *', async () => {
       HAVING COUNT(dc.id) > 2
     `);
 
-    // Récupérer l'ID du gérant
+    // Récupérer l'ID du gérant pour les notifications
     const [gerant] = await pool.query(`
       SELECT id FROM utilisateurs 
       WHERE role = 'gerant' 
@@ -286,22 +354,23 @@ cron.schedule('0 3 * * *', async () => {
 
     const gerantId = gerant[0]?.id;
 
+    // Traiter chaque utilisateur avec trop de crédits expirés
     for (const user of usersWithExpiredCredits) {
-      // 2. Désactiver le compte
+      // Désactiver le compte
       await pool.query(`UPDATE utilisateurs SET status = 'inactive' WHERE id = ?`, [user.id]);
 
-      // 3. Créer une notification pour le gérant
+      // Créer une notification pour le gérant
       if (gerantId) {
         await Notification.create(
-          gerantId, // ID du gérant comme destinataire
+          gerantId,
           'systeme',
-          user.id, // ID du client comme entité concernée
+          user.id,
           'compte_desactive',
           `Le compte client ${user.username} (ID: ${user.id}) a été désactivé automatiquement pour ${user.expired_credits_count} crédits expirés`,
         );
       }
 
-      // 4. Envoyer un email au client (optionnel)
+      // Envoyer un email au client
       await sendNotificationEmail(
         user.id,
         'Compte désactivé',
@@ -319,13 +388,13 @@ cron.schedule('0 3 * * *', async () => {
     console.error('❌ Erreur lors de la vérification des comptes:', err);
   }
 });
-// CRON Jobs for automated notifications
+// ===== CRON JOB 2: VÉRIFICATIONS QUOTIDIENNES DES CRÉDITS =====
+// Exécution quotidienne à minuit pour traiter les crédits
 cron.schedule('0 0 * * *', async () => {
-  // Daily at midnight
   try {
-    console.log('🔄 Running daily credit checks...');
+    console.log('🔄 Vérifications quotidiennes des crédits...');
 
-    // 1. Process expired credits
+    // 1. Traiter les crédits expirés
     const [expiredCredits] = await pool.query(`
       SELECT dc.id, dc.id_utilisateur, dc.date_debut, dc.duree_credit, u.username 
       FROM details_credits dc
@@ -334,11 +403,10 @@ cron.schedule('0 0 * * *', async () => {
       AND DATE_ADD(dc.date_debut, INTERVAL dc.duree_credit DAY) < CURDATE()
     `);
 
+    // Marquer les crédits comme expirés et envoyer notifications
     for (const credit of expiredCredits) {
-      // Mark as expired
       await pool.query(`UPDATE details_credits SET etat = 'expiré' WHERE id = ?`, [credit.id]);
 
-      // Send expiration notification
       await Notification.create(
         credit.id_utilisateur,
         'credit',
@@ -347,7 +415,6 @@ cron.schedule('0 0 * * *', async () => {
         `Votre crédit #${credit.id} a expiré`,
       );
 
-      // Send email
       await sendNotificationEmail(
         credit.id_utilisateur,
         'Votre crédit a expiré',
@@ -357,7 +424,7 @@ cron.schedule('0 0 * * *', async () => {
       );
     }
 
-    // 2. Credits expiring soon (3-7 days)
+    // 2. Alerter les crédits bientôt expirés (3-7 jours)
     const [expiringSoon] = await pool.query(`
       SELECT dc.id, dc.id_utilisateur, dc.date_debut, dc.duree_credit, u.username,
       DATEDIFF(DATE_ADD(dc.date_debut, INTERVAL dc.duree_credit DAY), CURDATE()) AS days_remaining
@@ -367,6 +434,7 @@ cron.schedule('0 0 * * *', async () => {
       AND DATEDIFF(DATE_ADD(dc.date_debut, INTERVAL dc.duree_credit DAY), CURDATE()) BETWEEN 3 AND 7
     `);
 
+    // Envoyer notifications d'expiration proche
     for (const credit of expiringSoon) {
       await Notification.create(
         credit.id_utilisateur,
@@ -383,18 +451,19 @@ cron.schedule('0 0 * * *', async () => {
       );
     }
 
-    console.log('✅ Daily credit checks completed');
+    console.log('✅ Vérifications quotidiennes terminées');
   } catch (err) {
-    console.error('❌ Error in daily credit checks:', err);
+    console.error('❌ Erreur lors des vérifications quotidiennes:', err);
   }
 });
 
-// Hourly checks
+// ===== CRON JOB 3: VÉRIFICATIONS HORAIRES =====
+// Vérifications des remboursements récents toutes les heures
 cron.schedule('0 * * * *', async () => {
   try {
-    console.log('🔄 Running hourly notifications check...');
+    console.log('🔄 Vérifications horaires des notifications...');
 
-    // 1. Recently repaid credits (last hour)
+    // Crédits récemment remboursés (dernière heure)
     const [recentlyPaid] = await pool.query(`
       SELECT dc.id, dc.id_utilisateur, u.username 
       FROM details_credits dc
@@ -403,6 +472,7 @@ cron.schedule('0 * * * *', async () => {
       AND dc.date_dernier_paiement >= NOW() - INTERVAL 1 HOUR
     `);
 
+    // Envoyer notification pour chaque crédit remboursé
     for (const credit of recentlyPaid) {
       await Notification.create(
         credit.id_utilisateur,
@@ -419,12 +489,13 @@ cron.schedule('0 * * * *', async () => {
       );
     }
 
-    console.log('✅ Hourly notifications check completed');
+    console.log('✅ Vérifications horaires terminées');
   } catch (err) {
-    console.error('❌ Error in hourly notifications check:', err);
+    console.error('❌ Erreur lors des vérifications horaires:', err);
   }
 });
-// CRON Job pour les alertes de stock et réapprovisionnement automatique
+// ===== CRON JOB 4: ALERTES DE STOCK ET RÉAPPROVISIONNEMENT AUTOMATIQUE =====
+// Vérifie toutes les heures les produits sous le seuil et crée des commandes automatiques
 cron.schedule('0 * * * *', async () => {
   try {
     console.log('🔄 Vérification des produits sous le seuil et réapprovisionnement automatique...');
@@ -633,18 +704,19 @@ cron.schedule('0 * * * *', async () => {
     console.error('❌ Erreur lors de la vérification du stock et réapprovisionnement:', err);
   }
 });
-// Weekly summary every Monday at 9 AM
+// ===== CRON JOB 5: RÉSUMÉ HEBDOMADAIRE =====
+// Exécution chaque lundi à 9h pour envoyer un résumé d'activité
 cron.schedule('0 9 * * 1', async () => {
   try {
-    console.log('🔄 Running weekly summary...');
+    console.log('🔄 Génération du résumé hebdomadaire...');
 
-    // Get all active users
+    // Récupérer tous les utilisateurs actifs
     const [users] = await pool.query(`
       SELECT id, username, email FROM utilisateurs WHERE status = 'active'
     `);
 
     for (const user of users) {
-      // Get weekly stats - Version corrigée
+      // Calculer les statistiques de la semaine passée
       const [[{ transactions }]] = await pool.query(
         `
         SELECT COUNT(*) AS transactions 
@@ -666,6 +738,7 @@ cron.schedule('0 9 * * 1', async () => {
         [user.id],
       );
 
+      // Créer notification de résumé
       await Notification.create(
         user.id,
         'systeme',
@@ -674,6 +747,7 @@ cron.schedule('0 9 * * 1', async () => {
         `Résumé hebdomadaire: ${transactions} transactions, ${payments || 0} DT payés`,
       );
 
+      // Envoyer email de résumé si l'utilisateur a un email
       if (user.email) {
         await transporter.sendMail({
           from: `"Carbotrack" <${process.env.EMAIL_USER}>`,
@@ -691,14 +765,16 @@ cron.schedule('0 9 * * 1', async () => {
       }
     }
   
-    console.log('✅ Weekly summary completed');
+    console.log('✅ Résumé hebdomadaire terminé');
   } catch (err) {
-    console.error('❌ Error in weekly summary:', err);
+    console.error('❌ Erreur lors du résumé hebdomadaire:', err);
   }
 });
+// ===== DÉMARRAGE DU SERVEUR =====
 server.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`🔌 WebSocket server ready`);
+  console.log(`📚 API Documentation available at http://localhost:${PORT}/api-docs`);
 });
 
 export default app;

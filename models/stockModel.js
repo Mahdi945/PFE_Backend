@@ -6,14 +6,19 @@ import { dirname } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// ===================================================================
+//  MODÈLE STOCK - Gestion complète du système de stock
+// ===================================================================
 const Stock = {
   // ==================== PRODUITS ====================
+  
+  // Crée un nouveau produit avec upload d'image optionnel
   createProduit: async (produitData, imagePath = null) => {
     // Validation des champs obligatoires
     if (
       !produitData.code_barre ||
       !produitData.nom ||
-      !produitData.categorie_id ||
       produitData.prix_achat === undefined ||
       produitData.prix_vente === undefined
     ) {
@@ -30,7 +35,7 @@ const Stock = {
       produitData.code_barre,
       produitData.nom,
       produitData.description || null,
-      produitData.categorie_id,
+      produitData.categorie_id || null,
       produitData.fournisseur_id || null,
       produitData.prix_achat,
       produitData.prix_vente,
@@ -43,6 +48,7 @@ const Stock = {
     return { id: result.insertId, ...produitData, image_url: imagePath };
   },
 
+  // Met à jour un produit existant avec gestion d'image
   updateProduit: async (id, produitData, imagePath = null) => {
     // Validation des champs obligatoires
     if (
@@ -98,6 +104,7 @@ const Stock = {
     return { id, ...produitData, image_url: imagePath || produitData.image_url };
   },
 
+  // Supprime un produit et son image associée
   deleteProduit: async (id) => {
     // Suppression de l'image associée
     const [produit] = await db.execute('SELECT image_url FROM produits WHERE id = ?', [id]);
@@ -111,6 +118,7 @@ const Stock = {
     return { id };
   },
 
+  // Récupère un produit par son ID avec informations fournisseur
   getProduitById: async (id) => {
     const [produit] = await db.execute(`
       SELECT p.*, f.nom as fournisseur_nom 
@@ -121,6 +129,7 @@ const Stock = {
     return produit[0] || null;
   },
 
+  // Récupère tous les produits avec informations fournisseur
   getAllProduits: async () => {
     const [produits] = await db.execute(`
       SELECT p.*, f.nom as fournisseur_nom 
@@ -131,6 +140,7 @@ const Stock = {
     return produits;
   },
 
+  // Récupère les produits avec stock faible pour alertes
   getProduitsLowStock: async () => {
     const [produits] = await db.execute(`
       SELECT p.*, f.nom as fournisseur_nom 
@@ -143,6 +153,8 @@ const Stock = {
   },
 
   // ==================== CATÉGORIES ====================
+  
+  // Crée une nouvelle catégorie de produits
   createCategorie: async (categorieData) => {
     if (!categorieData.nom) {
       throw new Error('Le nom de la catégorie est obligatoire');
@@ -161,6 +173,7 @@ const Stock = {
     return { id: result.insertId, ...categorieData };
   },
 
+  // Met à jour les informations d'une catégorie
   updateCategorie: async (id, categorieData) => {
     if (!categorieData.nom) {
       throw new Error('Le nom de la catégorie est obligatoire');
@@ -182,22 +195,27 @@ const Stock = {
     return { id, ...categorieData };
   },
 
+  // Supprime une catégorie de produits
   deleteCategorie: async (id) => {
     await db.execute('DELETE FROM categories WHERE id = ?', [id]);
     return { id };
   },
 
+  // Récupère une catégorie par son ID
   getCategorieById: async (id) => {
     const [categorie] = await db.execute('SELECT * FROM categories WHERE id = ?', [id]);
     return categorie[0] || null;
   },
 
+  // Récupère toutes les catégories triées par nom
   getAllCategories: async () => {
     const [categories] = await db.execute('SELECT * FROM categories ORDER BY nom');
     return categories;
   },
 
   // ==================== MOUVEMENTS STOCK ====================
+  
+  // Enregistre un mouvement de stock (entrée/sortie)
   createMouvement: async (mouvementData) => {
     if (!mouvementData.produit_id || !mouvementData.type || mouvementData.quantite === undefined) {
       throw new Error('produit_id, type et quantite sont obligatoires');
@@ -221,6 +239,7 @@ const Stock = {
     return { id: result.insertId, ...mouvementData };
   },
 
+  // Récupère l'historique des mouvements pour un produit
   getMouvementsByProduit: async (produitId) => {
     const [mouvements] = await db.execute(
       `
@@ -239,6 +258,7 @@ const Stock = {
     return mouvements;
   },
 
+  // Récupère les mouvements sur une période donnée
   getMouvementsByDate: async (startDate, endDate) => {
     const [mouvements] = await db.execute(
       `
@@ -258,7 +278,8 @@ const Stock = {
   },
 
   // ==================== VENTES ====================
-  // ==================== VENTES ====================
+  
+  // Enregistre une nouvelle vente avec gestion du stock
   createVente: async (venteData) => {
     if (
       !venteData.montant_total ||
@@ -351,6 +372,7 @@ const Stock = {
     }
   },
 
+  // Récupère une vente par son ID avec détails produits
   getVenteById: async (id) => {
     const [ventes] = await db.execute('SELECT * FROM ventes WHERE id = ?', [id]);
     if (ventes.length === 0) return null;
@@ -375,6 +397,7 @@ const Stock = {
     };
   },
 
+  // Récupère les ventes sur une période donnée
   getVentesByDate: async (startDate, endDate) => {
     const [ventes] = await db.execute(
       `SELECT v.*, u.username as caissier_nom
@@ -400,6 +423,7 @@ const Stock = {
     return ventes;
   },
 
+  // Récupère les ventes d'un caissier spécifique
   getVentesByCaissier: async (caissierId, startDate, endDate) => {
     const [ventes] = await db.execute(
       `SELECT v.*, u.username as caissier_nom
@@ -426,6 +450,7 @@ const Stock = {
     return ventes;
   },
 
+  // Annule une vente et restaure le stock
   cancelVente: async (id) => {
     const vente = await Stock.getVenteById(id);
     if (!vente) throw new Error('Vente non trouvée');
@@ -462,7 +487,10 @@ const Stock = {
       throw err;
     }
   },
+  
   // ==================== FOURNISSEURS ====================
+  
+  // Crée un nouveau fournisseur avec informations de contact
   createFournisseur: async (fournisseurData) => {
     if (!fournisseurData.nom) {
       throw new Error('Le nom du fournisseur est obligatoire');
@@ -483,6 +511,7 @@ const Stock = {
     return { id: result.insertId, ...fournisseurData };
   },
 
+  // Met à jour les informations d'un fournisseur
   updateFournisseur: async (id, fournisseurData) => {
     if (!fournisseurData.nom) {
       throw new Error('Le nom du fournisseur est obligatoire');
@@ -504,6 +533,7 @@ const Stock = {
     return { id: parseInt(id), ...fournisseurData };
   },
 
+  // Supprime un fournisseur avec vérification des contraintes
   deleteFournisseur: async (id) => {
     // Vérifier s'il y a des commandes associées à ce fournisseur
     const [commandes] = await db.execute('SELECT COUNT(*) as count FROM commandes_achat WHERE fournisseur_id = ?', [id]);
@@ -518,11 +548,13 @@ const Stock = {
     return { id: parseInt(id), deleted: true };
   },
 
+  // Récupère un fournisseur par son ID
   getFournisseurById: async (id) => {
     const [fournisseurs] = await db.execute('SELECT * FROM fournisseurs WHERE id = ?', [id]);
     return fournisseurs[0] || null;
   },
 
+  // Récupère tous les fournisseurs avec statistiques
   getAllFournisseurs: async () => {
     const [fournisseurs] = await db.execute(`
       SELECT f.*, 
@@ -537,6 +569,8 @@ const Stock = {
   },
 
   // ==================== COMMANDES ACHAT ====================
+  
+  // Crée une nouvelle commande d'achat
   createCommandeAchat: async (commandeData) => {
     if (!commandeData.fournisseur_id || !commandeData.produits || !Array.isArray(commandeData.produits)) {
       throw new Error('fournisseur_id et produits sont obligatoires');
@@ -593,6 +627,7 @@ const Stock = {
     }
   },
 
+  // Met à jour une commande d'achat existante
   updateCommandeAchat: async (id, commandeData) => {
     const commande = await Stock.getCommandeAchatById(id);
     if (!commande) {
@@ -655,6 +690,7 @@ const Stock = {
     }
   },
 
+  // Supprime une commande d'achat
   deleteCommandeAchat: async (id) => {
     const commande = await Stock.getCommandeAchatById(id);
     if (!commande) {
@@ -689,6 +725,7 @@ const Stock = {
     }
   },
 
+  // Récupère une commande d'achat par son ID
   getCommandeAchatById: async (id) => {
     const [commandes] = await db.execute(`
       SELECT ca.*, f.nom as fournisseur_nom, u.username as agent_nom
@@ -719,6 +756,7 @@ const Stock = {
     };
   },
 
+  // Récupère toutes les commandes d'achat avec filtres
   getAllCommandesAchat: async (filters = {}) => {
     let query = `
       SELECT ca.*, f.nom as fournisseur_nom, u.username as agent_nom
@@ -768,6 +806,7 @@ const Stock = {
     return commandes;
   },
 
+  // Valide une commande d'achat en brouillon
   validerCommandeAchat: async (id, agentId) => {
     const commande = await Stock.getCommandeAchatById(id);
     if (!commande) {
@@ -786,6 +825,7 @@ const Stock = {
     return await Stock.getCommandeAchatById(id);
   },
 
+  // Réceptionne une commande validée et met à jour le stock
   recevoirCommandeAchat: async (id, agentId, receptionData) => {
     const commande = await Stock.getCommandeAchatById(id);
     if (!commande) {
@@ -841,6 +881,7 @@ const Stock = {
     }
   },
 
+  // Annule une commande d'achat
   annulerCommandeAchat: async (id, agentId) => {
     const commande = await Stock.getCommandeAchatById(id);
     if (!commande) {
@@ -859,6 +900,7 @@ const Stock = {
     return await Stock.getCommandeAchatById(id);
   },
 
+  // Récupère les commandes d'un fournisseur spécifique
   getCommandesAchatByFournisseur: async (fournisseurId, filters = {}) => {
     let query = `
       SELECT ca.*, f.nom as fournisseur_nom, u.username as agent_nom
@@ -899,6 +941,7 @@ const Stock = {
     return commandes;
   },
 
+  // Génère les statistiques des commandes d'achat
   getStatsCommandesAchat: async (startDate, endDate) => {
     const [stats] = await db.execute(`
       SELECT 
@@ -935,6 +978,7 @@ const Stock = {
   },
 
   // ==================== STATISTIQUES ====================
+  // Génère les statistiques complètes du stock
   getStockStats: async () => {
     // Statistiques de base du stock
     const [baseStats] = await db.execute(`
@@ -1038,6 +1082,7 @@ const Stock = {
     };
   },
 
+  // Génère les statistiques des ventes pour une période donnée
   getVentesStats: async (startDate, endDate) => {
     const [stats] = await db.execute(
       `

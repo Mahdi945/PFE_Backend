@@ -1,6 +1,7 @@
 import db from '../config/db.js';
 
 const AffectationCalendrier = {
+  // Ajoute une affectation manuelle de pompiste à une pompe
   addAffectationManuelle: async (pompiste_id, poste_id, pompe_id, date) => {
     // Vérifier si le pompiste est déjà affecté ce jour-là
     const isPompisteAffected = await AffectationCalendrier.checkPompisteAffectation(
@@ -31,6 +32,7 @@ const AffectationCalendrier = {
     return db.execute(query, [pompiste_id, poste_id, pompe_id, date]);
   },
 
+  // Vérifie si un pompiste est déjà affecté à une date
   checkPompisteAffectation: async (pompiste_id, date, poste_id) => {
     const query = `
       SELECT COUNT(*) AS count 
@@ -43,6 +45,7 @@ const AffectationCalendrier = {
     return rows[0].count > 0;
   },
 
+  // Contrôle si une pompe est occupée à une date donnée
   checkPompeOccupied: async (pompe_id, date, poste_id) => {
     const query = `
       SELECT COUNT(*) AS count 
@@ -55,7 +58,8 @@ const AffectationCalendrier = {
     return rows[0].count > 0;
   },
 
-addAffectationAutomatiqueEquitable: async (mois, annee, regenerate = false) => {
+  // Crée des affectations automatiques équitables pour un mois
+  addAffectationAutomatiqueEquitable: async (mois, annee, regenerate = false) => {
     try {
       // Validation robuste des paramètres
       mois = parseInt(mois);
@@ -109,7 +113,7 @@ addAffectationAutomatiqueEquitable: async (mois, annee, regenerate = false) => {
         const date = new Date(year, month - 1, day);
         return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       };
-
+    
       for (let day = 1; day <= dernierJourDuMois; day++) {
         dates.push(formatDate(annee, mois, day));
       }
@@ -196,6 +200,7 @@ addAffectationAutomatiqueEquitable: async (mois, annee, regenerate = false) => {
       throw new Error(`Échec de la génération: ${error.message}`);
     }
   },
+  // Supprime toutes les affectations d'un mois spécifique
   deleteAffectationsByMonthYear: async (mois, annee) => {
     const [result] = await db.execute(
       `DELETE FROM affectations
@@ -205,6 +210,7 @@ addAffectationAutomatiqueEquitable: async (mois, annee, regenerate = false) => {
     return result;
   },
 
+  // Récupère les affectations pour une date précise
   getAffectationsByDate: async (date) => {
     const query = `
       SELECT 
@@ -226,6 +232,7 @@ addAffectationAutomatiqueEquitable: async (mois, annee, regenerate = false) => {
     return rows;
   },
 
+  // Obtient toutes les affectations d'un mois et année
   getAffectationsByMonthYear: async (mois, annee) => {
     const query = `
       SELECT 
@@ -246,6 +253,7 @@ addAffectationAutomatiqueEquitable: async (mois, annee, regenerate = false) => {
     return rows;
   },
 
+  // Met à jour une affectation existante
   updateAffectation: async (id, updates) => {
     try {
       console.log('Début de la mise à jour - Données reçues:', { id, updates });
@@ -353,7 +361,7 @@ addAffectationAutomatiqueEquitable: async (mois, annee, regenerate = false) => {
     }
   },
 
-  // Modifiez la méthode getCurrentAffectation comme suit :
+  // Récupère l'affectation actuelle d'un pompiste
   getCurrentAffectation: async (pompiste_id) => {
     const now = new Date();
     const currentHour = now.getHours();
@@ -404,7 +412,8 @@ addAffectationAutomatiqueEquitable: async (mois, annee, regenerate = false) => {
       throw error;
     }
   },
-  // Ajoutez cette méthode pour récupérer l'historique des relevés
+
+  // Obtient l'historique des relevés d'affectations
   getHistoriqueReleves: async (pistolet_id, date_debut, date_fin) => {
     const query = `
     SELECT 
@@ -427,6 +436,7 @@ addAffectationAutomatiqueEquitable: async (mois, annee, regenerate = false) => {
     }
   },
 
+  // Récupère les pistolets disponibles par affectation
   getAvailablePistoletsByAffectation: async (affectation_id) => {
     const query = `
       SELECT pt.* 

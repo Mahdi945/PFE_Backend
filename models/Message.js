@@ -1,6 +1,8 @@
 import db from '../config/db.js';
 
 class Message {
+  
+  // Crée un nouveau message dans la base de données avec statut non lu par défaut
   static async create(senderId, receiverId, content) {
     const [result] = await db.execute(
       'INSERT INTO messages (sender_id, receiver_id, content, is_read) VALUES (?, ?, ?, 0)',
@@ -8,7 +10,7 @@ class Message {
     );
     return result.insertId;
   }
-
+  // Récupère tous les messages d'une conversation entre deux utilisateurs avec leurs informations
   static async getConversation(user1, user2) {
     const [messages] = await db.execute(
       `SELECT m.*, u1.username as sender_name, u1.photo as sender_photo, 
@@ -23,7 +25,7 @@ class Message {
     );
     return messages;
   }
-
+  // Récupère la liste des contacts d'un utilisateur avec dernier message et compteur non lus
   static async getUserMessages(userId) {
     const [messages] = await db.execute(
       `SELECT DISTINCT 
@@ -40,7 +42,7 @@ class Message {
     );
     return messages;
   }
-
+  // Marque tous les messages d'un expéditeur comme lus pour le destinataire spécifié
   static async markAsRead(senderId, receiverId) {
     await db.execute(
       'UPDATE messages SET is_read = 1 WHERE sender_id = ? AND receiver_id = ? AND is_read = 0',
@@ -48,6 +50,7 @@ class Message {
     );
   }
 
+  // Compte le nombre total de messages non lus pour un utilisateur donné
   static async getUnreadCount(userId) {
     const [result] = await db.execute(
       'SELECT COUNT(*) as count FROM messages WHERE receiver_id = ? AND is_read = 0',
