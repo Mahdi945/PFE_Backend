@@ -93,7 +93,7 @@ const createTransaction = async (req, res) => {
   try {
     await connection.beginTransaction();
 
-    const { id_vehicule, quantite, montant, id_credit, id_pompiste } = req.body;
+    const { id_vehicule, quantite, montant, id_pompiste } = req.body;
     let preuvePath = null;
 
     // Validation des données
@@ -114,7 +114,7 @@ const createTransaction = async (req, res) => {
     // Vérification que l'utilisateur est bien un pompiste
     const [userCheck] = await connection.execute(
       `SELECT id, username, role FROM utilisateurs WHERE id = ?`,
-      [id_pompiste],
+      [id_pompiste]
     );
 
     if (!userCheck || userCheck.length === 0 || userCheck[0].role !== 'pompiste') {
@@ -130,27 +130,40 @@ const createTransaction = async (req, res) => {
     let nouveauSolde = null;
     let creditUtilise = 0;
     let id_utilisateur = null;
+    let id_credit = null;
 
-    // Si un crédit est spécifié, vérifier sa validité et récupérer l'utilisateur
+    // Récupérer les informations du véhicule et son crédit associé
+    const [vehicule] = await connection.execute(
+      `SELECT v.*, dc.id as credit_id, dc.id_utilisateur, dc.solde_credit, dc.credit_utilise, dc.type_credit
+       FROM vehicules v
+       LEFT JOIN details_credits dc ON v.id_credit = dc.id
+       WHERE v.id = ?`,
+      [id_vehicule]
+    );
+
+    if (!vehicule || vehicule.length === 0) {
+      await connection.rollback();
+      if (req.file) fs.unlinkSync(req.file.path);
+      return res.status(404).json({
+        success: false,
+        error: 'Véhicule non trouvé',
+      });
+    }
+
+    const vehiculeInfo = vehicule[0];
+    id_credit = vehiculeInfo.credit_id;
+    id_utilisateur = vehiculeInfo.id_utilisateur;
+
+    // Si un crédit est associé au véhicule, vérifier sa validité
     if (id_credit) {
-      const [credit] = await connection.execute(
-        `SELECT dc.* 
-         FROM details_credits dc
-         WHERE dc.id = ?`,
-        [id_credit],
-      );
+      creditInfo = {
+        id: id_credit,
+        id_utilisateur: vehiculeInfo.id_utilisateur,
+        solde_credit: vehiculeInfo.solde_credit,
+        credit_utilise: vehiculeInfo.credit_utilise,
+        type_credit: vehiculeInfo.type_credit
+      };
 
-      if (!credit || credit.length === 0) {
-        await connection.rollback();
-        if (req.file) fs.unlinkSync(req.file.path);
-        return res.status(404).json({
-          success: false,
-          error: 'Crédit non trouvé',
-        });
-      }
-
-      creditInfo = credit[0];
-      id_utilisateur = creditInfo.id_utilisateur;
       creditUtilise = parseFloat(creditInfo.credit_utilise) || 0;
       const soldeCredit = parseFloat(creditInfo.solde_credit);
       nouveauSolde = soldeCredit - creditUtilise - parseFloat(montant);
@@ -165,29 +178,9 @@ const createTransaction = async (req, res) => {
           montant_demande: montant,
         });
       }
-    } else {
-      // Pour les transactions sans crédit, récupérer l'utilisateur via le véhicule
-      const [vehicule] = await connection.execute(
-        `SELECT v.*, dc.id_utilisateur 
-         FROM vehicules v
-         LEFT JOIN details_credits dc ON v.id_credit = dc.id
-         WHERE v.id = ?`,
-        [id_vehicule],
-      );
-
-      if (!vehicule || vehicule.length === 0) {
-        await connection.rollback();
-        if (req.file) fs.unlinkSync(req.file.path);
-        return res.status(404).json({
-          success: false,
-          error: 'Véhicule non trouvé',
-        });
-      }
-
-      id_utilisateur = vehicule[0].id_utilisateur;
     }
 
-    // Récupération des informations utilisateur et véhicule
+    // Récupération des informations utilisateur
     const [info] = await connection.execute(
       `SELECT 
          u.email, 
@@ -199,7 +192,7 @@ const createTransaction = async (req, res) => {
        JOIN vehicules v ON v.id = ?
        ${id_credit ? 'JOIN details_credits dc ON dc.id = ?' : ''}
        WHERE u.id = ?`,
-      id_credit ? [id_vehicule, id_credit, id_utilisateur] : [id_vehicule, id_utilisateur],
+      id_credit ? [id_vehicule, id_credit, id_utilisateur] : [id_vehicule, id_utilisateur]
     );
 
     if (!info || info.length === 0) {
@@ -212,23 +205,21 @@ const createTransaction = async (req, res) => {
     }
 
     const userInfo = info[0];
-    // Avant la ligne où vous appelez addTransaction, ajoutez ce log:
     console.log('Paramètres pour addTransaction:', {
       id_vehicule,
       quantite,
       montant,
-      id_credit: id_credit || null,
       id_pompiste,
       preuve: preuvePath,
     });
-    // Création de la transaction avec preuve et id_pompiste
+
+    // Création de la transaction sans id_credit (déterminé via id_vehicule)
     const transactionResult = await Transaction.addTransaction(
       id_vehicule,
       quantite,
       montant,
-      id_credit || null,
       preuvePath,
-      id_pompiste,
+      id_pompiste
     );
 
     // Mettre à jour le crédit si nécessaire
@@ -237,7 +228,7 @@ const createTransaction = async (req, res) => {
       // Recharger les infos crédit après mise à jour
       const [updatedCredit] = await connection.execute(
         'SELECT credit_utilise, solde_credit FROM details_credits WHERE id = ?',
-        [id_credit],
+        [id_credit]
       );
       creditUtilise = parseFloat(updatedCredit[0].credit_utilise);
     }
@@ -255,8 +246,6 @@ const createTransaction = async (req, res) => {
             id_credit
               ? `
             <li>Crédit utilisé: #${id_credit}</li>
-            <li>Crédit consommé: ${(parseFloat(creditUtilise) + parseFloat(montant)).toFixed(2)} DT</li>
-            <li>Solde restant: ${(parseFloat(userInfo.solde_credit) - (parseFloat(creditUtilise) + parseFloat(montant))).toFixed(2)} DT</li>
           `
               : '<li>Paiement: Direct</li>'
           }
@@ -278,7 +267,7 @@ const createTransaction = async (req, res) => {
         ],
       };
 
-      transporter.sendMail(mailOptions).catch((err) => {
+      transporter.sendMail(mailOptions).catch(err => {
         console.error('Erreur envoi email:', err);
       });
     }
@@ -385,18 +374,18 @@ const getTransactionsByPompiste = async (req, res) => {
 
     // Validation de l'ID pompiste
     if (!id_pompiste || isNaN(id_pompiste)) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'ID pompiste invalide ou manquant' 
+      return res.status(400).json({
+        success: false,
+        error: 'ID pompiste invalide ou manquant',
       });
     }
 
     // Construction du filtre basé sur les paramètres de requête
     const filter = {};
-    
+
     if (type) {
       filter.type = type;
-      
+
       // Validation et ajout des paramètres spécifiques selon le type
       if (type === 'day' && date) {
         filter.date = date;
@@ -407,7 +396,7 @@ const getTransactionsByPompiste = async (req, res) => {
         filter.year = year ? parseInt(year) : new Date().getFullYear();
       }
     }
-    
+
     // Gestion des dates personnalisées
     if (startDate && endDate) {
       filter.startDate = startDate;
@@ -417,18 +406,17 @@ const getTransactionsByPompiste = async (req, res) => {
     // Appel de la fonction du modèle
     const result = await Transaction.getTransactionsByPompiste(parseInt(id_pompiste), filter);
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       data: result,
-      message: `Transactions du pompiste ${id_pompiste} récupérées avec succès`
+      message: `Transactions du pompiste ${id_pompiste} récupérées avec succès`,
     });
-
   } catch (error) {
     console.error('Erreur dans getTransactionsByPompiste:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       error: 'Erreur lors de la récupération des transactions du pompiste',
-      details: error.message 
+      details: error.message,
     });
   }
 };

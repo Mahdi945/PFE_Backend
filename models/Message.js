@@ -1,7 +1,6 @@
 import db from '../config/db.js';
 
 class Message {
-  
   // Crée un nouveau message dans la base de données avec statut non lu par défaut
   static async create(senderId, receiverId, content) {
     const [result] = await db.execute(

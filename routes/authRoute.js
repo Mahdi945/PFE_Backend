@@ -22,7 +22,7 @@ const authenticateJWT = (req, res, next) => {
   const publicRoutes = ['/login', '/request-password-reset', '/reset-password'];
 
   // Vérifier si la route actuelle est publique
-  const isPublicRoute = publicRoutes.some((route) => req.path.endsWith(route));
+  const isPublicRoute = publicRoutes.some(route => req.path.endsWith(route));
 
   if (isPublicRoute) {
     return next();
@@ -87,7 +87,7 @@ router.post(
       .isLength({ max: 255 })
       .withMessage('Email trop long'),
   ],
-  authController.requestPasswordReset,
+  authController.requestPasswordReset
 );
 
 // Réinitialisation du mot de passe
@@ -98,7 +98,7 @@ router.put(
       .isLength({ min: 6, max: 20 })
       .withMessage('Le mot de passe doit contenir entre 6 et 20 caractères'),
   ],
-  authController.updatePassword,
+  authController.updatePassword
 );
 
 // ==================== ROUTES PROTÉGÉES ====================
@@ -127,7 +127,7 @@ router.post(
       .withMessage('Le numéro de téléphone est trop long'),
   ],
   validateRequest,
-  authController.registerUser,
+  authController.registerUser
 );
 
 // Profil utilisateur
@@ -156,7 +156,7 @@ router.put(
       .withMessage('Le mot de passe doit contenir entre 6 et 20 caractères'),
   ],
   validateRequest,
-  authController.updatePasswordConnected,
+  authController.updatePasswordConnected
 );
 
 // Mise à jour utilisateur
@@ -186,7 +186,7 @@ router.put(
       .withMessage('Rôle invalide'),
   ],
   validateRequest,
-  authController.updateUser,
+  authController.updateUser
 );
 
 // Désactivation utilisateur
@@ -197,7 +197,7 @@ router.put(
     body('reason').notEmpty().withMessage('Une raison est requise pour la désactivation'),
   ],
   validateRequest,
-  authController.deactivateUser,
+  authController.deactivateUser
 );
 
 // Réactivation utilisateur
@@ -205,7 +205,7 @@ router.put(
   '/reactiver/:id',
   [param('id').isInt().withMessage("L'ID doit être un entier")],
   validateRequest,
-  authController.reactivateUser,
+  authController.reactivateUser
 );
 
 // Récupération utilisateur par email
@@ -219,7 +219,7 @@ router.get(
       .withMessage('Email trop long'),
   ],
   validateRequest,
-  authController.getUserByEmail,
+  authController.getUserByEmail
 );
 
 // Récupération utilisateur par username
@@ -233,7 +233,7 @@ router.get(
       .withMessage("Le nom d'utilisateur doit contenir entre 3 et 50 caractères"),
   ],
   validateRequest,
-  authController.getUserByUsername,
+  authController.getUserByUsername
 );
 
 // Récupération utilisateurs par rôle
@@ -245,7 +245,7 @@ router.get(
       .withMessage('Rôle invalide'),
   ],
   validateRequest,
-  authController.getUserByRole,
+  authController.getUserByRole
 );
 
 // Récupération de tous les utilisateurs
@@ -256,7 +256,7 @@ router.delete(
   '/user/:id',
   [param('id').isInt().withMessage("L'ID doit être un entier")],
   validateRequest,
-  authController.deleteUser,
+  authController.deleteUser
 );
 
 export default router;

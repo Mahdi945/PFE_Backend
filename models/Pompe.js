@@ -17,13 +17,13 @@ const Pompe = {
   },
 
   // Récupérer une pompe par son ID
-  getPompeById: (id) => {
+  getPompeById: id => {
     const query = 'SELECT * FROM pompes WHERE id = ?';
     return db.execute(query, [id]);
   },
 
   // Récupérer une pompe par un critère (comme numero_pompe)
-  findOne: (criteria) => {
+  findOne: criteria => {
     let query = 'SELECT * FROM pompes WHERE ';
     const keys = Object.keys(criteria);
     const values = [];
@@ -36,7 +36,7 @@ const Pompe = {
 
     return db.execute(query, values);
   },
-  findByNumero: async (numero_pompe) => {
+  findByNumero: async numero_pompe => {
     const [rows] = await db.query('SELECT * FROM pompes WHERE numero_pompe = ?', [numero_pompe]);
     return rows[0];
   },
@@ -63,7 +63,7 @@ const Pompe = {
   },
 
   // Supprimer une pompe
-  deletePompe: (id) => {
+  deletePompe: id => {
     const query = 'DELETE FROM pompes WHERE id = ?';
     return db.execute(query, [id]);
   },

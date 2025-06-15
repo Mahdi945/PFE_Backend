@@ -365,7 +365,7 @@ const loginUser = async (req, res) => {
     const token = jwt.sign(
       { id: user.id, username: user.username, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN },
+      { expiresIn: process.env.JWT_EXPIRES_IN }
     );
 
     // Définir le cookie HTTP-only
@@ -373,12 +373,12 @@ const loginUser = async (req, res) => {
       httpOnly: true,
       secure: false, // Désactiver pour HTTP, activer pour HTTPS en production
       sameSite: 'Strict',
-       maxAge: 18000000, // 5 heures (5 * 60 * 60 * 1000 = 18000000 ms)
+      maxAge: 18000000, 
     });
 
     res.status(200).json({
       message: 'Connexion réussie.',
-      user: { username: user.username, role: user.role, photo: user.photo }, // Envoi de l'utilisateur avec son rôle
+      user: { username: user.username, role: user.role, photo: user.photo },
     });
   } catch (err) {
     console.error('Erreur lors de la connexion:', err);
@@ -564,7 +564,7 @@ const requestPasswordReset = async (req, res) => {
         'Réinitialisation de mot de passe',
         emailContent,
         resetLink,
-        'Réinitialiser le mot de passe',
+        'Réinitialiser le mot de passe'
       ),
       attachments: [
         {
@@ -619,12 +619,10 @@ const updatePassword = async (req, res) => {
       !/\d/.test(newPassword) ||
       !/[\W_]/.test(newPassword)
     ) {
-      return res
-        .status(400)
-        .json({
-          message:
-            'Mot de passe non valide. Il doit contenir au moins 8 caractères, une majuscule, un chiffre et un caractère spécial.',
-        });
+      return res.status(400).json({
+        message:
+          'Mot de passe non valide. Il doit contenir au moins 8 caractères, une majuscule, un chiffre et un caractère spécial.',
+      });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -695,12 +693,10 @@ const updatePasswordConnected = async (req, res) => {
       !/\d/.test(newPassword) ||
       !/[\W_]/.test(newPassword)
     ) {
-      return res
-        .status(400)
-        .json({
-          message:
-            'Mot de passe non valide. Il doit contenir au moins 8 caractères, une majuscule, un chiffre et un caractère spécial.',
-        });
+      return res.status(400).json({
+        message:
+          'Mot de passe non valide. Il doit contenir au moins 8 caractères, une majuscule, un chiffre et un caractère spécial.',
+      });
     }
 
     // Hacher le nouveau mot de passe

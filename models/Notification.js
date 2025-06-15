@@ -27,7 +27,7 @@ const Notification = {
   },
 
   // Marquer une notification comme lue
-  markAsRead: async (id) => {
+  markAsRead: async id => {
     const query = `
       UPDATE notifications 
       SET vue = 1 
@@ -37,7 +37,7 @@ const Notification = {
   },
 
   // Compter les notifications non lues
-  countUnread: async (id_utilisateur) => {
+  countUnread: async id_utilisateur => {
     const query = `
       SELECT COUNT(*) AS count 
       FROM notifications 
@@ -47,7 +47,7 @@ const Notification = {
   },
 
   // Marquer toutes les notifications comme lues
-  markAllAsRead: async (id_utilisateur) => {
+  markAllAsRead: async id_utilisateur => {
     const query = `
       UPDATE notifications 
       SET vue = 1
@@ -65,7 +65,7 @@ const Notification = {
   },
 
   // Supprimer toutes les notifications d'un utilisateur
-  deleteAll: async (id_utilisateur) => {
+  deleteAll: async id_utilisateur => {
     const query = `
       DELETE FROM notifications 
       WHERE id_utilisateur = ?

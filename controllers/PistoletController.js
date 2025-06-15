@@ -28,7 +28,7 @@ const PistoletController = {
         pompe.id,
         numero_pistolet,
         nom_produit,
-        prix_unitaire,
+        prix_unitaire
       );
 
       res.status(201).send({
@@ -71,7 +71,7 @@ const PistoletController = {
         affectation_id,
         pistolet_id,
         index_ouverture,
-        index_fermeture,
+        index_fermeture
       );
 
       res.status(201).send({
@@ -119,7 +119,7 @@ const PistoletController = {
         pistolet_id,
         index_ouverture,
         index_fermeture,
-        date_heure,
+        date_heure
       );
 
       res.status(201).send({
@@ -203,7 +203,7 @@ const PistoletController = {
         date_rapport,
         pistolet_id,
         total_quantite,
-        total_montant,
+        total_montant
       );
 
       res.status(201).json({
@@ -243,7 +243,7 @@ const PistoletController = {
       const revenus = await Pistolet.getRevenusJournaliers(
         date_debut,
         date_fin,
-        pistolet_id || null,
+        pistolet_id || null
       );
 
       res.status(200).json({
@@ -410,7 +410,7 @@ const PistoletController = {
       const historique = await Pistolet.getHistoriqueReleves(
         pistolet_id, // peut être undefined
         date_debut,
-        date_fin,
+        date_fin
       );
 
       res.status(200).send(historique);

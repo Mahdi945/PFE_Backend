@@ -23,7 +23,7 @@ const Credit = {
         dc.duree_credit, 
         dc.credit_utilise, 
         dc.etat,
-        (dc.solde_credit - IFNULL(dc.credit_utilise, 0)) AS montant_restant,
+        dc.montant_restant,
         dc.date_dernier_paiement,
         DATE_ADD(dc.date_debut, INTERVAL dc.duree_credit DAY) AS date_expiration
       FROM details_credits dc
@@ -34,7 +34,7 @@ const Credit = {
   },
 
   // Récupérer un crédit par ID
-  getCreditById: (id_credit) => {
+  getCreditById: id_credit => {
     const query = `
       SELECT 
         dc.id,
@@ -82,7 +82,7 @@ const Credit = {
     });
   },
   // Récupérer les crédits d'un utilisateur spécifique
-  getCreditsByUser: async (id_utilisateur) => {
+  getCreditsByUser: async id_utilisateur => {
     const query = `
     SELECT 
       dc.*,
@@ -112,7 +112,7 @@ const Credit = {
   `;
     return db.execute(query, [new_solde, new_date_debut, new_duree, id_credit]);
   },
-  getCreditStats: async (id_utilisateur) => {
+  getCreditStats: async id_utilisateur => {
     const query = `
     SELECT 
       COUNT(*) AS total_credits,
@@ -177,7 +177,7 @@ const Credit = {
     return db.execute(query);
   },
   getCreditsWithVehicules: async () => {
-  const query = `
+    const query = `
     SELECT 
       c.id,
       u.username AS proprietaire,
@@ -193,8 +193,8 @@ const Credit = {
     WHERE c.etat = 'actif'
     GROUP BY c.id, u.username
   `;
-  return db.execute(query);
-},
+    return db.execute(query);
+  },
 };
 
 export default Credit;

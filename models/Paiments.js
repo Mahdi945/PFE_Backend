@@ -32,7 +32,7 @@ const Paiments = {
         `SELECT dc.solde_credit, dc.montant_restant, dc.etat, dc.id_utilisateur
          FROM details_credits dc 
          WHERE dc.id = ?`,
-        [id_credit],
+        [id_credit]
       );
 
       if (!creditRows.length) throw new Error('Crédit non trouvé');
@@ -63,7 +63,7 @@ const Paiments = {
           reference,
           description,
           id_caissier, // Dernier paramètre optionnel
-        ],
+        ]
       );
 
       // Mise à jour crédit
@@ -73,7 +73,7 @@ const Paiments = {
         `UPDATE details_credits 
          SET montant_restant = ?, etat = ?, date_dernier_paiement = NOW()
          WHERE id = ?`,
-        [nouveauMontantRestant, nouvelEtat, id_credit],
+        [nouveauMontantRestant, nouvelEtat, id_credit]
       );
 
       await connection.query('COMMIT');
@@ -117,10 +117,10 @@ const Paiments = {
          JOIN details_credits c ON p.id_credit = c.id
          JOIN utilisateurs u ON c.id_utilisateur = u.id
          LEFT JOIN utilisateurs uc ON p.id_caissier = uc.id 
-         ORDER BY p.date_paiement DESC`,
+         ORDER BY p.date_paiement DESC`
       );
 
-      return rows.map((row) => ({
+      return rows.map(row => ({
         id: row.id,
         id_credit: row.id_credit,
         id_utilisateur: row.id_utilisateur,
@@ -143,7 +143,7 @@ const Paiments = {
   },
 
   // Obtient les paiements associés à un crédit
-  getByCredit: async (id_credit) => {
+  getByCredit: async id_credit => {
     const [rows] = await db.execute(
       `SELECT 
           p.*, 
@@ -154,13 +154,13 @@ const Paiments = {
        JOIN utilisateurs u ON c.id_utilisateur = u.id
        WHERE p.id_credit = ?
        ORDER BY p.date_paiement DESC`,
-      [id_credit],
+      [id_credit]
     );
     return rows;
   },
 
   // Récupère les paiements d'un utilisateur spécifique
-  getByUser: async (id_utilisateur) => {
+  getByUser: async id_utilisateur => {
     const [rows] = await db.execute(
       `SELECT 
           p.*, 
@@ -170,13 +170,13 @@ const Paiments = {
        JOIN details_credits c ON p.id_credit = c.id
        WHERE c.id_utilisateur = ?
        ORDER BY p.date_paiement DESC`,
-      [id_utilisateur],
+      [id_utilisateur]
     );
     return rows;
   },
 
   // Trouve un paiement par référence unique
-  getByReference: async (reference) => {
+  getByReference: async reference => {
     const [rows] = await db.execute(
       `SELECT 
           p.*, 
@@ -187,13 +187,13 @@ const Paiments = {
        JOIN details_credits c ON p.id_credit = c.id
        JOIN utilisateurs u ON c.id_utilisateur = u.id
        WHERE p.reference_paiement = ?`,
-      [reference],
+      [reference]
     );
     return rows[0];
   },
 
   // Calcule les statistiques des paiements
-  getPaymentStats: async (filterOrUserId) => {
+  getPaymentStats: async filterOrUserId => {
     try {
       let query = `
         SELECT 
@@ -251,7 +251,7 @@ const Paiments = {
   },
 
   // Obtient les paiements par plage de dates
-  getPaymentsByDate: async (filter) => {
+  getPaymentsByDate: async filter => {
     let query = `
       SELECT 
         DATE(p.date_paiement) as date,
@@ -360,7 +360,7 @@ const Paiments = {
 
       const [rows] = await db.execute(query, params);
 
-      return rows.map((row) => ({
+      return rows.map(row => ({
         ...row,
         montant_paye: parseFloat(row.montant_paye),
         montant_restant: parseFloat(row.montant_restant),

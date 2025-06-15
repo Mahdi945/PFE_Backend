@@ -62,7 +62,7 @@ router.get('/paiments/credit/:id_credit', requireAuth, PaimentController.getPaym
 router.get(
   '/paiments/utilisateur/:id_utilisateur',
   requireAuth,
-  PaimentController.getPaymentsByUser,
+  PaimentController.getPaymentsByUser
 );
 router.get('/paiments/reference/:reference', requireAuth, PaimentController.getPaymentByReference);
 
@@ -73,7 +73,7 @@ router.get('/vehicules', requireAuth, VehiculeController.getAllVehicules);
 router.get(
   '/vehicules/immatriculation/:immatriculation',
   requireAuth,
-  VehiculeController.getVehiculeByImmatriculation,
+  VehiculeController.getVehiculeByImmatriculation
 );
 router.put('/vehicules/update', requireAuth, VehiculeController.updateVehicule);
 router.delete('/vehicules/:id', requireAuth, VehiculeController.deleteVehicule);
@@ -85,18 +85,18 @@ router.post(
   '/transactions/create',
   requireAuth,
   upload.single('preuve'),
-  TransactionController.createTransaction,
+  TransactionController.createTransaction
 );
 router.get('/transactions/all', requireAuth, TransactionController.getAllTransactions);
 router.get(
   '/transactions/utilisateur/:id_utilisateur',
   requireAuth,
-  TransactionController.getTransactionsByUser,
+  TransactionController.getTransactionsByUser
 );
 router.get(
   '/transactions/pompiste/:id_pompiste',
   requireAuth,
-  TransactionController.getTransactionsByPompiste,
+  TransactionController.getTransactionsByPompiste
 );
 
 // ==================== ROUTES DASHBOARD ====================
@@ -105,38 +105,38 @@ router.get('/dashboard/credit-stats/:id_utilisateur', requireAuth, CreditControl
 router.get(
   '/dashboard/payment-stats/:id_utilisateur',
   requireAuth,
-  PaimentController.getPaymentStats,
+  PaimentController.getPaymentStats
 );
 router.get(
   '/dashboard/recent-payments/:id_utilisateur',
   requireAuth,
-  PaimentController.getRecentPayments,
+  PaimentController.getRecentPayments
 );
 router.get(
   '/dashboard/transaction-stats/:id_utilisateur',
   requireAuth,
-  TransactionController.getTransactionStats,
+  TransactionController.getTransactionStats
 );
 router.get(
   '/dashboard/recent-transactions/:id_utilisateur',
   requireAuth,
-  TransactionController.getRecentTransactions,
+  TransactionController.getRecentTransactions
 );
 router.get(
   '/dashboard/client/:id_utilisateur',
   requireAuth,
-  DashboardController.getClientDashboard,
+  DashboardController.getClientDashboard
 );
 router.get('/dashboard/gerant', requireAuth, DashboardController.getGerantDashboard);
 router.get(
   '/dashboard/caissier/:id_caissier',
   requireAuth,
-  DashboardController.getCaissierDashboard,
+  DashboardController.getCaissierDashboard
 );
 // Ajoutez cette route
 router.get(
   '/dashboard/monthly-payments/:id_utilisateur',
   requireAuth,
-  DashboardController.getMonthlyPayments,
+  DashboardController.getMonthlyPayments
 );
 export default router;

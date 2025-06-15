@@ -76,7 +76,7 @@ const sendEmail = async (to, subject, title, content, includeAction = false) => 
       title,
       content,
       includeAction ? `${process.env.FRONTEND_URL}/traitement-reclamations` : null,
-      includeAction ? 'Accéder aux réclamations' : null,
+      includeAction ? 'Accéder aux réclamations' : null
     ),
     attachments: [
       {
@@ -120,7 +120,7 @@ export const createReclamation = async (req, res) => {
       id_client,
       reclamationId,
       'reclamation_created',
-      `Votre réclamation #${reclamation.reference} a été créée avec succès`,
+      `Votre réclamation #${reclamation.reference} a été créée avec succès`
     );
 
     // Email au support
@@ -147,7 +147,7 @@ export const createReclamation = async (req, res) => {
       `Nouvelle réclamation - ${reclamation.reference}`,
       'Nouvelle réclamation',
       supportContent,
-      true,
+      true
     );
 
     // Email de confirmation au client
@@ -175,7 +175,7 @@ export const createReclamation = async (req, res) => {
       reclamation.email,
       `Confirmation de réception - ${reclamation.reference}`,
       'Votre réclamation a été reçue',
-      clientContent,
+      clientContent
     );
 
     res.status(201).json({

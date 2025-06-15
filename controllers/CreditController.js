@@ -27,7 +27,7 @@ const createCredit = async (req, res) => {
       type_credit,
       solde_credit,
       date_debut,
-      duree_credit,
+      duree_credit
     );
     res.status(201).json({ message: 'Crédit créé avec succès', creditId: result.insertId });
   } catch (err) {

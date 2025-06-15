@@ -68,10 +68,9 @@ const generateEmailTemplate = (title, content, actionLink = null, actionText = n
 const sendAffectationEmail = async (pompisteId, dateOrMois, annee = null, isUpdate = false) => {
   try {
     // Récupérer les informations du pompiste
-    const [pompiste] = await db.execute(
-      'SELECT username, email FROM utilisateurs WHERE id = ?',
-      [pompisteId]
-    );
+    const [pompiste] = await db.execute('SELECT username, email FROM utilisateurs WHERE id = ?', [
+      pompisteId,
+    ]);
 
     if (!pompiste.length || !pompiste[0].email) {
       console.warn(`Aucun email trouvé pour le pompiste ID: ${pompisteId}`);
@@ -79,11 +78,21 @@ const sendAffectationEmail = async (pompisteId, dateOrMois, annee = null, isUpda
     }
 
     const { username, email } = pompiste[0];
-    
+
     // Noms des mois en français
     const moisNoms = [
-      'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
-      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+      'janvier',
+      'février',
+      'mars',
+      'avril',
+      'mai',
+      'juin',
+      'juillet',
+      'août',
+      'septembre',
+      'octobre',
+      'novembre',
+      'décembre',
     ];
 
     if (isUpdate) {
@@ -92,7 +101,7 @@ const sendAffectationEmail = async (pompisteId, dateOrMois, annee = null, isUpda
       const jour = date.getDate();
       const mois = moisNoms[date.getMonth()];
       const anneeAffectation = date.getFullYear();
-      
+
       // Récupérer les détails de la nouvelle affectation
       const [affectation] = await db.execute(
         `SELECT 
@@ -109,7 +118,9 @@ const sendAffectationEmail = async (pompisteId, dateOrMois, annee = null, isUpda
       );
 
       if (!affectation.length) {
-        console.warn(`Aucune affectation trouvée pour la mise à jour (pompiste ID: ${pompisteId}, date: ${dateOrMois})`);
+        console.warn(
+          `Aucune affectation trouvée pour la mise à jour (pompiste ID: ${pompisteId}, date: ${dateOrMois})`
+        );
         return;
       }
 
@@ -138,24 +149,26 @@ const sendAffectationEmail = async (pompisteId, dateOrMois, annee = null, isUpda
           process.env.FRONTEND_URL,
           'Voir mes affectations'
         ),
-        attachments: [{
-          filename: 'logobg.png',
-          path: path.join(process.cwd(), 'public', 'logobg.png'),
-          cid: 'logo',
-        }],
+        attachments: [
+          {
+            filename: 'logobg.png',
+            path: path.join(process.cwd(), 'public', 'logobg.png'),
+            cid: 'logo',
+          },
+        ],
       });
     } else {
       // CAS D'AFFECTATION AUTOMATIQUE (mois/année)
       const mois = parseInt(dateOrMois);
       const anneeAffectation = parseInt(annee);
-      
+
       if (isNaN(mois) || isNaN(anneeAffectation) || mois < 1 || mois > 12) {
-        console.error('Mois ou année invalide pour l\'envoi d\'email');
+        console.error("Mois ou année invalide pour l'envoi d'email");
         return;
       }
 
       const nomMois = moisNoms[mois - 1];
-      
+
       // Contenu email pour affectation automatique
       const emailContent = `
         <p>Bonjour ${username},</p>
@@ -173,17 +186,19 @@ const sendAffectationEmail = async (pompisteId, dateOrMois, annee = null, isUpda
           process.env.FRONTEND_URL,
           'Consulter mes affectations'
         ),
-        attachments: [{
-          filename: 'logobg.png',
-          path: path.join(process.cwd(), 'public', 'logobg.png'),
-          cid: 'logo',
-        }],
+        attachments: [
+          {
+            filename: 'logobg.png',
+            path: path.join(process.cwd(), 'public', 'logobg.png'),
+            cid: 'logo',
+          },
+        ],
       });
     }
 
     console.log(`Email envoyé avec succès à ${email}`);
   } catch (error) {
-    console.error('Erreur lors de l\'envoi de l\'email:', error);
+    console.error("Erreur lors de l'envoi de l'email:", error);
   }
 };
 
@@ -195,10 +210,10 @@ const addAffectationManuelle = async (req, res) => {
   try {
     const { pompiste_id, poste_id, pompe_id, date } = req.body;
     await AffectationCalendrier.addAffectationManuelle(pompiste_id, poste_id, pompe_id, date);
-    
+
     // Envoyer l'email au pompiste
     await sendAffectationEmail(pompiste_id, date);
-    
+
     res.status(201).send({ message: 'Affectation manuelle ajoutée avec succès.' });
   } catch (error) {
     res
@@ -219,21 +234,21 @@ const addAffectationAutomatiqueEquitable = async (req, res) => {
     }
 
     const result = await AffectationCalendrier.addAffectationAutomatiqueEquitable(mois, annee);
-    
+
     // Envoyer des emails à tous les pompistes affectés (version mensuelle)
     const [affectedPompistes] = await db.execute(
       `SELECT DISTINCT pompiste_id FROM affectations 
        WHERE MONTH(date) = ? AND YEAR(date) = ?`,
       [mois, annee]
     );
-    
+
     for (const { pompiste_id } of affectedPompistes) {
       await sendAffectationEmail(pompiste_id, mois, annee); // Mois et année pour affectation automatique
     }
-    
-    res.status(201).send({ 
+
+    res.status(201).send({
       message: 'Affectation automatique équitable ajoutée avec succès.',
-      stats: result.stats
+      stats: result.stats,
     });
   } catch (error) {
     res.status(500).send({
@@ -241,7 +256,6 @@ const addAffectationAutomatiqueEquitable = async (req, res) => {
     });
   }
 };
-
 
 /**
  * Régénère toutes les affectations pour un mois donné
@@ -255,7 +269,11 @@ const regenerateAffectations = async (req, res) => {
       return res.status(400).send({ message: 'Mois et année sont requis.' });
     }
 
-    const result = await AffectationCalendrier.addAffectationAutomatiqueEquitable(mois, annee, true);
+    const result = await AffectationCalendrier.addAffectationAutomatiqueEquitable(
+      mois,
+      annee,
+      true
+    );
 
     // Envoyer des emails à tous les pompistes affectés
     const [affectedPompistes] = await db.execute(
@@ -263,14 +281,14 @@ const regenerateAffectations = async (req, res) => {
        WHERE MONTH(date) = ? AND YEAR(date) = ?`,
       [mois, annee]
     );
-    
+
     for (const { pompiste_id, date } of affectedPompistes) {
       await sendAffectationEmail(pompiste_id, date, true); // isUpdate = true
     }
 
-    res.status(201).send({ 
+    res.status(201).send({
       message: 'Affectations régénérées avec succès.',
-      stats: result.stats
+      stats: result.stats,
     });
   } catch (error) {
     res
@@ -302,12 +320,12 @@ const updateAffectation = async (req, res) => {
     );
 
     const result = await AffectationCalendrier.updateAffectation(id, updates);
-    
+
     // Si la date ou le pompiste a changé, envoyer un email
     if (oldAffectation.length > 0) {
       const pompisteId = updates.pompiste_id || oldAffectation[0].pompiste_id;
       const date = updates.date || oldAffectation[0].date;
-      
+
       await sendAffectationEmail(pompisteId, date, null, true); // Date et isUpdate=true
     }
 

@@ -991,44 +991,44 @@ const options = {
         },
       },
       Message: {
-  type: 'object',
-  properties: {
-    id: { type: 'integer', example: 1 },
-    sender_id: { type: 'integer', example: 13 },
-    receiver_id: { type: 'integer', example: 14 },
-    content: { type: 'string', example: 'Bonjour, comment ça va ?' },
-    is_read: { type: 'boolean', example: false },
-    created_at: { 
-      type: 'string', 
-      format: 'date-time', 
-      example: '2025-05-25T00:35:23Z' 
-    }
-  }
-},
-MessageInput: {
-  type: 'object',
-  required: ['receiver_id', 'content'],
-  properties: {
-    receiver_id: { type: 'integer', example: 14 },
-    content: { 
-      type: 'string', 
-      minLength: 1,
-      maxLength: 1000,
-      example: 'Bonjour, comment ça va ?' 
-    }
-  }
-},
-MarkAsReadInput: {
-  type: 'object',
-  required: ['message_ids'],
-  properties: {
-    message_ids: {
-      type: 'array',
-      items: { type: 'integer' },
-      example: [1, 2, 3]
-    }
-  }
-},
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 1 },
+          sender_id: { type: 'integer', example: 13 },
+          receiver_id: { type: 'integer', example: 14 },
+          content: { type: 'string', example: 'Bonjour, comment ça va ?' },
+          is_read: { type: 'boolean', example: false },
+          created_at: {
+            type: 'string',
+            format: 'date-time',
+            example: '2025-05-25T00:35:23Z',
+          },
+        },
+      },
+      MessageInput: {
+        type: 'object',
+        required: ['receiver_id', 'content'],
+        properties: {
+          receiver_id: { type: 'integer', example: 14 },
+          content: {
+            type: 'string',
+            minLength: 1,
+            maxLength: 1000,
+            example: 'Bonjour, comment ça va ?',
+          },
+        },
+      },
+      MarkAsReadInput: {
+        type: 'object',
+        required: ['message_ids'],
+        properties: {
+          message_ids: {
+            type: 'array',
+            items: { type: 'integer' },
+            example: [1, 2, 3],
+          },
+        },
+      },
       // ==================== SCHÉMAS STATISTIQUES ====================
       StatsStock: {
         type: 'object',
@@ -1066,25 +1066,25 @@ MarkAsReadInput: {
         properties: {
           id: { type: 'integer', example: 1 },
           nom: { type: 'string', example: 'Fournisseur ABC' },
-          adresse: { 
-            type: 'string', 
+          adresse: {
+            type: 'string',
             example: '123 Rue de la Livraison, Tunis',
-            nullable: true 
+            nullable: true,
           },
-          telephone: { 
-            type: 'string', 
+          telephone: {
+            type: 'string',
             example: '+216 12 345 678',
-            nullable: true 
+            nullable: true,
           },
-          email: { 
-            type: 'string', 
+          email: {
+            type: 'string',
             example: 'contact@fournisseur-abc.com',
-            nullable: true 
+            nullable: true,
           },
-          contact_personne: { 
-            type: 'string', 
+          contact_personne: {
+            type: 'string',
             example: 'Ahmed Ben Ali',
-            nullable: true 
+            nullable: true,
           },
           date_creation: {
             type: 'string',
@@ -1104,25 +1104,25 @@ MarkAsReadInput: {
         required: ['nom'],
         properties: {
           nom: { type: 'string', example: 'Fournisseur ABC' },
-          adresse: { 
-            type: 'string', 
+          adresse: {
+            type: 'string',
             example: '123 Rue de la Livraison, Tunis',
-            nullable: true 
+            nullable: true,
           },
-          telephone: { 
-            type: 'string', 
+          telephone: {
+            type: 'string',
             example: '+216 12 345 678',
-            nullable: true 
+            nullable: true,
           },
-          email: { 
-            type: 'string', 
+          email: {
+            type: 'string',
             example: 'contact@fournisseur-abc.com',
-            nullable: true 
+            nullable: true,
           },
-          contact_personne: { 
-            type: 'string', 
+          contact_personne: {
+            type: 'string',
             example: 'Ahmed Ben Ali',
-            nullable: true 
+            nullable: true,
           },
         },
       },
@@ -1144,10 +1144,10 @@ MarkAsReadInput: {
             enum: ['en_attente', 'validee', 'recue', 'annulee'],
             example: 'en_attente',
           },
-          montant_total: { 
-            type: 'number', 
-            format: 'float', 
-            example: 1250.50 
+          montant_total: {
+            type: 'number',
+            format: 'float',
+            example: 1250.5,
           },
           date_livraison_prevue: {
             type: 'string',
@@ -1161,10 +1161,10 @@ MarkAsReadInput: {
             example: '2025-01-24',
             nullable: true,
           },
-          notes: { 
-            type: 'string', 
+          notes: {
+            type: 'string',
             example: 'Livraison urgente demandée',
-            nullable: true 
+            nullable: true,
           },
           utilisateur_id: { type: 'integer', example: 14 },
           date_creation: {
@@ -1191,10 +1191,10 @@ MarkAsReadInput: {
             example: '2025-01-25',
             nullable: true,
           },
-          notes: { 
-            type: 'string', 
+          notes: {
+            type: 'string',
             example: 'Livraison urgente demandée',
-            nullable: true 
+            nullable: true,
           },
           lignes: {
             type: 'array',
@@ -1212,7 +1212,7 @@ MarkAsReadInput: {
                   type: 'number',
                   format: 'float',
                   minimum: 0,
-                  example: 8.50,
+                  example: 8.5,
                 },
               },
             },
@@ -1228,8 +1228,8 @@ MarkAsReadInput: {
           commande_id: { type: 'integer', example: 1 },
           produit_id: { type: 'integer', example: 2 },
           quantite: { type: 'integer', example: 50 },
-          prix_unitaire: { type: 'number', format: 'float', example: 8.50 },
-          montant_ligne: { type: 'number', format: 'float', example: 425.00 },
+          prix_unitaire: { type: 'number', format: 'float', example: 8.5 },
+          montant_ligne: { type: 'number', format: 'float', example: 425.0 },
           produit_nom: { type: 'string', example: 'Produit Exemple' },
           code_barre: { type: 'string', example: '1234567890123' },
         },
@@ -1505,543 +1505,562 @@ MarkAsReadInput: {
           },
         },
       },
-  '/desactiver/{id}': {
-    put: {
-      tags: ['Lister les utilisateurs'], // Même tag que /users
-      summary: 'Désactiver un utilisateur',
-      description: 'Endpoint pour désactiver un utilisateur (réservé aux administrateurs)',
-      // ... (reste inchangé)
-    }
-  },
-
-  '/reactiver/{id}': {
-    put: {
-      tags: ['Lister les utilisateurs'], // Même tag que /users
-      summary: 'Réactiver un utilisateur',
-      description: 'Endpoint pour réactiver un utilisateur désactivé (réservé aux administrateurs)',
-      // ... (reste inchangé)
-    }
-  },
-
-  '/update/{id}': {
-    put: {
-      tags: ['Lister les utilisateurs'], // Même tag que /users
-      summary: 'Modifier le rôle d\'un utilisateur',
-      description: 'Endpoint pour changer le rôle d\'un utilisateur (réservé aux administrateurs)',
-      // ... (reste inchangé)
-    }
-  },
-
-  '/user/username/{username}': {
-    get: {
-      tags: ['Lister les utilisateurs'], // Même tag que /users
-      summary: 'Récupérer un utilisateur par son nom d\'utilisateur',
-      description: 'Endpoint pour obtenir les détails d\'un utilisateur spécifique par son username',
-      // ... (reste inchangé)
-    }
-  },'/permissions': {
-    get: {
-      tags: ['Permissions'],
-      summary: 'Obtenir toutes les permissions',
-      description: 'Endpoint pour récupérer toutes les permissions disponibles dans le système',
-      security: [{ cookieAuth: [] }],
-      responses: {
-        200: {
-          description: 'Liste des permissions',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    id: { type: 'integer', example: 1 },
-                    name: { type: 'string', example: 'manage_users' },
-                    description: { type: 'string', example: 'Permission de gérer les utilisateurs' }
-                  }
-                }
-              }
-            }
-          }
+      '/desactiver/{id}': {
+        put: {
+          tags: ['Lister les utilisateurs'], // Même tag que /users
+          summary: 'Désactiver un utilisateur',
+          description: 'Endpoint pour désactiver un utilisateur (réservé aux administrateurs)',
+          // ... (reste inchangé)
         },
-        401: { description: 'Non autorisé' }
-      }
-    }
-  },
-
-  '/permissions/update': {
-    post: {
-      tags: ['Permissions'],
-      summary: 'Mettre à jour une permission',
-      description: 'Endpoint pour modifier les accords d\'une permission spécifique',
-      security: [{ cookieAuth: [] }],
-      requestBody: {
-        required: true,
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-              required: ['permissionId', 'role', 'allowed'],
-              properties: {
-                permissionId: { type: 'integer', example: 1 },
-                role: { type: 'string', example: 'admin' },
-                allowed: { type: 'boolean', example: true }
-              }
-            }
-          }
-        }
       },
-      responses: {
-        200: {
-          description: 'Permission mise à jour avec succès',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Permission mise à jour avec succès' }
-                }
-              }
-            }
-          }
-        },
-        400: { description: 'Données invalides' },
-        401: { description: 'Non autorisé' }
-      }
-    }
-  },
 
-  '/permissions/role/:role': {
-    get: {
-      tags: ['Permissions'],
-      summary: 'Obtenir les permissions par rôle',
-      description: 'Endpoint pour récupérer toutes les permissions associées à un rôle spécifique',
-      security: [{ cookieAuth: [] }],
-      parameters: [
-        {
-          in: 'path',
-          name: 'role',
-          required: true,
-          schema: { type: 'string' },
-          description: 'Nom du rôle (ex: admin, user, manager)'
-        }
-      ],
-      responses: {
-        200: {
-          description: 'Liste des permissions pour le rôle',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    id: { type: 'integer', example: 1 },
-                    name: { type: 'string', example: 'manage_users' },
-                    allowed: { type: 'boolean', example: true }
-                  }
-                }
-              }
-            }
-          }
+      '/reactiver/{id}': {
+        put: {
+          tags: ['Lister les utilisateurs'], // Même tag que /users
+          summary: 'Réactiver un utilisateur',
+          description:
+            'Endpoint pour réactiver un utilisateur désactivé (réservé aux administrateurs)',
+          // ... (reste inchangé)
         },
-        401: { description: 'Non autorisé' },
-        404: { description: 'Rôle non trouvé' }
-      }
-    }
-  },
+      },
 
-  '/permissions/dashboard/:role': {
-    get: {
-      tags: ['Permissions'],
-      summary: 'Obtenir les permissions du dashboard par rôle',
-      description: 'Endpoint pour récupérer les permissions spécifiques au dashboard pour un rôle',
-      security: [{ cookieAuth: [] }],
-      parameters: [
-        {
-          in: 'path',
-          name: 'role',
-          required: true,
-          schema: { type: 'string' },
-          description: 'Nom du rôle (ex: admin, user, manager)'
-        }
-      ],
-      responses: {
-        200: {
-          description: 'Permissions du dashboard pour le rôle',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  canViewDashboard: { type: 'boolean', example: true },
-                  modules: {
+      '/update/{id}': {
+        put: {
+          tags: ['Lister les utilisateurs'], // Même tag que /users
+          summary: "Modifier le rôle d'un utilisateur",
+          description:
+            "Endpoint pour changer le rôle d'un utilisateur (réservé aux administrateurs)",
+          // ... (reste inchangé)
+        },
+      },
+
+      '/user/username/{username}': {
+        get: {
+          tags: ['Lister les utilisateurs'], // Même tag que /users
+          summary: "Récupérer un utilisateur par son nom d'utilisateur",
+          description:
+            "Endpoint pour obtenir les détails d'un utilisateur spécifique par son username",
+          // ... (reste inchangé)
+        },
+      },
+      '/permissions': {
+        get: {
+          tags: ['Permissions'],
+          summary: 'Obtenir toutes les permissions',
+          description: 'Endpoint pour récupérer toutes les permissions disponibles dans le système',
+          security: [{ cookieAuth: [] }],
+          responses: {
+            200: {
+              description: 'Liste des permissions',
+              content: {
+                'application/json': {
+                  schema: {
                     type: 'array',
                     items: {
                       type: 'object',
                       properties: {
-                        name: { type: 'string', example: 'analytics' },
-                        access: { type: 'boolean', example: true }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+                        id: { type: 'integer', example: 1 },
+                        name: { type: 'string', example: 'manage_users' },
+                        description: {
+                          type: 'string',
+                          example: 'Permission de gérer les utilisateurs',
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            401: { description: 'Non autorisé' },
+          },
         },
-        401: { description: 'Non autorisé' },
-        404: { description: 'Rôle non trouvé' }
-      }
-    }
-  },
+      },
 
-  '/permissions/roles': {
-    get: {
-      tags: ['Permissions'],
-      summary: 'Obtenir tous les rôles',
-      description: 'Endpoint pour récupérer la liste de tous les rôles disponibles dans le système',
-      security: [{ cookieAuth: [] }],
-      responses: {
-        200: {
-          description: 'Liste des rôles',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'array',
-                items: {
-                  type: 'string',
-                  example: 'admin'
-                }
-              }
-            }
-          }
-        },
-        401: { description: 'Non autorisé' }
-      }
-    }
-  },
-
-  '/permissions/update-multiple': {
-    post: {
-      tags: ['Permissions'],
-      summary: 'Mettre à jour plusieurs permissions',
-      description: 'Endpoint pour modifier plusieurs permissions en une seule requête',
-      security: [{ cookieAuth: [] }],
-      requestBody: {
-        required: true,
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-              required: ['updates'],
-              properties: {
-                updates: {
-                  type: 'array',
-                  items: {
+      '/permissions/update': {
+        post: {
+          tags: ['Permissions'],
+          summary: 'Mettre à jour une permission',
+          description: "Endpoint pour modifier les accords d'une permission spécifique",
+          security: [{ cookieAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['permissionId', 'role', 'allowed'],
+                  properties: {
+                    permissionId: { type: 'integer', example: 1 },
+                    role: { type: 'string', example: 'admin' },
+                    allowed: { type: 'boolean', example: true },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'Permission mise à jour avec succès',
+              content: {
+                'application/json': {
+                  schema: {
                     type: 'object',
-                    required: ['permissionId', 'role', 'allowed'],
                     properties: {
-                      permissionId: { type: 'integer', example: 1 },
-                      role: { type: 'string', example: 'admin' },
-                      allowed: { type: 'boolean', example: true }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
+                      success: { type: 'boolean', example: true },
+                      message: { type: 'string', example: 'Permission mise à jour avec succès' },
+                    },
+                  },
+                },
+              },
+            },
+            400: { description: 'Données invalides' },
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
-      responses: {
-        200: {
-          description: 'Permissions mises à jour avec succès',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Permissions mises à jour avec succès' },
-                  updatedCount: { type: 'integer', example: 3 }
-                }
-              }
-            }
-          }
-        },
-        400: { description: 'Données invalides' },
-        401: { description: 'Non autorisé' }
-      }
-    }
-  },
- '/notifications/{id_utilisateur}': {
-    get: {
-      tags: ['Notifications'],
-      summary: 'Obtenir les notifications d\'un utilisateur',
-      description: 'Endpoint pour récupérer toutes les notifications d\'un utilisateur spécifique',
-      security: [{ cookieAuth: [] }],
-      parameters: [
-        {
-          in: 'path',
-          name: 'id_utilisateur',
-          required: true,
-          schema: { type: 'integer' },
-          description: 'ID de l\'utilisateur'
-        },
-        {
-          in: 'query',
-          name: 'limit',
-          schema: { type: 'integer', default: 10 },
-          description: 'Limite le nombre de notifications retournées'
-        },
-        {
-          in: 'query',
-          name: 'offset',
-          schema: { type: 'integer', default: 0 },
-          description: 'Décalage pour la pagination'
-        }
-      ],
-      responses: {
-        200: {
-          description: 'Liste des notifications',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'array',
-                items: {
-                  $ref: '#/components/schemas/Notification'
-                }
-              }
-            }
-          }
-        },
-        401: { description: 'Non autorisé' },
-        404: { description: 'Utilisateur non trouvé' }
-      }
-    }
-  },
 
-  '/notifications/mark-as-read': {
-    put: {
-      tags: ['Notifications'],
-      summary: 'Marquer une notification comme lue',
-      description: 'Endpoint pour marquer une notification spécifique comme lue',
-      security: [{ cookieAuth: [] }],
-      requestBody: {
-        required: true,
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-              required: ['notification_id'],
-              properties: {
-                notification_id: { 
-                  type: 'integer',
-                  example: 123,
-                  description: 'ID de la notification à marquer comme lue'
-                }
-              }
-            }
-          }
-        }
+      '/permissions/role/:role': {
+        get: {
+          tags: ['Permissions'],
+          summary: 'Obtenir les permissions par rôle',
+          description:
+            'Endpoint pour récupérer toutes les permissions associées à un rôle spécifique',
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'role',
+              required: true,
+              schema: { type: 'string' },
+              description: 'Nom du rôle (ex: admin, user, manager)',
+            },
+          ],
+          responses: {
+            200: {
+              description: 'Liste des permissions pour le rôle',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'integer', example: 1 },
+                        name: { type: 'string', example: 'manage_users' },
+                        allowed: { type: 'boolean', example: true },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            401: { description: 'Non autorisé' },
+            404: { description: 'Rôle non trouvé' },
+          },
+        },
       },
-      responses: {
-        200: {
-          description: 'Notification marquée comme lue',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Notification marquée comme lue' }
-                }
-              }
-            }
-          }
-        },
-        400: { description: 'ID de notification invalide' },
-        401: { description: 'Non autorisé' },
-        404: { description: 'Notification non trouvée' }
-      }
-    }
-  },
 
-  '/notifications/mark-all-as-read': {
-    put: {
-      tags: ['Notifications'],
-      summary: 'Marquer toutes les notifications comme lues',
-      description: 'Endpoint pour marquer toutes les notifications d\'un utilisateur comme lues',
-      security: [{ cookieAuth: [] }],
-      requestBody: {
-        required: true,
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-              required: ['user_id'],
-              properties: {
-                user_id: { 
-                  type: 'integer',
-                  example: 456,
-                  description: 'ID de l\'utilisateur'
-                }
-              }
-            }
-          }
-        }
+      '/permissions/dashboard/:role': {
+        get: {
+          tags: ['Permissions'],
+          summary: 'Obtenir les permissions du dashboard par rôle',
+          description:
+            'Endpoint pour récupérer les permissions spécifiques au dashboard pour un rôle',
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'role',
+              required: true,
+              schema: { type: 'string' },
+              description: 'Nom du rôle (ex: admin, user, manager)',
+            },
+          ],
+          responses: {
+            200: {
+              description: 'Permissions du dashboard pour le rôle',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      canViewDashboard: { type: 'boolean', example: true },
+                      modules: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            name: { type: 'string', example: 'analytics' },
+                            access: { type: 'boolean', example: true },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            401: { description: 'Non autorisé' },
+            404: { description: 'Rôle non trouvé' },
+          },
+        },
       },
-      responses: {
-        200: {
-          description: 'Toutes les notifications marquées comme lues',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Toutes les notifications marquées comme lues' },
-                  updatedCount: { type: 'integer', example: 5 }
-                }
-              }
-            }
-          }
-        },
-        400: { description: 'ID utilisateur invalide' },
-        401: { description: 'Non autorisé' },
-        404: { description: 'Utilisateur non trouvé' }
-      }
-    }
-  },
 
-  '/notifications/unread-count/{id_utilisateur}': {
-    get: {
-      tags: ['Notifications'],
-      summary: 'Obtenir le nombre de notifications non lues',
-      description: 'Endpoint pour récupérer le nombre de notifications non lues d\'un utilisateur',
-      security: [{ cookieAuth: [] }],
-      parameters: [
-        {
-          in: 'path',
-          name: 'id_utilisateur',
-          required: true,
-          schema: { type: 'integer' },
-          description: 'ID de l\'utilisateur'
-        }
-      ],
-      responses: {
-        200: {
-          description: 'Nombre de notifications non lues',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  count: { type: 'integer', example: 3 }
-                }
-              }
-            }
-          }
+      '/permissions/roles': {
+        get: {
+          tags: ['Permissions'],
+          summary: 'Obtenir tous les rôles',
+          description:
+            'Endpoint pour récupérer la liste de tous les rôles disponibles dans le système',
+          security: [{ cookieAuth: [] }],
+          responses: {
+            200: {
+              description: 'Liste des rôles',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'array',
+                    items: {
+                      type: 'string',
+                      example: 'admin',
+                    },
+                  },
+                },
+              },
+            },
+            401: { description: 'Non autorisé' },
+          },
         },
-        401: { description: 'Non autorisé' },
-        404: { description: 'Utilisateur non trouvé' }
-      }
-    }
-  },
-
-  '/notifications/hide': {
-    delete: {
-      tags: ['Notifications'],
-      summary: 'Masquer une notification',
-      description: 'Endpoint pour masquer une notification spécifique (soft delete)',
-      security: [{ cookieAuth: [] }],
-      requestBody: {
-        required: true,
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-              required: ['notification_id'],
-              properties: {
-                notification_id: { 
-                  type: 'integer',
-                  example: 123,
-                  description: 'ID de la notification à masquer'
-                }
-              }
-            }
-          }
-        }
       },
-      responses: {
-        200: {
-          description: 'Notification masquée avec succès',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Notification masquée avec succès' }
-                }
-              }
-            }
-          }
-        },
-        400: { description: 'ID de notification invalide' },
-        401: { description: 'Non autorisé' },
-        404: { description: 'Notification non trouvée' }
-      }
-    }
-  },
 
-  '/notifications/hide-all': {
-    delete: {
-      tags: ['Notifications'],
-      summary: 'Masquer toutes les notifications',
-      description: 'Endpoint pour masquer toutes les notifications d\'un utilisateur (soft delete)',
-      security: [{ cookieAuth: [] }],
-      requestBody: {
-        required: true,
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-              required: ['user_id'],
-              properties: {
-                user_id: { 
-                  type: 'integer',
-                  example: 456,
-                  description: 'ID de l\'utilisateur'
-                }
-              }
-            }
-          }
-        }
-      },
-      responses: {
-        200: {
-          description: 'Toutes les notifications masquées avec succès',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Toutes les notifications masquées avec succès' },
-                  hiddenCount: { type: 'integer', example: 5 }
-                }
-              }
-            }
-          }
+      '/permissions/update-multiple': {
+        post: {
+          tags: ['Permissions'],
+          summary: 'Mettre à jour plusieurs permissions',
+          description: 'Endpoint pour modifier plusieurs permissions en une seule requête',
+          security: [{ cookieAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['updates'],
+                  properties: {
+                    updates: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        required: ['permissionId', 'role', 'allowed'],
+                        properties: {
+                          permissionId: { type: 'integer', example: 1 },
+                          role: { type: 'string', example: 'admin' },
+                          allowed: { type: 'boolean', example: true },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'Permissions mises à jour avec succès',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      success: { type: 'boolean', example: true },
+                      message: { type: 'string', example: 'Permissions mises à jour avec succès' },
+                      updatedCount: { type: 'integer', example: 3 },
+                    },
+                  },
+                },
+              },
+            },
+            400: { description: 'Données invalides' },
+            401: { description: 'Non autorisé' },
+          },
         },
-        400: { description: 'ID utilisateur invalide' },
-        401: { description: 'Non autorisé' },
-        404: { description: 'Utilisateur non trouvé' }
-      }
-    }
-  },
+      },
+      '/notifications/{id_utilisateur}': {
+        get: {
+          tags: ['Notifications'],
+          summary: "Obtenir les notifications d'un utilisateur",
+          description:
+            "Endpoint pour récupérer toutes les notifications d'un utilisateur spécifique",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'id_utilisateur',
+              required: true,
+              schema: { type: 'integer' },
+              description: "ID de l'utilisateur",
+            },
+            {
+              in: 'query',
+              name: 'limit',
+              schema: { type: 'integer', default: 10 },
+              description: 'Limite le nombre de notifications retournées',
+            },
+            {
+              in: 'query',
+              name: 'offset',
+              schema: { type: 'integer', default: 0 },
+              description: 'Décalage pour la pagination',
+            },
+          ],
+          responses: {
+            200: {
+              description: 'Liste des notifications',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'array',
+                    items: {
+                      $ref: '#/components/schemas/Notification',
+                    },
+                  },
+                },
+              },
+            },
+            401: { description: 'Non autorisé' },
+            404: { description: 'Utilisateur non trouvé' },
+          },
+        },
+      },
+
+      '/notifications/mark-as-read': {
+        put: {
+          tags: ['Notifications'],
+          summary: 'Marquer une notification comme lue',
+          description: 'Endpoint pour marquer une notification spécifique comme lue',
+          security: [{ cookieAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['notification_id'],
+                  properties: {
+                    notification_id: {
+                      type: 'integer',
+                      example: 123,
+                      description: 'ID de la notification à marquer comme lue',
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'Notification marquée comme lue',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      success: { type: 'boolean', example: true },
+                      message: { type: 'string', example: 'Notification marquée comme lue' },
+                    },
+                  },
+                },
+              },
+            },
+            400: { description: 'ID de notification invalide' },
+            401: { description: 'Non autorisé' },
+            404: { description: 'Notification non trouvée' },
+          },
+        },
+      },
+
+      '/notifications/mark-all-as-read': {
+        put: {
+          tags: ['Notifications'],
+          summary: 'Marquer toutes les notifications comme lues',
+          description: "Endpoint pour marquer toutes les notifications d'un utilisateur comme lues",
+          security: [{ cookieAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['user_id'],
+                  properties: {
+                    user_id: {
+                      type: 'integer',
+                      example: 456,
+                      description: "ID de l'utilisateur",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'Toutes les notifications marquées comme lues',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      success: { type: 'boolean', example: true },
+                      message: {
+                        type: 'string',
+                        example: 'Toutes les notifications marquées comme lues',
+                      },
+                      updatedCount: { type: 'integer', example: 5 },
+                    },
+                  },
+                },
+              },
+            },
+            400: { description: 'ID utilisateur invalide' },
+            401: { description: 'Non autorisé' },
+            404: { description: 'Utilisateur non trouvé' },
+          },
+        },
+      },
+
+      '/notifications/unread-count/{id_utilisateur}': {
+        get: {
+          tags: ['Notifications'],
+          summary: 'Obtenir le nombre de notifications non lues',
+          description:
+            "Endpoint pour récupérer le nombre de notifications non lues d'un utilisateur",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'id_utilisateur',
+              required: true,
+              schema: { type: 'integer' },
+              description: "ID de l'utilisateur",
+            },
+          ],
+          responses: {
+            200: {
+              description: 'Nombre de notifications non lues',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      count: { type: 'integer', example: 3 },
+                    },
+                  },
+                },
+              },
+            },
+            401: { description: 'Non autorisé' },
+            404: { description: 'Utilisateur non trouvé' },
+          },
+        },
+      },
+
+      '/notifications/hide': {
+        delete: {
+          tags: ['Notifications'],
+          summary: 'Masquer une notification',
+          description: 'Endpoint pour masquer une notification spécifique (soft delete)',
+          security: [{ cookieAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['notification_id'],
+                  properties: {
+                    notification_id: {
+                      type: 'integer',
+                      example: 123,
+                      description: 'ID de la notification à masquer',
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'Notification masquée avec succès',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      success: { type: 'boolean', example: true },
+                      message: { type: 'string', example: 'Notification masquée avec succès' },
+                    },
+                  },
+                },
+              },
+            },
+            400: { description: 'ID de notification invalide' },
+            401: { description: 'Non autorisé' },
+            404: { description: 'Notification non trouvée' },
+          },
+        },
+      },
+
+      '/notifications/hide-all': {
+        delete: {
+          tags: ['Notifications'],
+          summary: 'Masquer toutes les notifications',
+          description:
+            "Endpoint pour masquer toutes les notifications d'un utilisateur (soft delete)",
+          security: [{ cookieAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['user_id'],
+                  properties: {
+                    user_id: {
+                      type: 'integer',
+                      example: 456,
+                      description: "ID de l'utilisateur",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'Toutes les notifications masquées avec succès',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      success: { type: 'boolean', example: true },
+                      message: {
+                        type: 'string',
+                        example: 'Toutes les notifications masquées avec succès',
+                      },
+                      hiddenCount: { type: 'integer', example: 5 },
+                    },
+                  },
+                },
+              },
+            },
+            400: { description: 'ID utilisateur invalide' },
+            401: { description: 'Non autorisé' },
+            404: { description: 'Utilisateur non trouvé' },
+          },
+        },
+      },
       '/pompe/pompes': {
         post: {
           tags: ['Pompes'],
@@ -5170,8 +5189,8 @@ MarkAsReadInput: {
       '/stock/commandes-achat': {
         post: {
           tags: ['Achats'],
-          summary: 'Créer une commande d\'achat',
-          description: 'Endpoint pour créer une nouvelle commande d\'achat auprès d\'un fournisseur',
+          summary: "Créer une commande d'achat",
+          description: "Endpoint pour créer une nouvelle commande d'achat auprès d'un fournisseur",
           security: [{ cookieAuth: [] }],
           requestBody: {
             required: true,
@@ -5185,7 +5204,7 @@ MarkAsReadInput: {
           },
           responses: {
             201: {
-              description: 'Commande d\'achat créée avec succès',
+              description: "Commande d'achat créée avec succès",
               content: {
                 'application/json': {
                   schema: {
@@ -5221,8 +5240,9 @@ MarkAsReadInput: {
         },
         get: {
           tags: ['Achats'],
-          summary: 'Lister toutes les commandes d\'achat',
-          description: 'Endpoint pour récupérer toutes les commandes d\'achat avec filtres optionnels',
+          summary: "Lister toutes les commandes d'achat",
+          description:
+            "Endpoint pour récupérer toutes les commandes d'achat avec filtres optionnels",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -5261,7 +5281,7 @@ MarkAsReadInput: {
           ],
           responses: {
             200: {
-              description: 'Liste des commandes d\'achat',
+              description: "Liste des commandes d'achat",
               content: {
                 'application/json': {
                   schema: {
@@ -5281,7 +5301,7 @@ MarkAsReadInput: {
       '/stock/commandes-achat/{id}': {
         get: {
           tags: ['Achats'],
-          summary: 'Obtenir une commande d\'achat par ID',
+          summary: "Obtenir une commande d'achat par ID",
           description: "Endpoint pour récupérer les détails d'une commande d'achat spécifique",
           security: [{ cookieAuth: [] }],
           parameters: [
@@ -5290,12 +5310,12 @@ MarkAsReadInput: {
               name: 'id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID de la commande d\'achat',
+              description: "ID de la commande d'achat",
             },
           ],
           responses: {
             200: {
-              description: 'Détails de la commande d\'achat',
+              description: "Détails de la commande d'achat",
               content: {
                 'application/json': {
                   schema: {
@@ -5306,12 +5326,12 @@ MarkAsReadInput: {
             },
             401: { description: 'Non autorisé' },
             404: {
-              description: 'Commande d\'achat non trouvée',
+              description: "Commande d'achat non trouvée",
               content: {
                 'application/json': {
                   example: {
                     success: false,
-                    message: 'Commande d\'achat introuvable',
+                    message: "Commande d'achat introuvable",
                   },
                 },
               },
@@ -5320,7 +5340,7 @@ MarkAsReadInput: {
         },
         put: {
           tags: ['Achats'],
-          summary: 'Mettre à jour une commande d\'achat',
+          summary: "Mettre à jour une commande d'achat",
           description: "Endpoint pour modifier une commande d'achat (uniquement si en_attente)",
           security: [{ cookieAuth: [] }],
           parameters: [
@@ -5329,7 +5349,7 @@ MarkAsReadInput: {
               name: 'id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID de la commande d\'achat',
+              description: "ID de la commande d'achat",
             },
           ],
           requestBody: {
@@ -5344,7 +5364,7 @@ MarkAsReadInput: {
           },
           responses: {
             200: {
-              description: 'Commande d\'achat mise à jour',
+              description: "Commande d'achat mise à jour",
               content: {
                 'application/json': {
                   schema: {
@@ -5366,12 +5386,12 @@ MarkAsReadInput: {
             },
             401: { description: 'Non autorisé' },
             404: {
-              description: 'Commande d\'achat non trouvée',
+              description: "Commande d'achat non trouvée",
               content: {
                 'application/json': {
                   example: {
                     success: false,
-                    message: 'Commande d\'achat introuvable',
+                    message: "Commande d'achat introuvable",
                   },
                 },
               },
@@ -5380,8 +5400,8 @@ MarkAsReadInput: {
         },
         delete: {
           tags: ['Achats'],
-          summary: 'Supprimer une commande d\'achat',
-          description: 'Endpoint pour supprimer une commande d\'achat (uniquement si en_attente)',
+          summary: "Supprimer une commande d'achat",
+          description: "Endpoint pour supprimer une commande d'achat (uniquement si en_attente)",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -5389,17 +5409,17 @@ MarkAsReadInput: {
               name: 'id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID de la commande d\'achat',
+              description: "ID de la commande d'achat",
             },
           ],
           responses: {
             200: {
-              description: 'Commande d\'achat supprimée',
+              description: "Commande d'achat supprimée",
               content: {
                 'application/json': {
                   example: {
                     success: true,
-                    message: 'Commande d\'achat supprimée avec succès',
+                    message: "Commande d'achat supprimée avec succès",
                   },
                 },
               },
@@ -5417,12 +5437,12 @@ MarkAsReadInput: {
             },
             401: { description: 'Non autorisé' },
             404: {
-              description: 'Commande d\'achat non trouvée',
+              description: "Commande d'achat non trouvée",
               content: {
                 'application/json': {
                   example: {
                     success: false,
-                    message: 'Commande d\'achat introuvable',
+                    message: "Commande d'achat introuvable",
                   },
                 },
               },
@@ -5434,8 +5454,9 @@ MarkAsReadInput: {
       '/stock/commandes-achat/{id}/valider': {
         post: {
           tags: ['Achats'],
-          summary: 'Valider une commande d\'achat',
-          description: 'Endpoint pour valider une commande d\'achat et la passer au statut "validee"',
+          summary: "Valider une commande d'achat",
+          description:
+            'Endpoint pour valider une commande d\'achat et la passer au statut "validee"',
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -5443,7 +5464,7 @@ MarkAsReadInput: {
               name: 'id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID de la commande d\'achat',
+              description: "ID de la commande d'achat",
             },
           ],
           requestBody: {
@@ -5456,7 +5477,7 @@ MarkAsReadInput: {
                     agent_id: {
                       type: 'integer',
                       example: 1,
-                      description: 'ID de l\'agent qui valide la commande',
+                      description: "ID de l'agent qui valide la commande",
                     },
                   },
                 },
@@ -5465,7 +5486,7 @@ MarkAsReadInput: {
           },
           responses: {
             200: {
-              description: 'Commande d\'achat validée',
+              description: "Commande d'achat validée",
               content: {
                 'application/json': {
                   schema: {
@@ -5487,12 +5508,12 @@ MarkAsReadInput: {
             },
             401: { description: 'Non autorisé' },
             404: {
-              description: 'Commande d\'achat non trouvée',
+              description: "Commande d'achat non trouvée",
               content: {
                 'application/json': {
                   example: {
                     success: false,
-                    message: 'Commande d\'achat introuvable',
+                    message: "Commande d'achat introuvable",
                   },
                 },
               },
@@ -5505,7 +5526,8 @@ MarkAsReadInput: {
         post: {
           tags: ['Achats'],
           summary: 'Marquer une commande comme reçue',
-          description: 'Endpoint pour marquer une commande d\'achat comme reçue et mettre à jour les stocks',
+          description:
+            "Endpoint pour marquer une commande d'achat comme reçue et mettre à jour les stocks",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -5513,7 +5535,7 @@ MarkAsReadInput: {
               name: 'id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID de la commande d\'achat',
+              description: "ID de la commande d'achat",
             },
           ],
           requestBody: {
@@ -5527,7 +5549,7 @@ MarkAsReadInput: {
                     agent_id: {
                       type: 'integer',
                       example: 1,
-                      description: 'ID de l\'agent qui réceptionne la commande',
+                      description: "ID de l'agent qui réceptionne la commande",
                     },
                     reception_data: {
                       type: 'array',
@@ -5555,7 +5577,7 @@ MarkAsReadInput: {
           },
           responses: {
             200: {
-              description: 'Commande d\'achat marquée comme reçue',
+              description: "Commande d'achat marquée comme reçue",
               content: {
                 'application/json': {
                   schema: {
@@ -5577,12 +5599,12 @@ MarkAsReadInput: {
             },
             401: { description: 'Non autorisé' },
             404: {
-              description: 'Commande d\'achat non trouvée',
+              description: "Commande d'achat non trouvée",
               content: {
                 'application/json': {
                   example: {
                     success: false,
-                    message: 'Commande d\'achat introuvable',
+                    message: "Commande d'achat introuvable",
                   },
                 },
               },
@@ -5594,8 +5616,8 @@ MarkAsReadInput: {
       '/stock/commandes-achat/{id}/annuler': {
         post: {
           tags: ['Achats'],
-          summary: 'Annuler une commande d\'achat',
-          description: 'Endpoint pour annuler une commande d\'achat',
+          summary: "Annuler une commande d'achat",
+          description: "Endpoint pour annuler une commande d'achat",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -5603,7 +5625,7 @@ MarkAsReadInput: {
               name: 'id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID de la commande d\'achat',
+              description: "ID de la commande d'achat",
             },
           ],
           requestBody: {
@@ -5616,12 +5638,12 @@ MarkAsReadInput: {
                     agent_id: {
                       type: 'integer',
                       example: 1,
-                      description: 'ID de l\'agent qui annule la commande',
+                      description: "ID de l'agent qui annule la commande",
                     },
                     raison: {
                       type: 'string',
                       example: 'Fournisseur indisponible',
-                      description: 'Raison de l\'annulation',
+                      description: "Raison de l'annulation",
                     },
                   },
                 },
@@ -5630,7 +5652,7 @@ MarkAsReadInput: {
           },
           responses: {
             200: {
-              description: 'Commande d\'achat annulée',
+              description: "Commande d'achat annulée",
               content: {
                 'application/json': {
                   schema: {
@@ -5645,19 +5667,19 @@ MarkAsReadInput: {
                 'application/json': {
                   example: {
                     success: false,
-                    message: 'Impossible d\'annuler une commande déjà reçue',
+                    message: "Impossible d'annuler une commande déjà reçue",
                   },
                 },
               },
             },
             401: { description: 'Non autorisé' },
             404: {
-              description: 'Commande d\'achat non trouvée',
+              description: "Commande d'achat non trouvée",
               content: {
                 'application/json': {
                   example: {
                     success: false,
-                    message: 'Commande d\'achat introuvable',
+                    message: "Commande d'achat introuvable",
                   },
                 },
               },
@@ -5669,7 +5691,7 @@ MarkAsReadInput: {
       '/stock/commandes-achat/{id}/lignes': {
         get: {
           tags: ['Achats'],
-          summary: 'Lignes d\'une commande d\'achat',
+          summary: "Lignes d'une commande d'achat",
           description: "Endpoint pour récupérer les lignes détaillées d'une commande d'achat",
           security: [{ cookieAuth: [] }],
           parameters: [
@@ -5678,12 +5700,12 @@ MarkAsReadInput: {
               name: 'id',
               required: true,
               schema: { type: 'integer' },
-              description: 'ID de la commande d\'achat',
+              description: "ID de la commande d'achat",
             },
           ],
           responses: {
             200: {
-              description: 'Liste des lignes de la commande d\'achat',
+              description: "Liste des lignes de la commande d'achat",
               content: {
                 'application/json': {
                   schema: {
@@ -5697,12 +5719,12 @@ MarkAsReadInput: {
             },
             401: { description: 'Non autorisé' },
             404: {
-              description: 'Commande d\'achat non trouvée',
+              description: "Commande d'achat non trouvée",
               content: {
                 'application/json': {
                   example: {
                     success: false,
-                    message: 'Commande d\'achat introuvable',
+                    message: "Commande d'achat introuvable",
                   },
                 },
               },
@@ -5714,8 +5736,9 @@ MarkAsReadInput: {
       '/stock/fournisseurs/{fournisseurId}/commandes': {
         get: {
           tags: ['Achats'],
-          summary: 'Commandes d\'achat par fournisseur',
-          description: "Endpoint pour récupérer toutes les commandes d'achat d'un fournisseur spécifique",
+          summary: "Commandes d'achat par fournisseur",
+          description:
+            "Endpoint pour récupérer toutes les commandes d'achat d'un fournisseur spécifique",
           security: [{ cookieAuth: [] }],
           parameters: [
             {
@@ -5737,7 +5760,7 @@ MarkAsReadInput: {
           ],
           responses: {
             200: {
-              description: 'Liste des commandes d\'achat du fournisseur',
+              description: "Liste des commandes d'achat du fournisseur",
               content: {
                 'application/json': {
                   schema: {
@@ -6185,213 +6208,214 @@ MarkAsReadInput: {
         },
       },
       '/messages': {
-  post: {
-    tags: ['Messages'],
-    summary: 'Envoyer un message',
-    description: 'Endpoint pour envoyer un message à un autre utilisateur',
-    security: [{ cookieAuth: [] }],
-    requestBody: {
-      required: true,
-      content: {
-        'application/json': {
-          schema: {
-            $ref: '#/components/schemas/MessageInput'
-          }
-        }
-      }
-    },
-    responses: {
-      201: {
-        description: 'Message envoyé avec succès',
-        content: {
-          'application/json': {
-            schema: {
-              $ref: '#/components/schemas/Message'
-            }
-          }
-        }
+        post: {
+          tags: ['Messages'],
+          summary: 'Envoyer un message',
+          description: 'Endpoint pour envoyer un message à un autre utilisateur',
+          security: [{ cookieAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/MessageInput',
+                },
+              },
+            },
+          },
+          responses: {
+            201: {
+              description: 'Message envoyé avec succès',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Message',
+                  },
+                },
+              },
+            },
+            400: { description: 'Données invalides' },
+            401: { description: 'Non autorisé' },
+            404: { description: 'Destinataire non trouvé' },
+          },
+        },
       },
-      400: { description: 'Données invalides' },
-      401: { description: 'Non autorisé' },
-      404: { description: 'Destinataire non trouvé' }
-    }
-  }
-},
-'/messages/conversation/{user1}/{user2}': {
-  get: {
-    tags: ['Messages'],
-    summary: 'Obtenir une conversation',
-    description: 'Endpoint pour récupérer la conversation entre deux utilisateurs',
-    security: [{ cookieAuth: [] }],
-    parameters: [
-      {
-        in: 'path',
-        name: 'user1',
-        required: true,
-        schema: { type: 'integer' },
-        description: 'ID du premier utilisateur'
+      '/messages/conversation/{user1}/{user2}': {
+        get: {
+          tags: ['Messages'],
+          summary: 'Obtenir une conversation',
+          description: 'Endpoint pour récupérer la conversation entre deux utilisateurs',
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'user1',
+              required: true,
+              schema: { type: 'integer' },
+              description: 'ID du premier utilisateur',
+            },
+            {
+              in: 'path',
+              name: 'user2',
+              required: true,
+              schema: { type: 'integer' },
+              description: 'ID du deuxième utilisateur',
+            },
+          ],
+          responses: {
+            200: {
+              description: 'Liste des messages de la conversation',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'array',
+                    items: {
+                      $ref: '#/components/schemas/Message',
+                    },
+                  },
+                },
+              },
+            },
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
-      {
-        in: 'path',
-        name: 'user2',
-        required: true,
-        schema: { type: 'integer' },
-        description: 'ID du deuxième utilisateur'
-      }
-    ],
-    responses: {
-      200: {
-        description: 'Liste des messages de la conversation',
-        content: {
-          'application/json': {
-            schema: {
-              type: 'array',
-              items: {
-                $ref: '#/components/schemas/Message'
-              }
-            }
-          }
-        }
+      '/messages/user/{userId}': {
+        get: {
+          tags: ['Messages'],
+          summary: 'Obtenir tous les messages',
+          description: "Endpoint pour récupérer tous les messages d'un utilisateur",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'userId',
+              required: true,
+              schema: { type: 'integer' },
+              description: "ID de l'utilisateur",
+            },
+          ],
+          responses: {
+            200: {
+              description: 'Liste des messages',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'array',
+                    items: {
+                      $ref: '#/components/schemas/Message',
+                    },
+                  },
+                },
+              },
+            },
+            401: { description: 'Non autorisé' },
+            404: { description: 'Utilisateur non trouvé' },
+          },
+        },
       },
-      401: { description: 'Non autorisé' }
-    }
-  }
-},
-'/messages/user/{userId}': {
-  get: {
-    tags: ['Messages'],
-    summary: 'Obtenir tous les messages',
-    description: "Endpoint pour récupérer tous les messages d'un utilisateur",
-    security: [{ cookieAuth: [] }],
-    parameters: [
-      {
-        in: 'path',
-        name: 'userId',
-        required: true,
-        schema: { type: 'integer' },
-        description: "ID de l'utilisateur"
-      }
-    ],
-    responses: {
-      200: {
-        description: 'Liste des messages',
-        content: {
-          'application/json': {
-            schema: {
-              type: 'array',
-              items: {
-                $ref: '#/components/schemas/Message'
-              }
-            }
-          }
-        }
+      '/messages/unread-count/{userId}': {
+        get: {
+          tags: ['Messages'],
+          summary: 'Nombre de messages non lus',
+          description: "Endpoint pour obtenir le nombre de messages non lus d'un utilisateur",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'userId',
+              required: true,
+              schema: { type: 'integer' },
+              description: "ID de l'utilisateur",
+            },
+          ],
+          responses: {
+            200: {
+              description: 'Nombre de messages non lus',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      count: { type: 'integer', example: 3 },
+                    },
+                  },
+                },
+              },
+            },
+            401: { description: 'Non autorisé' },
+            404: { description: 'Utilisateur non trouvé' },
+          },
+        },
       },
-      401: { description: 'Non autorisé' },
-      404: { description: 'Utilisateur non trouvé' }
-    }
-  }
-},
-'/messages/unread-count/{userId}': {
-  get: {
-    tags: ['Messages'],
-    summary: 'Nombre de messages non lus',
-    description: "Endpoint pour obtenir le nombre de messages non lus d'un utilisateur",
-    security: [{ cookieAuth: [] }],
-    parameters: [
-      {
-        in: 'path',
-        name: 'userId',
-        required: true,
-        schema: { type: 'integer' },
-        description: "ID de l'utilisateur"
-      }
-    ],
-    responses: {
-      200: {
-        description: 'Nombre de messages non lus',
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-              properties: {
-                count: { type: 'integer', example: 3 }
-              }
-            }
-          }
-        }
+      '/messages/mark-as-read': {
+        put: {
+          tags: ['Messages'],
+          summary: 'Marquer comme lu',
+          description: 'Endpoint pour marquer des messages comme lus',
+          security: [{ cookieAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/MarkAsReadInput',
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'Messages marqués comme lus',
+              content: {
+                'application/json': {
+                  example: {
+                    success: true,
+                    message: '3 messages marqués comme lus',
+                  },
+                },
+              },
+            },
+            400: { description: 'Données invalides' },
+            401: { description: 'Non autorisé' },
+          },
+        },
       },
-      401: { description: 'Non autorisé' },
-      404: { description: 'Utilisateur non trouvé' }
-    }
-  }
-},
-'/messages/mark-as-read': {
-  put: {
-    tags: ['Messages'],
-    summary: 'Marquer comme lu',
-    description: 'Endpoint pour marquer des messages comme lus',
-    security: [{ cookieAuth: [] }],
-    requestBody: {
-      required: true,
-      content: {
-        'application/json': {
-          schema: {
-            $ref: '#/components/schemas/MarkAsReadInput'
-          }
-        }
-      }
-    },
-    responses: {
-      200: {
-        description: 'Messages marqués comme lus',
-        content: {
-          'application/json': {
-            example: {
-              success: true,
-              message: '3 messages marqués comme lus'
-            }
-          }
-        }
+      '/messages/contacts/{userId}': {
+        get: {
+          tags: ['Messages'],
+          summary: 'Obtenir tous les contacts',
+          description:
+            "Endpoint pour récupérer tous les contacts avec qui l'utilisateur a échangé des messages",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'userId',
+              required: true,
+              schema: { type: 'integer' },
+              description: "ID de l'utilisateur",
+            },
+          ],
+          responses: {
+            200: {
+              description: 'Liste des contacts',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'array',
+                    items: {
+                      $ref: '#/components/schemas/User',
+                    },
+                  },
+                },
+              },
+            },
+            401: { description: 'Non autorisé' },
+            404: { description: 'Utilisateur non trouvé' },
+          },
+        },
       },
-      400: { description: 'Données invalides' },
-      401: { description: 'Non autorisé' }
-    }
-  }
-},
-'/messages/contacts/{userId}': {
-  get: {
-    tags: ['Messages'],
-    summary: 'Obtenir tous les contacts',
-    description: "Endpoint pour récupérer tous les contacts avec qui l'utilisateur a échangé des messages",
-    security: [{ cookieAuth: [] }],
-    parameters: [
-      {
-        in: 'path',
-        name: 'userId',
-        required: true,
-        schema: { type: 'integer' },
-        description: "ID de l'utilisateur"
-      }
-    ],
-    responses: {
-      200: {
-        description: 'Liste des contacts',
-        content: {
-          'application/json': {
-            schema: {
-              type: 'array',
-              items: {
-                $ref: '#/components/schemas/User'
-              }
-            }
-          }
-        }
-      },
-      401: { description: 'Non autorisé' },
-      404: { description: 'Utilisateur non trouvé' }
-    }
-  }
-},
       // ==================== ROUTES STATISTIQUES ====================
       '/stock/stats/stock': {
         get: {

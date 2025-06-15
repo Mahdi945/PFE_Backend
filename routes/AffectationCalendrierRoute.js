@@ -16,14 +16,14 @@ router.post('/add-manual', requireAuth, AffectationCalendrierController.addAffec
 router.post(
   '/add-automatic',
   requireAuth,
-  AffectationCalendrierController.addAffectationAutomatiqueEquitable,
+  AffectationCalendrierController.addAffectationAutomatiqueEquitable
 );
 
 // Récupérer les affectations d'un mois et année
 router.get(
   '/month/:mois/year/:annee',
   requireAuth,
-  AffectationCalendrierController.getAffectationsByMonthYear,
+  AffectationCalendrierController.getAffectationsByMonthYear
 );
 
 // Mettre à jour une affectation
@@ -39,14 +39,14 @@ router.get('/date/:date', requireAuth, AffectationCalendrierController.getAffect
 router.get(
   '/current/:pompiste_id',
   requireAuth,
-  AffectationCalendrierController.getCurrentAffectation,
+  AffectationCalendrierController.getCurrentAffectation
 );
 
 // Obtenir les pistolets disponibles pour une affectation
 router.get(
   '/pistolets/:affectation_id',
   requireAuth,
-  AffectationCalendrierController.getAvailablePistolets,
+  AffectationCalendrierController.getAvailablePistolets
 );
 
 export default router;

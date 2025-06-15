@@ -2,34 +2,34 @@ import db from '../config/db.js';
 
 const User = {
   // Recherche un utilisateur par ID
-  findById: (id) => {
+  findById: id => {
     const query =
       'SELECT id,username,email,numero_telephone,role,photo FROM utilisateurs WHERE id = ?';
     return db.execute(query, [id]);
   },
   // Recherche un utilisateur par email
-  findByEmail: (email) => {
+  findByEmail: email => {
     const query =
       'SELECT id,username,email,numero_telephone,password,role FROM utilisateurs WHERE email = ?';
     return db.execute(query, [email || null]);
   },
 
   // Recherche un utilisateur par nom d'utilisateur
-  findByUsername: (username) => {
+  findByUsername: username => {
     const query =
       'SELECT id,username,email,numero_telephone,password,role,status FROM utilisateurs WHERE username = ?';
     return db.execute(query, [username]);
   },
 
   // Recherche un utilisateur par numéro de téléphone
-  findByPhoneNumber: (numeroTelephone) => {
+  findByPhoneNumber: numeroTelephone => {
     const query =
       'SELECT id,username,email,numero_telephone,role FROM utilisateurs WHERE numero_telephone = ?';
     return db.execute(query, [numeroTelephone || null]);
   },
 
   // Recherche un utilisateur par rôle
-  findByRole: (role) => {
+  findByRole: role => {
     const query = 'SELECT id,username,email,numero_telephone,role FROM utilisateurs WHERE role = ?';
     return db.execute(query, [role]);
   },
@@ -46,7 +46,7 @@ const User = {
     return db.execute(query);
   },
 
-  findOne: (criteria) => {
+  findOne: criteria => {
     let query =
       'SELECT id, username, email, numero_telephone, role, photo FROM utilisateurs WHERE ';
     const values = [];
@@ -117,7 +117,7 @@ const User = {
     return db.execute(query, values);
   },
   // Supprime un utilisateur par son ID
-  deleteUser: (id) => {
+  deleteUser: id => {
     const query = 'DELETE FROM utilisateurs WHERE id = ?';
     return db.execute(query, [id]);
   },
@@ -221,7 +221,7 @@ const User = {
   `;
     return db.execute(query);
   },
-  // Dans models/User.js
+  
   getNewUsers: async () => {
     const query = `
     SELECT 

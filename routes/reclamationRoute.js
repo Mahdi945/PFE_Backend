@@ -46,7 +46,7 @@ router.post(
       .withMessage('La description ne doit pas dépasser 1000 caractères'),
   ],
   validate,
-  ReclamationController.createReclamation,
+  ReclamationController.createReclamation
 );
 
 router.get(
@@ -54,7 +54,7 @@ router.get(
   requireAuth,
   [param('id_client').isInt().withMessage('ID client doit être un nombre entier')],
   validate,
-  ReclamationController.getClientReclamations,
+  ReclamationController.getClientReclamations
 );
 
 router.get(
@@ -62,7 +62,7 @@ router.get(
   requireAuth,
   [param('id').isInt().withMessage('ID réclamation doit être un nombre entier')],
   validate,
-  ReclamationController.getReclamationDetails,
+  ReclamationController.getReclamationDetails
 );
 
 router.put(
@@ -78,7 +78,7 @@ router.put(
       .withMessage('Statut invalide'),
   ],
   validate,
-  ReclamationController.updateReclamationStatus,
+  ReclamationController.updateReclamationStatus
 );
 
 router.get('/', requireAuth, ReclamationController.getAllReclamations);

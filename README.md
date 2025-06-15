@@ -1,9 +1,10 @@
 # CarboTrack - Plateforme de Gestion de Station-Service
 
 ## Table des Matières
+
 1. [Présentation](#présentation)
 2. [Fonctionnalités](#fonctionnalités)
-3. [Technologies](#technologies) 
+3. [Technologies](#technologies)
 4. [Installation](#installation)
 5. [Configuration](#configuration)
 6. [Démarrage](#démarrage)
@@ -12,34 +13,41 @@
 9. [Licence](#licence)
 
 ## Présentation
+
 Solution web complète pour la gestion des stations-service développée avec :
-- Frontend Angular : [https://github.com/Mahdi945/PFE_Frontend](https://github.com/Mahdi945/PFE_Frontend)
-- Backend Node.js/Express : [https://github.com/Mahdi945/PFE_Backend](https://github.com/Mahdi945/PFE_Backend)
+
+- Frontend Angular :
+  [https://github.com/Mahdi945/PFE_Frontend](https://github.com/Mahdi945/PFE_Frontend)
+- Backend Node.js/Express :
+  [https://github.com/Mahdi945/PFE_Backend](https://github.com/Mahdi945/PFE_Backend)
 
 ## Fonctionnalités
-- 🔐 Système d'authentification sécurisé  
-- 👥 Gestion des rôles (5 niveaux d'accès)  
-- ⛽ Suivi des pompes et index  
-- 💳 Gestion des crédits clients  
-- 📦 Inventaire et gestion de stock  
-- 🧾 Point de vente intégré  
-- 📊 Tableaux de bord analytiques  
+
+- 🔐 Système d'authentification sécurisé
+- 👥 Gestion des rôles (5 niveaux d'accès)
+- ⛽ Suivi des pompes et index
+- 💳 Gestion des crédits clients
+- 📦 Inventaire et gestion de stock
+- 🧾 Point de vente intégré
+- 📊 Tableaux de bord analytiques
 
 ## Technologies
 
 **Frontend** :
-- Angular 18  
-- TypeScript 5.3  
-- Bootstrap 5.3  
-- Chart.js 4.4  
-- RxJS 7.8  
+
+- Angular 18
+- TypeScript 5.3
+- Bootstrap 5.3
+- Chart.js 4.4
+- RxJS 7.8
 
 **Backend** :
-- Node.js 18  
-- Express 4.18  
-- MySQL 8.0  
-- JWT  
-- Bcrypt  
+
+- Node.js 18
+- Express 4.18
+- MySQL 8.0
+- JWT
+- Bcrypt
 
 ## Installation
 
@@ -56,6 +64,7 @@ cd ../PFE_Backend && npm install
 ## Configuration
 
 ### Backend (`.env`)
+
 ```ini
 DB_HOST=localhost
 DB_USER=root
@@ -66,11 +75,12 @@ PORT=3000
 ```
 
 ### Frontend (`environment.ts`)
+
 ```typescript
 export const environment = {
   production: false,
   apiUrl: 'http://localhost:3000/api',
-  authKey: 'carbotrack_auth'
+  authKey: 'carbotrack_auth',
 };
 ```
 
@@ -91,20 +101,23 @@ Accès à l'application : [http://localhost:4200](http://localhost:4200)
 ## Documentation
 
 Documentation interactive disponible après connexion :
-- 📘 Guide utilisateur complet  
-- 🛡️ Tableaux des permissions  
-- 🔁 Procédures étape par étape  
-- ❓ FAQ technique  
+
+- 📘 Guide utilisateur complet
+- 🛡️ Tableaux des permissions
+- 🔁 Procédures étape par étape
+- ❓ FAQ technique
 
 ## Auteurs
 
-**Mahdi Bey**  
-- GitHub : [Mahdi945](https://github.com/Mahdi945)  
-- Email : mahdibeyy@gmail.com  
+**Mahdi Bey**
 
-**Yassine Zaghdoudi**  
-- GitHub : [YassineZaghdoudi](https://github.com/YassineZaghdoudi9)  
-- Email : yassinezaghdoudi9@gmail.com  
+- GitHub : [Mahdi945](https://github.com/Mahdi945)
+- Email : mahdibeyy@gmail.com
+
+**Yassine Zaghdoudi**
+
+- GitHub : [YassineZaghdoudi](https://github.com/YassineZaghdoudi9)
+- Email : yassinezaghdoudi9@gmail.com
 
 ## Licence
 

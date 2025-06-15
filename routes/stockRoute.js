@@ -56,7 +56,7 @@ router.post(
   '/produits',
   requireAuth,
   uploadProduitImage.single('image'),
-  StockController.createProduit,
+  StockController.createProduit
 );
 
 // Met à jour un produit existant avec remplacement d'image possible
@@ -64,7 +64,7 @@ router.put(
   '/produits/:id',
   requireAuth,
   uploadProduitImage.single('image'),
-  StockController.updateProduit,
+  StockController.updateProduit
 );
 
 // Supprime un produit et son image associée
@@ -138,7 +138,7 @@ router.get('/ventes/:id/lignes', requireAuth, async (req, res) => {
        FROM ligne_vente lv
        JOIN produits p ON lv.produit_id = p.id
        WHERE lv.vente_id = ?`,
-      [req.params.id],
+      [req.params.id]
     );
     res.json(lignes);
   } catch (err) {
@@ -198,7 +198,11 @@ router.post('/commandes-achat/:id/recevoir', requireAuth, StockController.recevo
 router.post('/commandes-achat/:id/annuler', requireAuth, StockController.annulerCommandeAchat);
 
 // Récupère les commandes d'un fournisseur spécifique
-router.get('/fournisseurs/:fournisseurId/commandes', requireAuth, StockController.getCommandesAchatByFournisseur);
+router.get(
+  '/fournisseurs/:fournisseurId/commandes',
+  requireAuth,
+  StockController.getCommandesAchatByFournisseur
+);
 
 // Récupère les lignes de produits d'une commande d'achat spécifique
 router.get('/commandes-achat/:id/lignes', requireAuth, async (req, res) => {
@@ -208,7 +212,7 @@ router.get('/commandes-achat/:id/lignes', requireAuth, async (req, res) => {
        FROM ligne_commande lc
        JOIN produits p ON lc.produit_id = p.id
        WHERE lc.commande_id = ?`,
-      [req.params.id],
+      [req.params.id]
     );
     res.json(lignes);
   } catch (err) {

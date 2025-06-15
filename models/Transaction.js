@@ -1,20 +1,19 @@
 import db from '../config/db.js';
 
 const Transaction = {
-  // Ajoute une nouvelle transaction avec gestion d'image
-  addTransaction: (id_vehicule, quantite, montant, id_credit, preuve = null, id_pompiste) => {
+  // Ajoute une nouvelle transaction sans id_credit (déterminé via id_vehicule)
+  addTransaction: (id_vehicule, quantite, montant, preuve = null, id_pompiste) => {
     const query = `
     INSERT INTO transactions 
-      (id_vehicule, quantite, montant, id_credit, preuve, date_transaction, id_pompiste) 
-    VALUES (?, ?, ?, ?, ?, NOW(), ?)
+      (id_vehicule, quantite, montant, preuve, date_transaction, id_pompiste) 
+    VALUES (?, ?, ?, ?, NOW(), ?)
   `;
     return db.execute(query, [
       id_vehicule, // 1er paramètre
       quantite, // 2ème paramètre
       montant, // 3ème paramètre
-      id_credit, // 4ème paramètre
-      preuve, // 5ème paramètre (peut être null)
-      id_pompiste, // 7ème paramètre (NOW() est le 6ème)
+      preuve, // 4ème paramètre (peut être null)
+      id_pompiste, // 5ème paramètre (NOW() est le 6ème)
     ]);
   },
   // Récupère les tendances de transactions sur 30 jours
@@ -42,7 +41,7 @@ const Transaction = {
       query += ' AND MONTH(date_transaction) = ? AND YEAR(date_transaction) = ?';
       params.push(
         filter.month || new Date().getMonth() + 1,
-        filter.year || new Date().getFullYear(),
+        filter.year || new Date().getFullYear()
       );
     } else if (filter.type === 'year') {
       query += ' AND YEAR(date_transaction) = ?';
@@ -62,7 +61,7 @@ const Transaction = {
     return db.execute(query, params);
   },
   // Obtient les statistiques globales des transactions
-  getTransactionStats: async (filterOrUserId) => {
+  getTransactionStats: async filterOrUserId => {
     let query = `
     SELECT 
       SUM(t.montant) as total_montant,
@@ -71,7 +70,7 @@ const Transaction = {
       dc.type_credit
     FROM transactions t
     JOIN vehicules v ON t.id_vehicule = v.id
-    LEFT JOIN details_credits dc ON t.id_credit = dc.id
+    LEFT JOIN details_credits dc ON v.id_credit = dc.id
   `;
 
     const params = [];
@@ -110,7 +109,7 @@ const Transaction = {
       t.id_vehicule,
       t.quantite,
       t.montant,
-      t.id_credit,
+      v.id_credit,
       t.preuve,
       t.date_transaction,
       v.immatriculation,
@@ -131,7 +130,7 @@ const Transaction = {
       up.role AS pompiste_role
     FROM transactions t
     JOIN vehicules v ON t.id_vehicule = v.id
-    LEFT JOIN details_credits dc ON t.id_credit = dc.id
+    LEFT JOIN details_credits dc ON v.id_credit = dc.id
     LEFT JOIN utilisateurs u ON dc.id_utilisateur = u.id
     LEFT JOIN utilisateurs up ON t.id_pompiste = up.id
     ORDER BY t.date_transaction DESC
@@ -139,10 +138,11 @@ const Transaction = {
     return db.execute(query);
   },
   // Obtient les transactions d'un utilisateur spécifique
-  getTransactionsByUser: (id_utilisateur) => {
+  getTransactionsByUser: id_utilisateur => {
     const query = `
       SELECT 
         t.*,
+        v.id_credit,
         v.immatriculation,
         v.marque,
         dc.type_credit,
@@ -150,7 +150,7 @@ const Transaction = {
         dc.credit_utilise
       FROM transactions t
       JOIN vehicules v ON t.id_vehicule = v.id
-      JOIN details_credits dc ON t.id_credit = dc.id
+      JOIN details_credits dc ON v.id_credit = dc.id
       WHERE dc.id_utilisateur = ?
       ORDER BY t.date_transaction DESC
     `;
@@ -175,7 +175,7 @@ const Transaction = {
         // Vérification que le crédit utilisé ne dépasse pas le solde
         if (nouveauCreditUtilise > soldeCredit) {
           throw new Error(
-            `Le crédit utilisé (${nouveauCreditUtilise}) dépasse le solde total (${soldeCredit})`,
+            `Le crédit utilisé (${nouveauCreditUtilise}) dépasse le solde total (${soldeCredit})`
           );
         }
 
@@ -189,7 +189,7 @@ const Transaction = {
                etat = ?,
                date_dernier_paiement = NOW()
            WHERE id = ?`,
-          [nouveauCreditUtilise, nouvelEtat, id_credit],
+          [nouveauCreditUtilise, nouvelEtat, id_credit]
         );
       })
       .then(([result]) => {
@@ -198,7 +198,7 @@ const Transaction = {
         }
         return { success: true };
       })
-      .catch((error) => {
+      .catch(error => {
         console.error('Erreur updateCredit:', error);
         throw error;
       });
@@ -224,7 +224,7 @@ const Transaction = {
       query += ' AND MONTH(date_transaction) = ? AND YEAR(date_transaction) = ?';
       params.push(
         filter.month || new Date().getMonth() + 1,
-        filter.year || new Date().getFullYear(),
+        filter.year || new Date().getFullYear()
       );
     } else if (filter.type === 'year') {
       query += ' AND YEAR(date_transaction) = ?';
@@ -277,12 +277,13 @@ const Transaction = {
     const query = `
       SELECT 
         t.*,
+        v.id_credit,
         v.immatriculation,
         v.marque,
         dc.type_credit
       FROM transactions t
       JOIN vehicules v ON t.id_vehicule = v.id
-      JOIN details_credits dc ON t.id_credit = dc.id
+      JOIN details_credits dc ON v.id_credit = dc.id
       WHERE dc.id_utilisateur = ?
       ORDER BY t.date_transaction DESC
       LIMIT ?
@@ -309,13 +310,14 @@ const Transaction = {
     const query = `
       SELECT 
         t.*,
+        v.id_credit,
         v.immatriculation,
         v.marque,
         u.username,
         dc.type_credit
       FROM transactions t
       JOIN vehicules v ON t.id_vehicule = v.id
-      JOIN details_credits dc ON t.id_credit = dc.id
+      JOIN details_credits dc ON v.id_credit = dc.id
       JOIN utilisateurs u ON dc.id_utilisateur = u.id
       ORDER BY t.date_transaction DESC
       LIMIT 10
@@ -358,7 +360,7 @@ const Transaction = {
           t.id_vehicule,
           t.quantite,
           t.montant,
-          t.id_credit,
+          v.id_credit,
           t.preuve,
           t.date_transaction,
           t.id_pompiste,
@@ -382,7 +384,7 @@ const Transaction = {
           END AS statut_credit
         FROM transactions t
         JOIN vehicules v ON t.id_vehicule = v.id
-        LEFT JOIN details_credits dc ON t.id_credit = dc.id
+        LEFT JOIN details_credits dc ON v.id_credit = dc.id
         LEFT JOIN utilisateurs u ON dc.id_utilisateur = u.id
         LEFT JOIN utilisateurs up ON t.id_pompiste = up.id
         WHERE t.id_pompiste = ? ${dateFilter}
@@ -406,7 +408,8 @@ const Transaction = {
           DATE_FORMAT(MIN(t.date_transaction), '%Y-%m-%d %H:%i:%s') AS premiere_transaction,
           DATE_FORMAT(MAX(t.date_transaction), '%Y-%m-%d %H:%i:%s') AS derniere_transaction
         FROM transactions t
-        LEFT JOIN details_credits dc ON t.id_credit = dc.id
+        JOIN vehicules v ON t.id_vehicule = v.id
+        LEFT JOIN details_credits dc ON v.id_credit = dc.id
         WHERE t.id_pompiste = ? ${dateFilter}
       `;
 
@@ -436,7 +439,8 @@ const Transaction = {
           AVG(t.montant) AS montant_moyen,
           COUNT(DISTINCT dc.id_utilisateur) AS nombre_clients
         FROM transactions t
-        LEFT JOIN details_credits dc ON t.id_credit = dc.id
+        JOIN vehicules v ON t.id_vehicule = v.id
+        LEFT JOIN details_credits dc ON v.id_credit = dc.id
         WHERE t.id_pompiste = ? ${dateFilter}
         GROUP BY dc.type_credit
         ORDER BY total_montant DESC
@@ -516,7 +520,8 @@ const Transaction = {
           AVG(t.montant) AS montant_moyen,
           DATE_FORMAT(MAX(t.date_transaction), '%Y-%m-%d %H:%i:%s') AS derniere_transaction
         FROM transactions t
-        LEFT JOIN details_credits dc ON t.id_credit = dc.id
+        JOIN vehicules v ON t.id_vehicule = v.id
+        LEFT JOIN details_credits dc ON v.id_credit = dc.id
         LEFT JOIN utilisateurs u ON dc.id_utilisateur = u.id
         WHERE t.id_pompiste = ? ${dateFilter}
         GROUP BY u.id, u.username, u.email, u.numero_telephone
@@ -549,15 +554,15 @@ const Transaction = {
             vehicules_servis: 0,
             clients_servis: 0,
             premiere_transaction: null,
-            derniere_transaction: null
+            derniere_transaction: null,
           },
           par_vehicule: vehicleStats,
           par_credit: creditStats,
           par_periode: periodStats,
-          clients_frequents: topClients
+          clients_frequents: topClients,
         },
         filtre_applique: filter,
-        pompiste_id: id_pompiste
+        pompiste_id: id_pompiste,
       };
     } catch (error) {
       console.error('Erreur dans getTransactionsByPompiste:', error);

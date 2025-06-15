@@ -184,11 +184,11 @@ class DashboardController {
       // Calculer les totaux à partir des paiements par date
       const total_payments = paymentsByDate.reduce(
         (sum, item) => sum + (item.nombre_paiements || 0),
-        0,
+        0
       );
       const total_amount = paymentsByDate.reduce(
         (sum, item) => sum + parseFloat(item.total_paye || 0),
-        0,
+        0
       );
 
       res.json({

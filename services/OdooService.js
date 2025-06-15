@@ -40,7 +40,7 @@ class OdooService {
           }
           this.uid = uid;
           resolve(uid);
-        },
+        }
       );
     });
   }
@@ -59,7 +59,7 @@ class OdooService {
             return;
           }
           resolve(result);
-        },
+        }
       );
     });
   }
@@ -96,7 +96,7 @@ class OdooService {
       'categ_id',
       'image_1920',
     ],
-    limit = 1000,
+    limit = 1000
   ) {
     try {
       const ids = await this.execute('product.product', 'search', [
@@ -327,7 +327,7 @@ class OdooService {
       'date',
       'location_id',
       'location_dest_id',
-    ],
+    ]
   ) {
     try {
       const ids = await this.execute('stock.move', 'search', [
@@ -381,7 +381,7 @@ class OdooService {
   // ============ VENTES ============
   async createSaleOrder(customerId, orderLines) {
     try {
-      const lines = orderLines.map((line) => ({
+      const lines = orderLines.map(line => ({
         product_id: line.productId,
         product_uom_qty: parseFloat(line.quantity),
         price_unit: parseFloat(line.price) || 0,
@@ -391,7 +391,7 @@ class OdooService {
       return this.execute('sale.order', 'create', [
         {
           partner_id: customerId,
-          order_line: lines.map((line) => [0, 0, line]),
+          order_line: lines.map(line => [0, 0, line]),
         },
       ]);
     } catch (error) {
@@ -407,7 +407,7 @@ class OdooService {
   // ============ COMMANDES FOURNISSEUR ============
   async createPurchaseOrder(vendorId, orderLines) {
     try {
-      const lines = orderLines.map((line) => ({
+      const lines = orderLines.map(line => ({
         product_id: line.productId,
         product_qty: parseFloat(line.quantity),
         price_unit: parseFloat(line.price) || 0,
@@ -417,7 +417,7 @@ class OdooService {
       return this.execute('purchase.order', 'create', [
         {
           partner_id: vendorId,
-          order_line: lines.map((line) => [0, 0, line]),
+          order_line: lines.map(line => [0, 0, line]),
         },
       ]);
     } catch (error) {
@@ -489,7 +489,7 @@ class OdooService {
         resolve();
       });
 
-      socket.on('error', (err) => {
+      socket.on('error', err => {
         reject(new Error(`Cannot connect to ${host}:${port} - ${err.message}`));
       });
 

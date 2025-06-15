@@ -22,7 +22,7 @@ router.get('/permissions/role/:role', requireAuth, PermissionController.getPermi
 router.get(
   '/permissions/dashboard/:role',
   requireAuth,
-  PermissionController.getDashboardPermission,
+  PermissionController.getDashboardPermission
 );
 
 // Récupère la liste de tous les rôles existants pour la gestion des utilisateurs
@@ -32,7 +32,7 @@ router.get('/permissions/roles', requireAuth, PermissionController.getAllRoles);
 router.post(
   '/permissions/update-multiple',
   requireAuth,
-  PermissionController.updateMultiplePermissions,
+  PermissionController.updateMultiplePermissions
 );
 
 export default router;

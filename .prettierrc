@@ -3,26 +3,48 @@
   "singleQuote": true,
   "tabWidth": 2,
   "useTabs": false,
-  "trailingComma": "all",
+  "trailingComma": "es5",
   "printWidth": 100,
   "bracketSpacing": true,
-  "arrowParens": "always",
+  "arrowParens": "avoid",
   "endOfLine": "lf",
-  "quoteProps": "consistent",
+  "quoteProps": "as-needed",
   "jsxSingleQuote": false,
   "bracketSameLine": false,
-  "proseWrap": "always",
+  "proseWrap": "preserve",
+  "htmlWhitespaceSensitivity": "css",
+  "embeddedLanguageFormatting": "auto",
   "overrides": [
     {
       "files": "*.json",
       "options": {
+        "printWidth": 80,
+        "tabWidth": 2,
+        "trailingComma": "none"
+      }
+    },
+    {
+      "files": ["*.yml", "*.yaml"],
+      "options": {
+        "singleQuote": false,
+        "tabWidth": 2,
         "printWidth": 80
       }
     },
     {
-      "files": "*.yml",
+      "files": "*.md",
       "options": {
-        "singleQuote": false
+        "printWidth": 80,
+        "proseWrap": "always",
+        "tabWidth": 2
+      }
+    },
+    {
+      "files": ["*.js", "*.ts"],
+      "options": {
+        "printWidth": 100,
+        "tabWidth": 2,
+        "trailingComma": "es5"
       }
     }
   ]

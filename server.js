@@ -1,40 +1,3 @@
-/**
- * SERVEUR PRINCIPAL - STATION SERVICE MANAGEMENT SYSTEM
- * =// ===== CONFIGURATION SERVEUR =====
-const app = express(); // Application Express
-const server = createServer(app); // Serveur HTTP pour WebSocket
-
-// Configuration WebSocket avec CORS pour Angular
-const io = new Server(server, {
-  cors: {
-    origin: ['http://localhost:4200'], // URL du frontend Angular
-    methods: ['GET', 'POST'],
-    credentials: true
-  }
-});
-
-const PORT = process.env.PORT || 3000; // Port d'écoute du serveur
-
-// ===== CONFIGURATION EMAIL =====
-// Service de messagerie pour notifications automatiques
-const transporter = nodemailer.createTransporter({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});===================================
- * Ce fichier configure et lance le serveur Express avec WebSocket
- * pour gérer une application de station-service avec:
- * - Authentification et gestion des utilisateurs
- * - Système de crédit et paiements
- * - Gestion des stocks et réapprovisionnement automatique
- * - Notifications en temps réel
- * - Messagerie instantanée
- * - Tâches planifiées (CRON jobs)
- */
-
-// ===== IMPORTS DES MODULES PRINCIPAUX =====
 // Framework web et serveur HTTP
 import express from 'express';
 import dotenv from 'dotenv';
@@ -92,8 +55,8 @@ const io = new Server(server, {
   cors: {
     origin: ['http://localhost:4200'],
     methods: ['GET', 'POST'],
-    credentials: true
-  }
+    credentials: true,
+  },
 });
 const PORT = process.env.PORT || 3000;
 
@@ -118,7 +81,7 @@ app.use(
     methods: 'GET,POST,PUT,DELETE',
     allowedHeaders: 'Content-Type, Authorization',
     credentials: true, // Autorise les cookies et l'authentification
-  }),
+  })
 );
 
 // Gestion des cookies et authentification
@@ -129,33 +92,36 @@ app.use(passport.initialize());
 // Map pour suivre les utilisateurs connectés
 const connectedUsers = new Map(); // userId -> socketId
 
-io.on('connection', (socket) => {
+io.on('connection', socket => {
   console.log('🔌 User connected:', socket.id);
 
   // ===== GESTION DE CONNEXION UTILISATEUR =====
-  socket.on('join', (userId) => {
+  socket.on('join', userId => {
     connectedUsers.set(userId, socket.id);
     console.log(`👤 User ${userId} joined with socket ${socket.id}`);
   });
 
   // ===== GESTION DES MESSAGES EN TEMPS RÉEL =====
-  socket.on('sendMessage', async (data) => {
+  socket.on('sendMessage', async data => {
     try {
       const { senderId, receiverId, content } = data;
-      
+
       // Sauvegarder le message en base de données
       const Message = (await import('./models/Message.js')).default;
       const messageId = await Message.create(senderId, receiverId, content);
-      
+
       // Récupérer les données complètes du message avec info utilisateurs
-      const [messageData] = await pool.execute(`
+      const [messageData] = await pool.execute(
+        `
         SELECT m.*, u1.username as sender_name, u1.photo as sender_photo, 
                u2.username as receiver_name, u2.photo as receiver_photo
         FROM messages m
         JOIN utilisateurs u1 ON m.sender_id = u1.id
         JOIN utilisateurs u2 ON m.receiver_id = u2.id
         WHERE m.id = ?
-      `, [messageId]);
+      `,
+        [messageId]
+      );
 
       const fullMessage = messageData[0];
 
@@ -174,16 +140,15 @@ io.on('connection', (socket) => {
 
       // Mise à jour du compteur de messages non lus
       const receiverUnreadCount = await Message.getUnreadCount(receiverId);
-      
+
       if (receiverSocketId) {
-        io.to(receiverSocketId).emit('unreadCountUpdate', { 
-          userId: receiverId, 
-          count: receiverUnreadCount 
+        io.to(receiverSocketId).emit('unreadCountUpdate', {
+          userId: receiverId,
+          count: receiverUnreadCount,
         });
       }
 
       console.log(`📨 Message sent via WebSocket: ${senderId} -> ${receiverId}`);
-
     } catch (error) {
       console.error('Error sending message:', error);
       socket.emit('messageError', { error: error.message });
@@ -191,17 +156,16 @@ io.on('connection', (socket) => {
   });
 
   // ===== MARQUER LES MESSAGES COMME LUS =====
-  socket.on('markAsRead', async (data) => {
+  socket.on('markAsRead', async data => {
     try {
       const { senderId, receiverId } = data;
       const Message = (await import('./models/Message.js')).default;
-      
+
       await Message.markAsRead(senderId, receiverId);
-      
+
       // Mettre à jour le compteur pour le destinataire
       const unreadCount = await Message.getUnreadCount(receiverId);
       socket.emit('unreadCountUpdate', { count: unreadCount });
-      
     } catch (error) {
       console.error('Error marking as read:', error);
     }
@@ -248,7 +212,7 @@ app.use(
     },
     customSiteTitle: 'API Carbotrack Documentation',
     customCss: '.swagger-ui .topbar { display: none }',
-  }),
+  })
 );
 
 // ===== CONFIGURATION DES FICHIERS STATIQUES =====
@@ -366,7 +330,7 @@ cron.schedule('0 3 * * *', async () => {
           'systeme',
           user.id,
           'compte_desactive',
-          `Le compte client ${user.username} (ID: ${user.id}) a été désactivé automatiquement pour ${user.expired_credits_count} crédits expirés`,
+          `Le compte client ${user.username} (ID: ${user.id}) a été désactivé automatiquement pour ${user.expired_credits_count} crédits expirés`
         );
       }
 
@@ -375,11 +339,11 @@ cron.schedule('0 3 * * *', async () => {
         user.id,
         'Compte désactivé',
         `<p>Votre compte a été désactivé automatiquement car vous avez ${user.expired_credits_count} crédits expirés.</p>
-         <p>Veuillez contacter le support pour plus d'informations.</p>`,
+         <p>Veuillez contacter le support pour plus d'informations.</p>`
       );
 
       console.log(
-        `Compte désactivé: ${user.username} (${user.expired_credits_count} crédits expirés)`,
+        `Compte désactivé: ${user.username} (${user.expired_credits_count} crédits expirés)`
       );
     }
 
@@ -412,15 +376,15 @@ cron.schedule('0 0 * * *', async () => {
         'credit',
         credit.id,
         'expiration',
-        `Votre crédit #${credit.id} a expiré`,
+        `Votre crédit #${credit.id} a expiré`
       );
 
       await sendNotificationEmail(
         credit.id_utilisateur,
         'Votre crédit a expiré',
         `<p>Votre crédit #${credit.id} a expiré le ${new Date(
-          new Date(credit.date_debut).getTime() + credit.duree_credit * 24 * 60 * 60 * 1000,
-        ).toLocaleDateString('fr-FR')}</p>`,
+          new Date(credit.date_debut).getTime() + credit.duree_credit * 24 * 60 * 60 * 1000
+        ).toLocaleDateString('fr-FR')}</p>`
       );
     }
 
@@ -441,13 +405,13 @@ cron.schedule('0 0 * * *', async () => {
         'credit',
         credit.id,
         'expiration_proche',
-        `Votre crédit #${credit.id} expire dans ${credit.days_remaining} jours`,
+        `Votre crédit #${credit.id} expire dans ${credit.days_remaining} jours`
       );
 
       await sendNotificationEmail(
         credit.id_utilisateur,
         'Crédit bientôt expiré',
-        `<p>Votre crédit #${credit.id} expire dans ${credit.days_remaining} jours</p>`,
+        `<p>Votre crédit #${credit.id} expire dans ${credit.days_remaining} jours</p>`
       );
     }
 
@@ -479,13 +443,13 @@ cron.schedule('0 * * * *', async () => {
         'credit',
         credit.id,
         'remboursement',
-        `Votre crédit #${credit.id} a été complètement remboursé`,
+        `Votre crédit #${credit.id} a été complètement remboursé`
       );
 
       await sendNotificationEmail(
         credit.id_utilisateur,
         'Crédit remboursé',
-        `<p>Votre crédit #${credit.id} a été complètement remboursé</p>`,
+        `<p>Votre crédit #${credit.id} a été complètement remboursé</p>`
       );
     }
 
@@ -550,7 +514,7 @@ cron.schedule('0 * * * *', async () => {
         AND created_at >= DATE_SUB(NOW(), INTERVAL 1 HOUR)
         LIMIT 1
       `,
-        [product.id],
+        [product.id]
       );
 
       // Si aucune notification récente n'existe, en créer une nouvelle
@@ -569,7 +533,7 @@ cron.schedule('0 * * * *', async () => {
           `Alerte stock: ${product.nom}`,
           `<p>Le produit <strong>${product.nom}</strong> (${product.categorie_nom}) est sous le seuil d'alerte.</p>
            <p>Stock actuel: ${product.quantite_stock}</p>
-           <p>Seuil d'alerte: ${product.seuil_alerte}</p>`,
+           <p>Seuil d'alerte: ${product.seuil_alerte}</p>`
         );
 
         produitsANotifier.push(product);
@@ -581,12 +545,13 @@ cron.schedule('0 * * * *', async () => {
           produitsParFournisseur[product.fournisseur_id] = {
             fournisseur_nom: product.fournisseur_nom,
             fournisseur_email: product.fournisseur_email,
-            produits: []
+            produits: [],
           };
         }
-        
+
         // Vérifier s'il n'existe pas déjà une commande récente pour ce produit
-        const [existingOrder] = await pool.query(`
+        const [existingOrder] = await pool.query(
+          `
           SELECT ca.id 
           FROM commandes_achat ca
           JOIN ligne_commande lc ON ca.id = lc.commande_id
@@ -594,7 +559,9 @@ cron.schedule('0 * * * *', async () => {
           AND ca.statut IN ('brouillon', 'validée')
           AND ca.date_commande >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
           LIMIT 1
-        `, [product.id]);
+        `,
+          [product.id]
+        );
 
         // Si pas de commande récente, ajouter le produit au réapprovisionnement
         if (!existingOrder || existingOrder.length === 0) {
@@ -603,7 +570,7 @@ cron.schedule('0 * * * *', async () => {
             produit_id: product.id,
             nom: product.nom,
             quantite: quantiteCommande,
-            prix_unitaire: product.prix_achat || 0
+            prix_unitaire: product.prix_achat || 0,
           });
         }
       }
@@ -615,26 +582,34 @@ cron.schedule('0 * * * *', async () => {
         try {
           // Importer le modèle Stock dynamiquement pour éviter les problèmes de circular import
           const { default: Stock } = await import('./models/stockModel.js');
-          
+
           const commandeData = {
             fournisseur_id: parseInt(fournisseurId),
             produits: data.produits,
-            agent_id: null // Commande automatique, pas d'agent spécifique
+            agent_id: null, // Commande automatique, pas d'agent spécifique
           };
 
           const commande = await Stock.createCommandeAchat(commandeData);
-          
-          console.log(`✅ Commande automatique créée: #${commande.id} pour ${data.fournisseur_nom}`);
+
+          console.log(
+            `✅ Commande automatique créée: #${commande.id} pour ${data.fournisseur_nom}`
+          );
 
           // Créer une notification de réapprovisionnement pour le gérant
           const reapproMessage = `Commande automatique #${commande.id} créée pour ${data.fournisseur_nom}. ${data.produits.length} produit(s) commandé(s).`;
-          
-          await Notification.create(gerantId, 'stock', commande.id, 'réapprovisionnement', reapproMessage);
+
+          await Notification.create(
+            gerantId,
+            'stock',
+            commande.id,
+            'réapprovisionnement',
+            reapproMessage
+          );
 
           // Envoyer email de notification au gérant
-          const produitsListe = data.produits.map(p => 
-            `- ${p.nom}: ${p.quantite} unités à ${p.prix_unitaire}€`
-          ).join('\n');
+          const produitsListe = data.produits
+            .map(p => `- ${p.nom}: ${p.quantite} unités à ${p.prix_unitaire}€`)
+            .join('\n');
 
           await sendNotificationEmail(
             gerantId,
@@ -672,34 +647,45 @@ cron.schedule('0 * * * *', async () => {
                       <th style="padding: 8px;">Prix unitaire</th>
                       <th style="padding: 8px;">Total</th>
                     </tr>
-                    ${data.produits.map(p => `
+                    ${data.produits
+                      .map(
+                        p => `
                       <tr>
                         <td style="padding: 8px;">${p.nom}</td>
                         <td style="padding: 8px;">${p.quantite}</td>
                         <td style="padding: 8px;">${p.prix_unitaire}DT</td>
                         <td style="padding: 8px;">${(p.quantite * p.prix_unitaire).toFixed(2)}DT</td>
                       </tr>
-                    `).join('')}
+                    `
+                      )
+                      .join('')}
                   </table>
                   <p>Merci de confirmer la réception de cette commande.</p>
                   <p>Cordialement,<br>L'équipe de gestion</p>
-                `
+                `,
               };
 
               await transporter.sendMail(fournisseurEmail);
               console.log(`📧 Email envoyé au fournisseur: ${data.fournisseur_email}`);
             } catch (emailError) {
-              console.error(`❌ Erreur envoi email fournisseur ${data.fournisseur_email}:`, emailError);
+              console.error(
+                `❌ Erreur envoi email fournisseur ${data.fournisseur_email}:`,
+                emailError
+              );
             }
           }
-
         } catch (commandeError) {
-          console.error(`❌ Erreur création commande pour fournisseur ${data.fournisseur_nom}:`, commandeError);
+          console.error(
+            `❌ Erreur création commande pour fournisseur ${data.fournisseur_nom}:`,
+            commandeError
+          );
         }
       }
     }
 
-    console.log(`✅ Vérification terminée: ${lowStockProducts.length} produits sous le seuil, ${Object.keys(produitsParFournisseur).length} fournisseurs traités`);
+    console.log(
+      `✅ Vérification terminée: ${lowStockProducts.length} produits sous le seuil, ${Object.keys(produitsParFournisseur).length} fournisseurs traités`
+    );
   } catch (err) {
     console.error('❌ Erreur lors de la vérification du stock et réapprovisionnement:', err);
   }
@@ -725,7 +711,7 @@ cron.schedule('0 9 * * 1', async () => {
         WHERE dc.id_utilisateur = ? 
         AND t.date_transaction >= DATE_SUB(NOW(), INTERVAL 7 DAY)
       `,
-        [user.id],
+        [user.id]
       );
 
       const [[{ payments }]] = await pool.query(
@@ -735,7 +721,7 @@ cron.schedule('0 9 * * 1', async () => {
         WHERE id_utilisateur = ? 
         AND date_paiement >= DATE_SUB(NOW(), INTERVAL 7 DAY)
       `,
-        [user.id],
+        [user.id]
       );
 
       // Créer notification de résumé
@@ -744,7 +730,7 @@ cron.schedule('0 9 * * 1', async () => {
         'systeme',
         null,
         'resume_hebdo',
-        `Résumé hebdomadaire: ${transactions} transactions, ${payments || 0} DT payés`,
+        `Résumé hebdomadaire: ${transactions} transactions, ${payments || 0} DT payés`
       );
 
       // Envoyer email de résumé si l'utilisateur a un email
@@ -764,7 +750,7 @@ cron.schedule('0 9 * * 1', async () => {
         });
       }
     }
-  
+
     console.log('✅ Résumé hebdomadaire terminé');
   } catch (err) {
     console.error('❌ Erreur lors du résumé hebdomadaire:', err);

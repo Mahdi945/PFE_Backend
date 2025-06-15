@@ -99,7 +99,7 @@ const createPayment = async (req, res) => {
       montant,
       mode_paiement,
       description,
-      id_caissier,
+      id_caissier
     );
 
     // 3. Récupération des infos utilisateur pour la notification
@@ -108,7 +108,7 @@ const createPayment = async (req, res) => {
        FROM details_credits dc
        JOIN utilisateurs u ON dc.id_utilisateur = u.id
        WHERE dc.id = ?`,
-      [id_credit],
+      [id_credit]
     );
 
     if (!creditInfo.length) {
@@ -132,7 +132,7 @@ const createPayment = async (req, res) => {
       'credit',
       id_credit,
       notificationType,
-      notificationMessage,
+      notificationMessage
     );
 
     // 5. Envoi email
@@ -155,7 +155,7 @@ const createPayment = async (req, res) => {
         subject: isFullPayment ? 'Crédit remboursé' : 'Confirmation de paiement',
         html: generateEmailTemplate(
           isFullPayment ? 'Remboursement complet' : 'Paiement enregistré',
-          emailContent,
+          emailContent
         ),
         attachments: [
           {

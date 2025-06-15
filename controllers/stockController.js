@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 const stockController = {
   // ==================== PRODUITS ====================
-  
+
   /**
    * Crée un nouveau produit dans le système
    * Gère l'upload d'image et la validation des données
@@ -431,8 +431,8 @@ const stockController = {
       // Validation des produits
       for (const produit of req.body.produits) {
         if (!produit.produit_id || !produit.quantite || !produit.prix_unitaire) {
-          return res.status(400).json({ 
-            error: 'Chaque produit doit avoir un produit_id, quantite et prix_unitaire' 
+          return res.status(400).json({
+            error: 'Chaque produit doit avoir un produit_id, quantite et prix_unitaire',
           });
         }
       }
@@ -459,8 +459,8 @@ const stockController = {
       // Validation des produits
       for (const produit of req.body.produits) {
         if (!produit.produit_id || !produit.quantite || !produit.prix_unitaire) {
-          return res.status(400).json({ 
-            error: 'Chaque produit doit avoir un produit_id, quantite et prix_unitaire' 
+          return res.status(400).json({
+            error: 'Chaque produit doit avoir un produit_id, quantite et prix_unitaire',
           });
         }
       }
@@ -536,8 +536,8 @@ const stockController = {
   recevoirCommandeAchat: async (req, res) => {
     try {
       const commande = await Stock.recevoirCommandeAchat(
-        req.params.id, 
-        req.body.agent_id, 
+        req.params.id,
+        req.body.agent_id,
         req.body.reception_data
       );
       res.json(commande);
@@ -570,7 +570,10 @@ const stockController = {
         endDate: req.query.endDate,
       };
 
-      const commandes = await Stock.getCommandesAchatByFournisseur(req.params.fournisseurId, filters);
+      const commandes = await Stock.getCommandesAchatByFournisseur(
+        req.params.fournisseurId,
+        filters
+      );
       res.json(commandes);
     } catch (err) {
       res.status(500).json({ error: err.message });

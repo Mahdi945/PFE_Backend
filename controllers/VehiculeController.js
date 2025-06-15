@@ -43,7 +43,7 @@ const create = async (req, res) => {
       immatriculation,
       marque,
       type_vehicule,
-      id_credit,
+      id_credit
     );
 
     // Ajouter le véhicule dans la base de données
@@ -52,7 +52,7 @@ const create = async (req, res) => {
       marque,
       type_vehicule,
       qrCodeUrl,
-      id_credit,
+      id_credit
     );
 
     // Récupérer les infos complètes du véhicule créé
@@ -235,7 +235,7 @@ const updateVehicule = async (req, res) => {
 
     // Vérifier que le nouveau crédit est actif
     const [credit] = await db.execute('SELECT etat FROM details_credits WHERE id = ?', [id_credit]);
-    
+
     if (!credit.length) {
       return res.status(404).json({
         success: false,

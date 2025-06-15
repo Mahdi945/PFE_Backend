@@ -12,7 +12,7 @@ const __dirname = dirname(__filename);
 // ===================================================================
 const Stock = {
   // ==================== PRODUITS ====================
-  
+
   // Crée un nouveau produit avec upload d'image optionnel
   createProduit: async (produitData, imagePath = null) => {
     // Validation des champs obligatoires
@@ -105,7 +105,7 @@ const Stock = {
   },
 
   // Supprime un produit et son image associée
-  deleteProduit: async (id) => {
+  deleteProduit: async id => {
     // Suppression de l'image associée
     const [produit] = await db.execute('SELECT image_url FROM produits WHERE id = ?', [id]);
     if (produit[0]?.image_url) {
@@ -119,13 +119,16 @@ const Stock = {
   },
 
   // Récupère un produit par son ID avec informations fournisseur
-  getProduitById: async (id) => {
-    const [produit] = await db.execute(`
+  getProduitById: async id => {
+    const [produit] = await db.execute(
+      `
       SELECT p.*, f.nom as fournisseur_nom 
       FROM produits p 
       LEFT JOIN fournisseurs f ON p.fournisseur_id = f.id 
       WHERE p.id = ?
-    `, [id]);
+    `,
+      [id]
+    );
     return produit[0] || null;
   },
 
@@ -153,9 +156,9 @@ const Stock = {
   },
 
   // ==================== CATÉGORIES ====================
-  
+
   // Crée une nouvelle catégorie de produits
-  createCategorie: async (categorieData) => {
+  createCategorie: async categorieData => {
     if (!categorieData.nom) {
       throw new Error('Le nom de la catégorie est obligatoire');
     }
@@ -196,13 +199,13 @@ const Stock = {
   },
 
   // Supprime une catégorie de produits
-  deleteCategorie: async (id) => {
+  deleteCategorie: async id => {
     await db.execute('DELETE FROM categories WHERE id = ?', [id]);
     return { id };
   },
 
   // Récupère une catégorie par son ID
-  getCategorieById: async (id) => {
+  getCategorieById: async id => {
     const [categorie] = await db.execute('SELECT * FROM categories WHERE id = ?', [id]);
     return categorie[0] || null;
   },
@@ -214,9 +217,9 @@ const Stock = {
   },
 
   // ==================== MOUVEMENTS STOCK ====================
-  
+
   // Enregistre un mouvement de stock (entrée/sortie)
-  createMouvement: async (mouvementData) => {
+  createMouvement: async mouvementData => {
     if (!mouvementData.produit_id || !mouvementData.type || mouvementData.quantite === undefined) {
       throw new Error('produit_id, type et quantite sont obligatoires');
     }
@@ -240,7 +243,7 @@ const Stock = {
   },
 
   // Récupère l'historique des mouvements pour un produit
-  getMouvementsByProduit: async (produitId) => {
+  getMouvementsByProduit: async produitId => {
     const [mouvements] = await db.execute(
       `
       SELECT 
@@ -253,7 +256,7 @@ const Stock = {
       WHERE m.produit_id = ?
       ORDER BY m.date_mouvement DESC
     `,
-      [produitId],
+      [produitId]
     );
     return mouvements;
   },
@@ -272,15 +275,15 @@ const Stock = {
       WHERE m.date_mouvement BETWEEN ? AND ?
       ORDER BY m.date_mouvement DESC
     `,
-      [startDate, endDate],
+      [startDate, endDate]
     );
     return mouvements;
   },
 
   // ==================== VENTES ====================
-  
+
   // Enregistre une nouvelle vente avec gestion du stock
-  createVente: async (venteData) => {
+  createVente: async venteData => {
     if (
       !venteData.montant_total ||
       !venteData.montant_paye ||
@@ -307,7 +310,7 @@ const Stock = {
           venteData.montant_paye,
           venteData.mode_paiement,
           venteData.id_caissier || null,
-        ],
+        ]
       );
 
       const venteId = resultVente.insertId;
@@ -337,7 +340,7 @@ const Stock = {
           `INSERT INTO ligne_vente 
           (vente_id, produit_id, quantite, prix_unitaire)
           VALUES (?, ?, ?, ?)`,
-          [venteId, produit.id, produit.quantite, produit.prix_unitaire],
+          [venteId, produit.id, produit.quantite, produit.prix_unitaire]
         );
 
         // Mettre à jour le stock
@@ -351,7 +354,7 @@ const Stock = {
           `INSERT INTO mouvements_stock 
           (produit_id, type, quantite, agent_id, raison)
           VALUES (?, 'SORTIE', ?, ?, ?)`,
-          [produit.id, produit.quantite, venteData.id_caissier || null, `Vente #${venteId}`],
+          [produit.id, produit.quantite, venteData.id_caissier || null, `Vente #${venteId}`]
         );
       }
 
@@ -373,7 +376,7 @@ const Stock = {
   },
 
   // Récupère une vente par son ID avec détails produits
-  getVenteById: async (id) => {
+  getVenteById: async id => {
     const [ventes] = await db.execute('SELECT * FROM ventes WHERE id = ?', [id]);
     if (ventes.length === 0) return null;
 
@@ -382,12 +385,12 @@ const Stock = {
        FROM ligne_vente lv
        JOIN produits p ON lv.produit_id = p.id
        WHERE lv.vente_id = ?`,
-      [id],
+      [id]
     );
 
     return {
       ...ventes[0],
-      produits_vendus: lignes.map((l) => ({
+      produits_vendus: lignes.map(l => ({
         id: l.produit_id,
         nom: l.produit_nom,
         code_barre: l.code_barre,
@@ -405,7 +408,7 @@ const Stock = {
        LEFT JOIN utilisateurs u ON v.id_caissier = u.id
        WHERE v.date_vente BETWEEN ? AND ?
        ORDER BY v.date_vente DESC`,
-      [startDate, endDate],
+      [startDate, endDate]
     );
 
     // Récupérer les lignes pour chaque vente
@@ -415,7 +418,7 @@ const Stock = {
          FROM ligne_vente lv
          JOIN produits p ON lv.produit_id = p.id
          WHERE vente_id = ?`,
-        [vente.id],
+        [vente.id]
       );
       vente.produits_vendus = lignes;
     }
@@ -432,7 +435,7 @@ const Stock = {
        WHERE v.id_caissier = ?
        AND v.date_vente BETWEEN ? AND ?
        ORDER BY v.date_vente DESC`,
-      [caissierId, startDate, endDate],
+      [caissierId, startDate, endDate]
     );
 
     // Récupérer les lignes pour chaque vente
@@ -442,7 +445,7 @@ const Stock = {
          FROM ligne_vente lv
          JOIN produits p ON lv.produit_id = p.id
          WHERE vente_id = ?`,
-        [vente.id],
+        [vente.id]
       );
       vente.produits_vendus = lignes;
     }
@@ -451,7 +454,7 @@ const Stock = {
   },
 
   // Annule une vente et restaure le stock
-  cancelVente: async (id) => {
+  cancelVente: async id => {
     const vente = await Stock.getVenteById(id);
     if (!vente) throw new Error('Vente non trouvée');
 
@@ -470,7 +473,7 @@ const Stock = {
           `INSERT INTO mouvements_stock 
           (produit_id, type, quantite, agent_id, raison)
           VALUES (?, 'AJUSTEMENT', ?, ?, ?)`,
-          [produit.id, produit.quantite, vente.id_caissier || null, `Annulation vente #${id}`],
+          [produit.id, produit.quantite, vente.id_caissier || null, `Annulation vente #${id}`]
         );
       }
 
@@ -487,11 +490,11 @@ const Stock = {
       throw err;
     }
   },
-  
+
   // ==================== FOURNISSEURS ====================
-  
+
   // Crée un nouveau fournisseur avec informations de contact
-  createFournisseur: async (fournisseurData) => {
+  createFournisseur: async fournisseurData => {
     if (!fournisseurData.nom) {
       throw new Error('Le nom du fournisseur est obligatoire');
     }
@@ -534,9 +537,12 @@ const Stock = {
   },
 
   // Supprime un fournisseur avec vérification des contraintes
-  deleteFournisseur: async (id) => {
+  deleteFournisseur: async id => {
     // Vérifier s'il y a des commandes associées à ce fournisseur
-    const [commandes] = await db.execute('SELECT COUNT(*) as count FROM commandes_achat WHERE fournisseur_id = ?', [id]);
+    const [commandes] = await db.execute(
+      'SELECT COUNT(*) as count FROM commandes_achat WHERE fournisseur_id = ?',
+      [id]
+    );
     if (commandes[0].count > 0) {
       throw new Error('Impossible de supprimer un fournisseur avec des commandes associées');
     }
@@ -549,7 +555,7 @@ const Stock = {
   },
 
   // Récupère un fournisseur par son ID
-  getFournisseurById: async (id) => {
+  getFournisseurById: async id => {
     const [fournisseurs] = await db.execute('SELECT * FROM fournisseurs WHERE id = ?', [id]);
     return fournisseurs[0] || null;
   },
@@ -569,10 +575,14 @@ const Stock = {
   },
 
   // ==================== COMMANDES ACHAT ====================
-  
+
   // Crée une nouvelle commande d'achat
-  createCommandeAchat: async (commandeData) => {
-    if (!commandeData.fournisseur_id || !commandeData.produits || !Array.isArray(commandeData.produits)) {
+  createCommandeAchat: async commandeData => {
+    if (
+      !commandeData.fournisseur_id ||
+      !commandeData.produits ||
+      !Array.isArray(commandeData.produits)
+    ) {
       throw new Error('fournisseur_id et produits sont obligatoires');
     }
 
@@ -599,7 +609,7 @@ const Stock = {
         `INSERT INTO commandes_achat 
         (fournisseur_id, date_commande, montant_total, statut, agent_id)
         VALUES (?, NOW(), ?, 'brouillon', ?)`,
-        [commandeData.fournisseur_id, montantTotal, commandeData.agent_id || null],
+        [commandeData.fournisseur_id, montantTotal, commandeData.agent_id || null]
       );
 
       const commandeId = resultCommande.insertId;
@@ -610,7 +620,7 @@ const Stock = {
           `INSERT INTO ligne_commande 
           (commande_id, produit_id, quantite, prix_unitaire)
           VALUES (?, ?, ?, ?)`,
-          [commandeId, produit.produit_id, produit.quantite, produit.prix_unitaire],
+          [commandeId, produit.produit_id, produit.quantite, produit.prix_unitaire]
         );
       }
 
@@ -661,7 +671,12 @@ const Stock = {
         `UPDATE commandes_achat 
         SET fournisseur_id = ?, montant_total = ?, agent_id = ?
         WHERE id = ?`,
-        [commandeData.fournisseur_id || commande.fournisseur_id, montantTotal, commandeData.agent_id || commande.agent_id, id],
+        [
+          commandeData.fournisseur_id || commande.fournisseur_id,
+          montantTotal,
+          commandeData.agent_id || commande.agent_id,
+          id,
+        ]
       );
 
       // 2. Supprimer les anciennes lignes
@@ -673,7 +688,7 @@ const Stock = {
           `INSERT INTO ligne_commande 
           (commande_id, produit_id, quantite, prix_unitaire)
           VALUES (?, ?, ?, ?)`,
-          [id, produit.produit_id, produit.quantite, produit.prix_unitaire],
+          [id, produit.produit_id, produit.quantite, produit.prix_unitaire]
         );
       }
 
@@ -691,7 +706,7 @@ const Stock = {
   },
 
   // Supprime une commande d'achat
-  deleteCommandeAchat: async (id) => {
+  deleteCommandeAchat: async id => {
     const commande = await Stock.getCommandeAchatById(id);
     if (!commande) {
       throw new Error('Commande non trouvée');
@@ -726,27 +741,33 @@ const Stock = {
   },
 
   // Récupère une commande d'achat par son ID
-  getCommandeAchatById: async (id) => {
-    const [commandes] = await db.execute(`
+  getCommandeAchatById: async id => {
+    const [commandes] = await db.execute(
+      `
       SELECT ca.*, f.nom as fournisseur_nom, u.username as agent_nom
       FROM commandes_achat ca
       JOIN fournisseurs f ON ca.fournisseur_id = f.id
       LEFT JOIN utilisateurs u ON ca.agent_id = u.id
       WHERE ca.id = ?
-    `, [id]);
+    `,
+      [id]
+    );
 
     if (commandes.length === 0) return null;
 
-    const [lignes] = await db.execute(`
+    const [lignes] = await db.execute(
+      `
       SELECT lc.*, p.nom as produit_nom, p.code_barre
       FROM ligne_commande lc
       JOIN produits p ON lc.produit_id = p.id
       WHERE lc.commande_id = ?
-    `, [id]);
+    `,
+      [id]
+    );
 
     return {
       ...commandes[0],
-      produits: lignes.map((l) => ({
+      produits: lignes.map(l => ({
         id: l.produit_id,
         nom: l.produit_nom,
         code_barre: l.code_barre,
@@ -764,7 +785,7 @@ const Stock = {
       JOIN fournisseurs f ON ca.fournisseur_id = f.id
       LEFT JOIN utilisateurs u ON ca.agent_id = u.id
     `;
-    
+
     const conditions = [];
     const params = [];
 
@@ -793,12 +814,15 @@ const Stock = {
 
     // Récupérer les produits pour chaque commande
     for (const commande of commandes) {
-      const [lignes] = await db.execute(`
+      const [lignes] = await db.execute(
+        `
         SELECT lc.*, p.nom as produit_nom, p.code_barre
         FROM ligne_commande lc
         JOIN produits p ON lc.produit_id = p.id
         WHERE lc.commande_id = ?
-      `, [commande.id]);
+      `,
+        [commande.id]
+      );
 
       commande.produits = lignes;
     }
@@ -817,10 +841,11 @@ const Stock = {
       throw new Error('Seules les commandes en brouillon peuvent être validées');
     }
 
-    await db.execute(
-      'UPDATE commandes_achat SET statut = ?, agent_id = ? WHERE id = ?',
-      ['validée', agentId, id]
-    );
+    await db.execute('UPDATE commandes_achat SET statut = ?, agent_id = ? WHERE id = ?', [
+      'validée',
+      agentId,
+      id,
+    ]);
 
     return await Stock.getCommandeAchatById(id);
   },
@@ -842,22 +867,22 @@ const Stock = {
       await conn.beginTransaction();
 
       // 1. Marquer la commande comme reçue
-      await conn.execute(
-        'UPDATE commandes_achat SET statut = ?, agent_id = ? WHERE id = ?',
-        ['reçue', agentId, id]
-      );
+      await conn.execute('UPDATE commandes_achat SET statut = ?, agent_id = ? WHERE id = ?', [
+        'reçue',
+        agentId,
+        id,
+      ]);
 
       // 2. Mettre à jour le stock pour chaque produit
       for (const produit of commande.produits) {
-        const quantiteRecue = receptionData && receptionData[produit.id] 
-          ? receptionData[produit.id] 
-          : produit.quantite;
+        const quantiteRecue =
+          receptionData && receptionData[produit.id] ? receptionData[produit.id] : produit.quantite;
 
         // Mettre à jour le stock
-        await conn.execute(
-          'UPDATE produits SET quantite_stock = quantite_stock + ? WHERE id = ?',
-          [quantiteRecue, produit.id]
-        );
+        await conn.execute('UPDATE produits SET quantite_stock = quantite_stock + ? WHERE id = ?', [
+          quantiteRecue,
+          produit.id,
+        ]);
 
         // Enregistrer le mouvement de stock
         await conn.execute(
@@ -889,13 +914,14 @@ const Stock = {
     }
 
     if (commande.statut === 'reçue') {
-      throw new Error('Impossible d\'annuler une commande déjà reçue');
+      throw new Error("Impossible d'annuler une commande déjà reçue");
     }
 
-    await db.execute(
-      'UPDATE commandes_achat SET statut = ?, agent_id = ? WHERE id = ?',
-      ['annulée', agentId, id]
-    );
+    await db.execute('UPDATE commandes_achat SET statut = ?, agent_id = ? WHERE id = ?', [
+      'annulée',
+      agentId,
+      id,
+    ]);
 
     return await Stock.getCommandeAchatById(id);
   },
@@ -909,7 +935,7 @@ const Stock = {
       LEFT JOIN utilisateurs u ON ca.agent_id = u.id
       WHERE ca.fournisseur_id = ?
     `;
-    
+
     const params = [fournisseurId];
 
     if (filters.statut) {
@@ -928,12 +954,15 @@ const Stock = {
 
     // Récupérer les produits pour chaque commande
     for (const commande of commandes) {
-      const [lignes] = await db.execute(`
+      const [lignes] = await db.execute(
+        `
         SELECT lc.*, p.nom as produit_nom, p.code_barre
         FROM ligne_commande lc
         JOIN produits p ON lc.produit_id = p.id
         WHERE lc.commande_id = ?
-      `, [commande.id]);
+      `,
+        [commande.id]
+      );
 
       commande.produits = lignes;
     }
@@ -943,7 +972,8 @@ const Stock = {
 
   // Génère les statistiques des commandes d'achat
   getStatsCommandesAchat: async (startDate, endDate) => {
-    const [stats] = await db.execute(`
+    const [stats] = await db.execute(
+      `
       SELECT 
         COUNT(*) as total_commandes,
         COUNT(CASE WHEN statut = 'brouillon' THEN 1 END) as commandes_brouillon,
@@ -954,10 +984,13 @@ const Stock = {
         COALESCE(SUM(CASE WHEN statut = 'reçue' THEN montant_total ELSE 0 END), 0) as montant_commandes_recues
       FROM commandes_achat
       WHERE DATE(date_commande) BETWEEN ? AND ?
-    `, [startDate, endDate]);
+    `,
+      [startDate, endDate]
+    );
 
     // Top fournisseurs par montant
-    const [topFournisseurs] = await db.execute(`
+    const [topFournisseurs] = await db.execute(
+      `
       SELECT 
         f.nom as fournisseur_nom,
         COUNT(ca.id) as nb_commandes,
@@ -969,11 +1002,13 @@ const Stock = {
       HAVING nb_commandes > 0
       ORDER BY montant_total DESC
       LIMIT 5
-    `, [startDate, endDate]);
+    `,
+      [startDate, endDate]
+    );
 
     return {
       ...stats[0],
-      top_fournisseurs: topFournisseurs
+      top_fournisseurs: topFournisseurs,
     };
   },
 
@@ -1000,7 +1035,7 @@ const Stock = {
         FROM ventes
         WHERE DATE(date_vente) = ?
     `,
-      [today],
+      [today]
     );
 
     // Ventes des 7 derniers jours
@@ -1018,7 +1053,7 @@ const Stock = {
         GROUP BY DATE(date_vente)
         ORDER BY sale_date ASC
     `,
-      [sevenDaysAgo, today],
+      [sevenDaysAgo, today]
     );
     // Dans votre modèle getStockStats()
     const [todayMovements] = await db.execute(
@@ -1033,7 +1068,7 @@ const Stock = {
     WHERE DATE(m.date_mouvement) = ?
     ORDER BY m.date_mouvement DESC
 `,
-      [today],
+      [today]
     );
     // Top 5 produits vendus
     const [topProducts] = await db.execute(`
@@ -1066,15 +1101,15 @@ const Stock = {
       todaySalesAmount: todaySales[0]?.todaySalesAmount || 0,
 
       // Ventes 7 derniers jours
-      last7DaysLabels: last7DaysSales.map((sale) => {
+      last7DaysLabels: last7DaysSales.map(sale => {
         const date = new Date(sale.sale_date);
         return date.toLocaleDateString('fr-FR', { weekday: 'short' });
       }),
-      last7DaysData: last7DaysSales.map((sale) => sale.daily_amount),
+      last7DaysData: last7DaysSales.map(sale => sale.daily_amount),
 
       // Top produits
-      topProductsLabels: topProducts.map((product) => product.product_name),
-      topProductsData: topProducts.map((product) => product.total_quantity),
+      topProductsLabels: topProducts.map(product => product.product_name),
+      topProductsData: topProducts.map(product => product.total_quantity),
 
       // Produits en alerte
       lowStockProductsList: lowStockProducts,
@@ -1095,7 +1130,7 @@ const Stock = {
       WHERE date_vente BETWEEN ? AND ?
       GROUP BY mode_paiement
     `,
-      [startDate, endDate],
+      [startDate, endDate]
     );
     return stats;
   },

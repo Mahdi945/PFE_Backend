@@ -7,13 +7,13 @@ const Pistolet = {
     numero_pistolet,
     nom_produit,
     prix_unitaire,
-    statut = 'disponible',
+    statut = 'disponible'
   ) => {
     const [result] = await db.query(
       `INSERT INTO pistolets 
       (pompe_id, numero_pistolet, nom_produit, prix_unitaire, statut, dernier_index) 
       VALUES (?, ?, ?, ?, ?, 0)`,
-      [pompe_id, numero_pistolet, nom_produit, prix_unitaire, statut],
+      [pompe_id, numero_pistolet, nom_produit, prix_unitaire, statut]
     );
     return result.insertId;
   },
@@ -26,7 +26,7 @@ const Pistolet = {
         `SELECT id FROM releves_postes 
          WHERE affectation_id = ? AND pistolet_id = ?
          AND DATE(date_heure_saisie) = CURDATE()`,
-        [affectation_id, pistolet_id],
+        [affectation_id, pistolet_id]
       );
 
       if (existingReleve.length > 0) {
@@ -38,7 +38,7 @@ const Pistolet = {
         `SELECT index_fermeture FROM releves_postes 
          WHERE pistolet_id = ? 
          ORDER BY date_heure_saisie DESC LIMIT 1`,
-        [pistolet_id],
+        [pistolet_id]
       );
 
       if (lastIndex.length > 0) {
@@ -47,7 +47,7 @@ const Pistolet = {
 
         if (dernierIndex !== nouvelIndex) {
           throw new Error(
-            `Index d'ouverture (${nouvelIndex}) ne correspond pas au dernier index de fermeture (${dernierIndex})`,
+            `Index d'ouverture (${nouvelIndex}) ne correspond pas au dernier index de fermeture (${dernierIndex})`
           );
         }
       }
@@ -57,7 +57,7 @@ const Pistolet = {
         `INSERT INTO releves_postes 
         (affectation_id, pistolet_id, index_ouverture, index_fermeture, date_heure_saisie, statut) 
         VALUES (?, ?, ?, ?, NOW(), 'saisie')`,
-        [affectation_id, pistolet_id, index_ouverture, index_fermeture],
+        [affectation_id, pistolet_id, index_ouverture, index_fermeture]
       );
 
       // Mise à jour du dernier index
@@ -65,7 +65,7 @@ const Pistolet = {
         `UPDATE pistolets 
          SET dernier_index = ?, date_dernier_index = NOW() 
          WHERE id = ?`,
-        [index_fermeture, pistolet_id],
+        [index_fermeture, pistolet_id]
       );
 
       await db.query('COMMIT');
@@ -90,7 +90,7 @@ const Pistolet = {
     pistolet_id,
     index_ouverture,
     index_fermeture,
-    date_heure,
+    date_heure
   ) => {
     await db.query('START TRANSACTION');
 
@@ -100,7 +100,7 @@ const Pistolet = {
         `SELECT index_fermeture FROM releves_postes 
          WHERE pistolet_id = ? 
          ORDER BY date_heure_saisie DESC LIMIT 1`,
-        [pistolet_id],
+        [pistolet_id]
       );
 
       if (lastIndex.length > 0) {
@@ -109,7 +109,7 @@ const Pistolet = {
 
         if (dernierIndex !== nouvelIndex) {
           throw new Error(
-            `Index d'ouverture (${nouvelIndex}) ne correspond pas au dernier index de fermeture (${dernierIndex})`,
+            `Index d'ouverture (${nouvelIndex}) ne correspond pas au dernier index de fermeture (${dernierIndex})`
           );
         }
       }
@@ -119,7 +119,7 @@ const Pistolet = {
         `INSERT INTO releves_postes 
         (affectation_id, pistolet_id, index_ouverture, index_fermeture, date_heure_saisie, statut) 
         VALUES (?, ?, ?, ?, ?, 'valide')`,
-        [affectation_id, pistolet_id, index_ouverture, index_fermeture, date_heure],
+        [affectation_id, pistolet_id, index_ouverture, index_fermeture, date_heure]
       );
 
       // Mise à jour du dernier index
@@ -127,7 +127,7 @@ const Pistolet = {
         `UPDATE pistolets 
          SET dernier_index = ?, date_dernier_index = NOW() 
          WHERE id = ?`,
-        [index_fermeture, pistolet_id],
+        [index_fermeture, pistolet_id]
       );
 
       await db.query('COMMIT');
@@ -156,7 +156,7 @@ const Pistolet = {
         `INSERT INTO rapports_journaliers 
           (date_rapport, pistolet_id, total_quantite, total_montant, nombre_postes, date_generation) 
           VALUES (?, ?, ?, ?, 1, NOW())`,
-        [date_rapport, pistolet_id, total_quantite, total_montant],
+        [date_rapport, pistolet_id, total_quantite, total_montant]
       );
 
       return result.insertId;
@@ -166,7 +166,7 @@ const Pistolet = {
     }
   },
   // Générer un rapport journalier
-  generateRapportJournalier: async (date) => {
+  generateRapportJournalier: async date => {
     try {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
         throw new Error('Format de date invalide');
@@ -191,7 +191,7 @@ const Pistolet = {
           JOIN pistolets p ON r.pistolet_id = p.id
           WHERE DATE(r.date_heure_saisie) = ? 
           GROUP BY r.pistolet_id`,
-        [date, date],
+        [date, date]
       );
 
       return result.affectedRows || 0;
@@ -331,7 +331,7 @@ const Pistolet = {
     return rows;
   },
   // Méthode pour récupérer les revenus par date spécifique
-  getRevenuesByDate: async (date) => {
+  getRevenuesByDate: async date => {
     const query = `
     SELECT 
       r.pistolet_id,
@@ -417,19 +417,19 @@ const Pistolet = {
     return result.affectedRows;
   },
 
-  getPistoletById: async (id) => {
+  getPistoletById: async id => {
     const [rows] = await db.query(
       `SELECT p.*, po.nom AS nom_poste 
        FROM pistolets p
        LEFT JOIN pompes pm ON p.pompe_id = pm.id
        LEFT JOIN postes po ON pm.poste_id = po.id
        WHERE p.id = ?`,
-      [id],
+      [id]
     );
     return rows[0];
   },
   // Obtenir tous les pistolets d'une pompe
-  getPistoletsByPompeId: async (pompe_id) => {
+  getPistoletsByPompeId: async pompe_id => {
     const [rows] = await db.query('SELECT * FROM pistolets WHERE pompe_id = ?', [pompe_id]);
     return rows;
   },
@@ -461,7 +461,7 @@ const Pistolet = {
          FROM releves_postes 
          WHERE pistolet_id = ? 
          ORDER BY date_heure_saisie DESC LIMIT 1`,
-        [id],
+        [id]
       );
 
       if (lastReleve.length === 0) {
@@ -479,7 +479,7 @@ const Pistolet = {
       // Vérifier la cohérence des index
       if (nouvelIndex < parseFloat(lastReleve[0].index_ouverture)) {
         throw new Error(
-          `L'index de fermeture ne peut pas être inférieur à l'index d'ouverture (${lastReleve[0].index_ouverture})`,
+          `L'index de fermeture ne peut pas être inférieur à l'index d'ouverture (${lastReleve[0].index_ouverture})`
         );
       }
 
@@ -489,7 +489,7 @@ const Pistolet = {
          SET index_fermeture = ?, 
              updated_at = NOW() 
          WHERE id = ?`,
-        [index_fermeture, lastReleve[0].id],
+        [index_fermeture, lastReleve[0].id]
       );
 
       // Mettre à jour l'index dans pistolets
@@ -498,7 +498,7 @@ const Pistolet = {
          SET dernier_index = ?, 
              date_dernier_index = NOW() 
          WHERE id = ?`,
-        [index_fermeture, id],
+        [index_fermeture, id]
       );
 
       await db.query('COMMIT');

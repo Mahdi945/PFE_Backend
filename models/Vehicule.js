@@ -5,12 +5,12 @@ import fs from 'fs';
 
 const Vehicule = {
   // Vérifier si un crédit individuel a déjà un véhicule
-  checkCreditVehiculeLimit: async (id_credit) => {
+  checkCreditVehiculeLimit: async id_credit => {
     try {
       // Récupérer le type de crédit depuis details_credits
       const [creditRows] = await db.execute(
         'SELECT type_credit FROM details_credits WHERE id = ?',
-        [id_credit],
+        [id_credit]
       );
 
       if (creditRows.length === 0) {
@@ -23,12 +23,12 @@ const Vehicule = {
       if (creditType.toLowerCase() === 'individuelle') {
         const [vehiculeRows] = await db.execute(
           'SELECT COUNT(*) AS count FROM vehicules WHERE id_credit = ?',
-          [id_credit],
+          [id_credit]
         );
 
         if (vehiculeRows[0].count > 0) {
           throw new Error(
-            "Un crédit de type individuelle ne peut avoir qu'un seul véhicule associé",
+            "Un crédit de type individuelle ne peut avoir qu'un seul véhicule associé"
           );
         }
       }
@@ -93,7 +93,7 @@ const Vehicule = {
   },
 
   // Récupérer un véhicule spécifique par son ID avec les infos utilisateur
-  getVehiculeById: async (id) => {
+  getVehiculeById: async id => {
     const query = `
             SELECT 
                 v.*,
@@ -110,7 +110,7 @@ const Vehicule = {
   },
 
   // Récupérer un véhicule par son immatriculation avec les infos utilisateur
-  getVehiculeByImmatriculation: async (immatriculation) => {
+  getVehiculeByImmatriculation: async immatriculation => {
     const query = `
             SELECT 
                 v.*,
@@ -127,7 +127,7 @@ const Vehicule = {
   },
 
   // Récupérer tous les véhicules d'un utilisateur par son ID
-  getVehiculesByUserId: async (id_utilisateur) => {
+  getVehiculesByUserId: async id_utilisateur => {
     const query = `
             SELECT 
                 v.*,
@@ -144,7 +144,7 @@ const Vehicule = {
   },
 
   // Récupérer les véhicules d'un crédit spécifique avec les infos utilisateur
-  getVehiculeByCredit: async (id_credit) => {
+  getVehiculeByCredit: async id_credit => {
     const query = `
             SELECT 
                 v.*,
@@ -160,31 +160,31 @@ const Vehicule = {
     return rows;
   },
 
-// Mettre à jour un véhicule (changement de crédit seulement)
-updateVehicule: async (id, id_credit) => {
-  try {
-    // Vérifier que le nouveau crédit existe
-    const [credit] = await db.execute('SELECT id FROM details_credits WHERE id = ?', [id_credit]);
-    
-    if (!credit.length) {
-      throw new Error('Crédit introuvable');
-    }
+  // Mettre à jour un véhicule (changement de crédit seulement)
+  updateVehicule: async (id, id_credit) => {
+    try {
+      // Vérifier que le nouveau crédit existe
+      const [credit] = await db.execute('SELECT id FROM details_credits WHERE id = ?', [id_credit]);
 
-    const query = `
+      if (!credit.length) {
+        throw new Error('Crédit introuvable');
+      }
+
+      const query = `
       UPDATE vehicules
       SET id_credit = ?
       WHERE id = ?
     `;
-    const [result] = await db.execute(query, [id_credit, id]);
-    return result;
-  } catch (error) {
-    console.error('Erreur lors de la mise à jour du véhicule:', error);
-    throw error;
-  }
-},
+      const [result] = await db.execute(query, [id_credit, id]);
+      return result;
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du véhicule:', error);
+      throw error;
+    }
+  },
 
   // Supprimer un véhicule
-  deleteVehicule: async (id) => {
+  deleteVehicule: async id => {
     const query = 'DELETE FROM vehicules WHERE id = ?';
     const [result] = await db.execute(query, [id]);
     return result;

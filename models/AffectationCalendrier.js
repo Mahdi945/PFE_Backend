@@ -7,7 +7,7 @@ const AffectationCalendrier = {
     const isPompisteAffected = await AffectationCalendrier.checkPompisteAffectation(
       pompiste_id,
       date,
-      poste_id,
+      poste_id
     );
 
     if (isPompisteAffected) {
@@ -18,7 +18,7 @@ const AffectationCalendrier = {
     const isPompeOccupied = await AffectationCalendrier.checkPompeOccupied(
       pompe_id,
       date,
-      poste_id,
+      poste_id
     );
 
     if (isPompeOccupied) {
@@ -64,7 +64,7 @@ const AffectationCalendrier = {
       // Validation robuste des paramètres
       mois = parseInt(mois);
       annee = parseInt(annee);
-      
+
       if (isNaN(mois) || isNaN(annee) || mois < 1 || mois > 12) {
         throw new Error('Paramètres invalides : mois (1-12) et année requis');
       }
@@ -73,13 +73,11 @@ const AffectationCalendrier = {
       const [existingAffectations] = await db.execute(
         `SELECT id FROM affectations 
          WHERE MONTH(date) = ? AND YEAR(date) = ?`,
-        [mois, annee],
+        [mois, annee]
       );
 
       if (existingAffectations.length > 0 && !regenerate) {
-        throw new Error(
-          'Affectations existantes. Utilisez regenerate=true pour les recréer.',
-        );
+        throw new Error('Affectations existantes. Utilisez regenerate=true pour les recréer.');
       }
 
       // 2. Nettoyage des anciennes affectations
@@ -87,7 +85,7 @@ const AffectationCalendrier = {
         await db.execute(
           `DELETE FROM affectations 
            WHERE MONTH(date) = ? AND YEAR(date) = ?`,
-          [mois, annee],
+          [mois, annee]
         );
       }
 
@@ -96,9 +94,7 @@ const AffectationCalendrier = {
         'SELECT id FROM utilisateurs WHERE role = "pompiste" AND status = "active"'
       );
       const [postes] = await db.execute('SELECT id FROM postes');
-      const [pompes] = await db.execute(
-        'SELECT id FROM pompes WHERE statut = "en_service"'
-      );
+      const [pompes] = await db.execute('SELECT id FROM pompes WHERE statut = "en_service"');
 
       if (pompistes.length === 0 || postes.length === 0 || pompes.length === 0) {
         throw new Error('Données insuffisantes pour générer les affectations');
@@ -113,12 +109,14 @@ const AffectationCalendrier = {
         const date = new Date(year, month - 1, day);
         return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       };
-    
+
       for (let day = 1; day <= dernierJourDuMois; day++) {
         dates.push(formatDate(annee, mois, day));
       }
 
-      console.log(`Génération STRICTE pour ${mois}/${annee} : ${dates[0]} à ${dates[dates.length - 1]}`);
+      console.log(
+        `Génération STRICTE pour ${mois}/${annee} : ${dates[0]} à ${dates[dates.length - 1]}`
+      );
 
       // 5. Algorithme d'affectation optimisé
       let totalAffectations = 0;
@@ -127,8 +125,9 @@ const AffectationCalendrier = {
       for (const date of dates) {
         for (const poste of postes) {
           // Priorité aux pompistes les moins affectés
-          const pompistesTries = [...pompistes].sort((a, b) => 
-            affectationsParPompiste.get(a.id) - affectationsParPompiste.get(b.id));
+          const pompistesTries = [...pompistes].sort(
+            (a, b) => affectationsParPompiste.get(a.id) - affectationsParPompiste.get(b.id)
+          );
 
           for (const pompe of pompes) {
             let affectationReussie = false;
@@ -148,10 +147,13 @@ const AffectationCalendrier = {
                     `INSERT INTO affectations 
                      (pompiste_id, poste_id, pompe_id, date)
                      VALUES (?, ?, ?, ?)`,
-                    [pompiste.id, poste.id, pompe.id, date],
+                    [pompiste.id, poste.id, pompe.id, date]
                   );
-                  
-                  affectationsParPompiste.set(pompiste.id, affectationsParPompiste.get(pompiste.id) + 1);
+
+                  affectationsParPompiste.set(
+                    pompiste.id,
+                    affectationsParPompiste.get(pompiste.id) + 1
+                  );
                   totalAffectations++;
                   affectationReussie = true;
                   break;
@@ -162,7 +164,9 @@ const AffectationCalendrier = {
             }
 
             if (!affectationReussie) {
-              console.warn(`Affectation impossible le ${date} pour pompe ${pompe.id} (poste ${poste.id})`);
+              console.warn(
+                `Affectation impossible le ${date} pour pompe ${pompe.id} (poste ${poste.id})`
+              );
             }
           }
         }
@@ -180,7 +184,7 @@ const AffectationCalendrier = {
       );
 
       return {
-         success: true,
+        success: true,
         message: `Affectations générées avec succès pour ${mois}/${annee}`,
         stats: {
           jours: dates.length,
@@ -189,13 +193,13 @@ const AffectationCalendrier = {
           total_affectations: totalAffectations,
           verification_bdd: verification[0][0],
           repartition: Object.fromEntries(affectationsParPompiste),
-          pompistes_affectes: pompistes.length // Ajouté pour référence
-        }
+          pompistes_affectes: pompistes.length, // Ajouté pour référence
+        },
       };
     } catch (error) {
       console.error('Échec de la génération:', {
         params: { mois, annee, regenerate },
-        error: error.message
+        error: error.message,
       });
       throw new Error(`Échec de la génération: ${error.message}`);
     }
@@ -205,13 +209,13 @@ const AffectationCalendrier = {
     const [result] = await db.execute(
       `DELETE FROM affectations
        WHERE MONTH(date) = ? AND YEAR(date) = ?`,
-      [mois, annee],
+      [mois, annee]
     );
     return result;
   },
 
   // Récupère les affectations pour une date précise
-  getAffectationsByDate: async (date) => {
+  getAffectationsByDate: async date => {
     const query = `
       SELECT 
         a.id AS affectation_id,
@@ -362,7 +366,7 @@ const AffectationCalendrier = {
   },
 
   // Récupère l'affectation actuelle d'un pompiste
-  getCurrentAffectation: async (pompiste_id) => {
+  getCurrentAffectation: async pompiste_id => {
     const now = new Date();
     const currentHour = now.getHours();
 
@@ -437,7 +441,7 @@ const AffectationCalendrier = {
   },
 
   // Récupère les pistolets disponibles par affectation
-  getAvailablePistoletsByAffectation: async (affectation_id) => {
+  getAvailablePistoletsByAffectation: async affectation_id => {
     const query = `
       SELECT pt.* 
       FROM pistolets pt
