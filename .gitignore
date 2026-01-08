@@ -1,5 +1,12 @@
 # Ignore les fichiers .env
 .env
+.env.local
+.env.production
+
+# Ignore les clés API et secrets
+chatbot/apikey.py
+**/apikey.py
+
 ### Fichiers Odoo à ignorer ###
 
 # Dossier Odoo cloné 
